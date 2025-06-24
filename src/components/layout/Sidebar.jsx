@@ -24,7 +24,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
     ];
 
     switch (userType) {
-      case 'admin':
+      case 'ADMIN':
         return [
           ...baseItems,
           {
@@ -77,7 +77,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           }
         ];
 
-      case 'staff':
+      case 'STAFF':
         return [
           ...baseItems,
           {
@@ -121,7 +121,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           }
         ];
 
-      case 'member':
+      case 'MEMBER':
         return [
           ...baseItems,
           {

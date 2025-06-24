@@ -83,9 +83,9 @@ const Header = ({ userType, onMenuClick }) => {
 
   const getUserTypeLabel = () => {
     switch (userType) {
-      case 'admin': return 'Quản trị viên';
-      case 'staff': return 'Nhân viên';
-      case 'member': return 'Thành viên';
+      case 'ADMIN': return 'Quản trị viên';
+      case 'STAFF': return 'Nhân viên';
+      case 'MEMBER': return 'Thành viên';
       default: return '';
     }
   };
@@ -140,7 +140,7 @@ const Header = ({ userType, onMenuClick }) => {
                 variant="ghost"
                 size="sm"
                 icon={<Calendar />}
-                onClick={() => navigate(userType === 'member' ? ROUTES.MEMBER_APPOINTMENTS : ROUTES.STAFF_APPOINTMENTS)}
+                onClick={() => navigate(userType === 'MEMBER' ? ROUTES.MEMBER_APPOINTMENTS : ROUTES.STAFF_APPOINTMENTS)}
               >
                 Lịch hẹn
               </Button>
@@ -271,7 +271,7 @@ const Header = ({ userType, onMenuClick }) => {
                       {
                         icon: User,
                         label: 'Hồ sơ cá nhân',
-                        onClick: () => navigate(userType === 'member' ? ROUTES.MEMBER_PROFILE : '/profile')
+                        onClick: () => navigate(userType === 'MEMBER' ? ROUTES.MEMBER_PROFILE : '/profile')
                       },
                       {
                         icon: Settings,

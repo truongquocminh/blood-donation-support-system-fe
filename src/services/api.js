@@ -288,14 +288,4 @@ export const clearApiCache = () => {
   requestCache.clear();
 };
 
-export const healthCheck = async () => {
-  try {
-    const response = await apiGet('/health');
-    return response.data;
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return { status: 'error', message: error.message };
-  }
-};
-
 export default api;

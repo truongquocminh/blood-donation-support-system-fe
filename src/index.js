@@ -12,8 +12,6 @@ import { ThemeProvider } from './context/ThemeContext';
 
 import ErrorBoundary from './components/common/ErrorBoundary';
 
-// import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
@@ -55,18 +53,3 @@ root.render(
   </React.StrictMode>
 );
 
-// serviceWorkerRegistration.register();
-
-if (process.env.NODE_ENV === 'development') {
-  const { getCLS, getFID, getFCP, getLCP, getTTFB } = require('web-vitals');
-  
-  function sendToAnalytics(metric) {
-    console.log(metric);
-  }
-
-  getCLS(sendToAnalytics);
-  getFID(sendToAnalytics);
-  getFCP(sendToAnalytics);
-  getLCP(sendToAnalytics);
-  getTTFB(sendToAnalytics);
-}

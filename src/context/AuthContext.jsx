@@ -95,15 +95,27 @@ export const AuthProvider = ({ children }) => {
       const storedAuth = getStoredAuth();
       
       if (storedAuth?.token) {
-        const userData = await authService.verifyToken(storedAuth.token);
-        
-        dispatch({
-          type: AUTH_ACTIONS.AUTH_INITIALIZE,
-          payload: {
-            user: userData,
-            token: storedAuth.token,
-          },
-        });
+        // Verify token by making a request to get user info
+        // You might need to create a verifyToken endpoint or use refresh token
+        try {
+          const response = await authService.refreshToken();
+          const { user, token } = response.data;
+          
+          dispatch({
+            type: AUTH_ACTIONS.AUTH_INITIALIZE,
+            payload: {
+              user,
+              token,
+            },
+          });
+        } catch (error) {
+          // Token invalid, remove stored auth
+          removeStoredAuth();
+          dispatch({
+            type: AUTH_ACTIONS.AUTH_INITIALIZE,
+            payload: null,
+          });
+        }
       } else {
         dispatch({
           type: AUTH_ACTIONS.AUTH_INITIALIZE,
@@ -124,19 +136,10 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.AUTH_START });
 
-      if (credentials.mockResult) {
-        const { user, token } = credentials.mockResult;
-        setStoredAuth({ token: 'demo-token', user });
-        dispatch({
-          type: AUTH_ACTIONS.AUTH_SUCCESS,
-          payload: { user, token: 'demo-token' },
-        });
-        toast.success(`Chào mừng ${user.email}!`);
-        return { success: true };
-      }
-
       const response = await authService.login(credentials);
-      const { user, token } = response.data;
+      
+      // Assuming API returns { user, token } or { data: { user, token } }
+      const { user, token } = response.data || response;
 
       setStoredAuth({ token, user });
 
@@ -145,11 +148,13 @@ export const AuthProvider = ({ children }) => {
         payload: { user, token },
       });
 
-      toast.success(`Chào mừng ${user.name}!`);
+      toast.success(`Chào mừng ${user.fullName || user.email}!`);
       return { success: true };
 
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Đăng nhập thất bại';
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Đăng nhập thất bại';
       
       dispatch({
         type: AUTH_ACTIONS.AUTH_FAILURE,
@@ -166,7 +171,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AUTH_ACTIONS.AUTH_START });
 
       const response = await authService.register(userData);
-      const { user, token } = response.data;
+      
+      // Assuming API returns { user, token } or { data: { user, token } }
+      const { user, token } = response.data || response;
 
       setStoredAuth({ token, user });
 
@@ -179,7 +186,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
 
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Đăng ký thất bại';
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Đăng ký thất bại';
       
       dispatch({
         type: AUTH_ACTIONS.AUTH_FAILURE,

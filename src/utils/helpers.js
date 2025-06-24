@@ -1,5 +1,12 @@
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import {
+  PLASMA_COMPATIBILITY,
+  RED_BLOOD_CELL_COMPATIBILITY,
+  WHOLE_BLOOD_COMPATIBILITY,
+  GENERIC_COMPONENT_COMPATIBILITY,
+  BLOOD_COMPONENTS,
+} from "./constants";
 
 /**
  * Combines class names using clsx and tailwind-merge
@@ -16,29 +23,29 @@ export function cn(...inputs) {
  * @param {string} format - Format string (default: 'DD/MM/YYYY')
  * @returns {string} Formatted date string
  */
-export const formatDate = (date, format = 'DD/MM/YYYY') => {
-  if (!date) return '';
-  
+export const formatDate = (date, format = "DD/MM/YYYY") => {
+  if (!date) return "";
+
   const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
   const year = d.getFullYear();
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+
   switch (format) {
-    case 'DD/MM/YYYY':
+    case "DD/MM/YYYY":
       return `${day}/${month}/${year}`;
-    case 'MM/DD/YYYY':
+    case "MM/DD/YYYY":
       return `${month}/${day}/${year}`;
-    case 'YYYY-MM-DD':
+    case "YYYY-MM-DD":
       return `${year}-${month}-${day}`;
-    case 'DD/MM/YYYY HH:mm':
+    case "DD/MM/YYYY HH:mm":
       return `${day}/${month}/${year} ${hours}:${minutes}`;
-    case 'HH:mm':
+    case "HH:mm":
       return `${hours}:${minutes}`;
     default:
-      return d.toLocaleDateString('vi-VN');
+      return d.toLocaleDateString("vi-VN");
   }
 };
 
@@ -48,11 +55,11 @@ export const formatDate = (date, format = 'DD/MM/YYYY') => {
  * @returns {string} Formatted currency string
  */
 export const formatCurrency = (amount) => {
-  if (typeof amount !== 'number') return '0 ₫';
-  
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
+  if (typeof amount !== "number") return "0 ₫";
+
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
     minimumFractionDigits: 0,
   }).format(amount);
 };
@@ -63,9 +70,9 @@ export const formatCurrency = (amount) => {
  * @returns {string} Formatted number string
  */
 export const formatNumber = (number) => {
-  if (typeof number !== 'number') return '0';
-  
-  return new Intl.NumberFormat('vi-VN').format(number);
+  if (typeof number !== "number") return "0";
+
+  return new Intl.NumberFormat("vi-VN").format(number);
 };
 
 /**
@@ -76,7 +83,7 @@ export const formatNumber = (number) => {
  */
 export const truncateText = (text, length = 100) => {
   if (!text || text.length <= length) return text;
-  return text.substring(0, length) + '...';
+  return text.substring(0, length) + "...";
 };
 
 /**
@@ -85,7 +92,7 @@ export const truncateText = (text, length = 100) => {
  * @returns {string} Capitalized string
  */
 export const capitalize = (str) => {
-  if (!str) return '';
+  if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
@@ -95,9 +102,10 @@ export const capitalize = (str) => {
  * @returns {string} Title case string
  */
 export const toTitleCase = (str) => {
-  if (!str) return '';
-  return str.replace(/\w\S*/g, (txt) => 
-    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  if (!str) return "";
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
   );
 };
 
@@ -107,8 +115,9 @@ export const toTitleCase = (str) => {
  * @returns {string} Random ID
  */
 export const generateId = (length = 8) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -141,11 +150,11 @@ export const debounce = (func, wait) => {
  */
 export const throttle = (func, limit) => {
   let inThrottle;
-  return function(...args) {
+  return function (...args) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 };
@@ -157,9 +166,9 @@ export const throttle = (func, limit) => {
  */
 export const isEmpty = (value) => {
   if (value == null) return true;
-  if (typeof value === 'string') return value.trim() === '';
+  if (typeof value === "string") return value.trim() === "";
   if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === 'object') return Object.keys(value).length === 0;
+  if (typeof value === "object") return Object.keys(value).length === 0;
   return false;
 };
 
@@ -169,10 +178,10 @@ export const isEmpty = (value) => {
  * @returns {any} Cloned object
  */
 export const deepClone = (obj) => {
-  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj === null || typeof obj !== "object") return obj;
   if (obj instanceof Date) return new Date(obj.getTime());
-  if (Array.isArray(obj)) return obj.map(item => deepClone(item));
-  
+  if (Array.isArray(obj)) return obj.map((item) => deepClone(item));
+
   const cloned = {};
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
@@ -190,16 +199,16 @@ export const deepClone = (obj) => {
  * @returns {any} Property value or default value
  */
 export const get = (obj, path, defaultValue = undefined) => {
-  const keys = path.split('.');
+  const keys = path.split(".");
   let result = obj;
-  
+
   for (let key of keys) {
-    if (result == null || typeof result !== 'object') {
+    if (result == null || typeof result !== "object") {
       return defaultValue;
     }
     result = result[key];
   }
-  
+
   return result !== undefined ? result : defaultValue;
 };
 
@@ -211,17 +220,17 @@ export const get = (obj, path, defaultValue = undefined) => {
  * @returns {object} Modified object
  */
 export const set = (obj, path, value) => {
-  const keys = path.split('.');
+  const keys = path.split(".");
   const lastKey = keys.pop();
   let current = obj;
-  
+
   for (let key of keys) {
-    if (!(key in current) || typeof current[key] !== 'object') {
+    if (!(key in current) || typeof current[key] !== "object") {
       current[key] = {};
     }
     current = current[key];
   }
-  
+
   current[lastKey] = value;
   return obj;
 };
@@ -233,26 +242,26 @@ export const set = (obj, path, value) => {
  * @returns {Array} Deduplicated array
  */
 export const uniqueBy = (array, key) => {
-  if (typeof key === 'string') {
+  if (typeof key === "string") {
     const seen = new Set();
-    return array.filter(item => {
+    return array.filter((item) => {
       const val = item[key];
       if (seen.has(val)) return false;
       seen.add(val);
       return true;
     });
   }
-  
-  if (typeof key === 'function') {
+
+  if (typeof key === "function") {
     const seen = new Set();
-    return array.filter(item => {
+    return array.filter((item) => {
       const val = key(item);
       if (seen.has(val)) return false;
       seen.add(val);
       return true;
     });
   }
-  
+
   return [...new Set(array)];
 };
 
@@ -264,7 +273,7 @@ export const uniqueBy = (array, key) => {
  */
 export const groupBy = (array, key) => {
   return array.reduce((groups, item) => {
-    const group = typeof key === 'function' ? key(item) : item[key];
+    const group = typeof key === "function" ? key(item) : item[key];
     groups[group] = groups[group] || [];
     groups[group].push(item);
     return groups;
@@ -280,19 +289,21 @@ export const groupBy = (array, key) => {
 export const sortBy = (array, criteria) => {
   return array.sort((a, b) => {
     for (let criterion of criteria) {
-      let aVal, bVal, order = 'asc';
-      
-      if (typeof criterion === 'string') {
+      let aVal,
+        bVal,
+        order = "asc";
+
+      if (typeof criterion === "string") {
         aVal = a[criterion];
         bVal = b[criterion];
-      } else if (typeof criterion === 'object') {
+      } else if (typeof criterion === "object") {
         aVal = a[criterion.key];
         bVal = b[criterion.key];
-        order = criterion.order || 'asc';
+        order = criterion.order || "asc";
       }
-      
-      if (aVal < bVal) return order === 'asc' ? -1 : 1;
-      if (aVal > bVal) return order === 'asc' ? 1 : -1;
+
+      if (aVal < bVal) return order === "asc" ? -1 : 1;
+      if (aVal > bVal) return order === "asc" ? 1 : -1;
     }
     return 0;
   });
@@ -308,11 +319,11 @@ export const calculateAge = (dateOfBirth) => {
   const birth = new Date(dateOfBirth);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
 };
 
@@ -322,13 +333,13 @@ export const calculateAge = (dateOfBirth) => {
  * @returns {string} Formatted file size
  */
 export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 /**
@@ -336,7 +347,7 @@ export const formatFileSize = (bytes) => {
  * @returns {string} Random hex color
  */
 export const randomColor = () => {
-  return '#' + Math.floor(Math.random() * 16777215).toString(16);
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
 };
 
 /**
@@ -344,7 +355,9 @@ export const randomColor = () => {
  * @returns {boolean} True if mobile device
  */
 export const isMobile = () => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
 };
 
 /**
@@ -356,7 +369,7 @@ export const scrollToElement = (elementId, offset = 0) => {
   const element = document.getElementById(elementId);
   if (element) {
     const y = element.getBoundingClientRect().top + window.pageYOffset + offset;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    window.scrollTo({ top: y, behavior: "smooth" });
   }
 };
 
@@ -370,13 +383,13 @@ export const copyToClipboard = async (text) => {
     await navigator.clipboard.writeText(text);
     return true;
   } catch (err) {
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = text;
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
     try {
-      document.execCommand('copy');
+      document.execCommand("copy");
       return true;
     } catch (err) {
       return false;
@@ -392,14 +405,30 @@ export const copyToClipboard = async (text) => {
  * @param {string} filename - File name
  * @param {string} type - MIME type
  */
-export const downloadFile = (data, filename, type = 'text/plain') => {
+export const downloadFile = (data, filename, type = "text/plain") => {
   const blob = new Blob([data], { type });
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
+};
+
+export const isCompatible = (receiverType, donorType, component) => {
+  switch (component) {
+    case BLOOD_COMPONENTS.WHOLE_BLOOD:
+      return WHOLE_BLOOD_COMPATIBILITY[receiverType].includes(donorType);
+    case BLOOD_COMPONENTS.RED_BLOOD_CELLS:
+      return RED_BLOOD_CELL_COMPATIBILITY[receiverType].includes(donorType);
+    case BLOOD_COMPONENTS.PLASMA:
+      return PLASMA_COMPATIBILITY[receiverType].includes(donorType);
+    case BLOOD_COMPONENTS.PLATELETS:
+    case BLOOD_COMPONENTS.WHITE_BLOOD_CELLS:
+      return GENERIC_COMPONENT_COMPATIBILITY[receiverType].includes(donorType);
+    default:
+      return false;
+  }
 };

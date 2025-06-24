@@ -4,7 +4,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import { cn } from '../../utils/helpers';
 
-const Layout = ({ children, userType = 'member' }) => {
+const Layout = ({ children, userType = 'MEMBER' }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

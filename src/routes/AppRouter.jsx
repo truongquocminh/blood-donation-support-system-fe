@@ -85,7 +85,7 @@ const AppRouter = () => {
           path="/member/*" 
           element={
             <ProtectedRoute allowedRoles={[ROLES.MEMBER, ROLES.STAFF, ROLES.ADMIN]}>
-              <Layout userType="member">
+              <Layout userType="MEMBER">
                 <Routes>
                   <Route index element={<Navigate to={ROUTES.MEMBER_DASHBOARD} replace />} />
                   <Route path="dashboard" element={<MemberDashboard />} />
@@ -102,7 +102,7 @@ const AppRouter = () => {
           path="/staff/*" 
           element={
             <ProtectedRoute allowedRoles={[ROLES.STAFF, ROLES.ADMIN]}>
-              <Layout userType="staff">
+              <Layout userType="STAFF">
                 <Routes>
                   <Route index element={<Navigate to={ROUTES.STAFF_DASHBOARD} replace />} />
                   <Route path="dashboard" element={<StaffDashboard />} />
@@ -117,7 +117,7 @@ const AppRouter = () => {
           path="/admin/*" 
           element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-              <Layout userType="admin">
+              <Layout userType="ADMIN">
                 <Routes>
                   <Route index element={<Navigate to={ROUTES.ADMIN_DASHBOARD} replace />} />
                   <Route path="dashboard" element={<AdminDashboard />} />

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Heart, Mail, Lock, Eye, EyeOff, ArrowRight, 
-  Facebook, Chrome, Apple, Shield, CheckCircle, AlertCircle
+  Facebook, Chrome, Apple, Shield, AlertCircle
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
-import Input, { PasswordInput } from '../../components/ui/Input';
+import Input from '../../components/ui/Input';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../utils/constants';
 import { validateEmail } from '../../utils/validators';
@@ -52,25 +52,12 @@ const Login = () => {
     
     if (!formData.password) {
       newErrors.password = 'Mật khẩu là bắt buộc';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const demoAccounts = {
-    admin: { email: 'admin@bloodconnect.vn', password: 'admin123', role: 'admin' },
-    staff: { email: 'staff@bloodconnect.vn', password: 'staff123', role: 'staff' },
-    member: { email: 'member@bloodconnect.vn', password: 'member123', role: 'member' }
-  };
-
-  const checkDemoAccount = (email, password) => {
-    for (const [key, account] of Object.entries(demoAccounts)) {
-      if (account.email === email && account.password === password) {
-        return { success: true, role: account.role };
-      }
-    }
-    return { success: false };
   };
 
   const handleSubmit = async (e) => {
@@ -79,37 +66,22 @@ const Login = () => {
     if (!validateForm()) return;
     
     setIsSubmitting(true);
+    setErrors({});
     
     try {
-      const demoCheck = checkDemoAccount(formData.email, formData.password);
+      const result = await login({
+        email: formData.email,
+        password: formData.password,
+        rememberMe: formData.rememberMe
+      });
       
-      if (demoCheck.success) {
-        const mockResult = {
-          success: true,
-          user: {
-            email: formData.email,
-            role: demoCheck.role
-          }
-        };
-        
-        await login({
-          email: formData.email,
-          password: formData.password,
-          rememberMe: formData.rememberMe,
-          mockResult
-        });
-        
+      if (result.success) {
         navigate(from, { replace: true });
       } else {
-        const result = await login({
-          email: formData.email,
-          password: formData.password,
-          rememberMe: formData.rememberMe
-        });
-        
-        if (result.success) {
-          navigate(from, { replace: true });
-        }
+        setErrors(prev => ({
+          ...prev,
+          general: result.error || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'
+        }));
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -124,15 +96,7 @@ const Login = () => {
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);
-  };
-
-  const demoLogin = (role) => {
-    const account = demoAccounts[role];
-    setFormData({
-      email: account.email,
-      password: account.password,
-      rememberMe: false
-    });
+    // Implement social login logic here
   };
 
   return (
@@ -224,12 +188,12 @@ const Login = () => {
               variant="primary"
               size="lg"
               fullWidth
-              loading={isSubmitting}
-              disabled={isSubmitting}
+              loading={isSubmitting || loading}
+              disabled={isSubmitting || loading}
               icon={<ArrowRight />}
               iconPosition="right"
             >
-              {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {isSubmitting || loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
           </form>
 
@@ -270,39 +234,6 @@ const Login = () => {
             >
               Apple
             </Button>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center space-x-2 mb-3">
-              <Shield className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">Tài khoản demo</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => demoLogin('admin')}
-                className="text-xs bg-red-100 text-red-700 hover:bg-red-200"
-              >
-                Admin
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => demoLogin('staff')}
-                className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200"
-              >
-                Staff
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => demoLogin('member')}
-                className="text-xs bg-green-100 text-green-700 hover:bg-green-200"
-              >
-                Member
-              </Button>
-            </div>
           </div>
 
           <div className="text-center mt-6">
