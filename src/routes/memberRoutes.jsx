@@ -5,6 +5,7 @@ import Layout from '../components/layout/Layout';
 const MemberDashboard = lazy(() => import('../pages/member/Dashboard'));
 const MemberProfile = lazy(() => import('../pages/member/Profile'));
 const MemberDonations = lazy(() => import('../pages/member/Donations'));
+const Appointments = lazy(() => import('../pages/member/Appointments'));
 const MemberRewards = lazy(() => import('../pages/member/Rewards'));
 
 const MemberRoutes = () => {
@@ -14,6 +15,7 @@ const MemberRoutes = () => {
         <Route path="dashboard" element={<MemberDashboard />} />
         <Route path="profile" element={<MemberProfile />} />
         <Route path="donations" element={<MemberDonations />} />
+        <Route path="appointments" element={<Appointments />} />
         <Route path="rewards" element={<MemberRewards />} />
       </Routes>
     </Layout>
