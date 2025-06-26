@@ -3,7 +3,15 @@ import { Plus, Calendar, Filter, Clock } from 'lucide-react';
 import AppointmentStats from '../../components/appointments/AppointmentStats';
 import AppointmentHistory from '../../components/appointments/AppointmentHistory';
 import AppointmentFormModal from '../../components/appointments/AppointmentFormModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS, APPOINTMENT_STATUS } from '../../utils/constants';
+import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
+
+// Appointment statuses
+export const APPOINTMENT_STATUS = {
+  PENDING: "PENDING",
+  SCHEDULED: "SCHEDULED", 
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+};
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -12,18 +20,20 @@ const STATUS_LABELS = {
   CANCELLED: 'Đã hủy'
 };
 
+// Mock data for member appointments (simplified)
 const MOCK_APPOINTMENTS = [
   {
     id: 1,
     userId: 1,
     appointmentDate: '2025-07-15T09:00:00Z',
+    status: APPOINTMENT_STATUS.SCHEDULED,
+    notes: 'Lịch hẹn hiến máu định kỳ',
+    createdAt: '2025-06-20T10:30:00Z',
+    // These fields will be filled by staff during consultation
     bloodType: BLOOD_TYPES.O_POSITIVE,
     bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
     volumeMl: 450,
-    status: APPOINTMENT_STATUS.SCHEDULED,
     location: 'Bệnh viện Chợ Rẫy',
-    notes: 'Lịch hẹn hiến máu định kỳ',
-    createdAt: '2025-06-20T10:30:00Z',
     healthCheck: {
       id: 1,
       pulse: 72,
@@ -40,27 +50,28 @@ const MOCK_APPOINTMENTS = [
     id: 2,
     userId: 1,
     appointmentDate: '2025-08-01T14:00:00Z',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.RED_BLOOD_CELLS,
-    volumeMl: 300,
     status: APPOINTMENT_STATUS.PENDING,
-    location: 'Trung tâm Huyết học TP.HCM',
-    notes: 'Đăng ký hiến hồng cầu',
+    notes: 'Muốn hiến máu giúp đỡ cộng đồng',
     createdAt: '2025-06-25T16:45:00Z',
+    // These will be null until staff consultation
+    bloodType: null,
+    bloodComponent: null,
+    volumeMl: null,
+    location: null,
     healthCheck: null
   },
   {
     id: 3,
     userId: 1,
     appointmentDate: '2025-06-20T10:00:00Z',
+    status: APPOINTMENT_STATUS.COMPLETED,
+    notes: 'Lần hiến máu đầu tiên',
+    createdAt: '2025-06-01T09:15:00Z',
+    completedAt: '2025-06-20T11:30:00Z',
     bloodType: BLOOD_TYPES.O_POSITIVE,
     bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
     volumeMl: 450,
-    status: APPOINTMENT_STATUS.COMPLETED,
     location: 'Bệnh viện Đại học Y Dược',
-    notes: 'Hiến máu thành công',
-    createdAt: '2025-06-01T09:15:00Z',
-    completedAt: '2025-06-20T11:30:00Z',
     healthCheck: {
       id: 2,
       pulse: 68,
@@ -77,14 +88,14 @@ const MOCK_APPOINTMENTS = [
     id: 4,
     userId: 1,
     appointmentDate: '2025-07-25T11:00:00Z',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLATELETS,
-    volumeMl: 250,
     status: APPOINTMENT_STATUS.CANCELLED,
-    location: 'Bệnh viện Nhân dân 115',
-    notes: 'Hủy do sức khỏe không đảm bảo',
+    notes: 'Có kế hoạch du lịch',
     createdAt: '2025-06-18T11:00:00Z',
     cancelledAt: '2025-07-24T16:00:00Z',
+    bloodType: null,
+    bloodComponent: null,
+    volumeMl: null,
+    location: null,
     healthCheck: {
       id: 3,
       pulse: 95,
@@ -124,6 +135,7 @@ const Appointments = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Get current user info from localStorage (mock)
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
   const handleAddAppointment = (appointmentData) => {
@@ -161,6 +173,7 @@ const Appointments = () => {
     return appointment.status === filterStatus;
   });
 
+  // Check if user can create new appointment (not within 12 weeks of last donation)
   const lastCompletedAppointment = appointments
     .filter(a => a.status === APPOINTMENT_STATUS.COMPLETED)
     .sort((a, b) => new Date(b.completedAt || b.appointmentDate) - new Date(a.completedAt || a.appointmentDate))[0];

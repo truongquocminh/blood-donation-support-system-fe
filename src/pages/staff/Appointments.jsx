@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { Search, Filter, Calendar, Users } from 'lucide-react';
+import { Search, Filter, Calendar, UserCheck } from 'lucide-react';
 import StaffAppointmentStats from '../../components/staff-appointments/StaffAppointmentStats';
 import StaffAppointmentTable from '../../components/staff-appointments/StaffAppointmentTable';
 import AppointmentDetailsModal from '../../components/staff-appointments/AppointmentDetailsModal';
 import HealthCheckFormModal from '../../components/staff-appointments/HealthCheckFormModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS, APPOINTMENT_STATUS } from '../../utils/constants';
+import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
+
+export const APPOINTMENT_STATUS = {
+  PENDING: "PENDING",
+  SCHEDULED: "SCHEDULED", 
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+};
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -26,14 +33,25 @@ const MOCK_APPOINTMENTS = [
       weight: 65
     },
     appointmentDate: '2025-07-15T09:00:00Z',
+    status: APPOINTMENT_STATUS.SCHEDULED,
+    notes: 'Lịch hẹn hiến máu định kỳ',
+    createdAt: '2025-06-20T10:30:00Z',
     bloodType: BLOOD_TYPES.O_POSITIVE,
     bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
     volumeMl: 450,
-    status: APPOINTMENT_STATUS.SCHEDULED,
     location: 'Bệnh viện Chợ Rẫy',
-    notes: 'Lịch hẹn hiến máu định kỳ',
-    createdAt: '2025-06-20T10:30:00Z',
-    healthCheck: null
+    healthCheck: {
+      id: 1,
+      pulse: 72,
+      bloodPressure: '120/80',
+      resultSummary: 'Sức khỏe tốt, đủ điều kiện hiến máu',
+      isEligible: true,
+      ineligibleReason: null,
+      bloodTypeId: BLOOD_TYPES.O_POSITIVE,
+      checkedAt: '2025-07-14T14:30:00Z',
+      staffId: 1,
+      staffName: 'Bs. Nguyễn Văn A'
+    }
   },
   {
     id: 2,
@@ -47,13 +65,13 @@ const MOCK_APPOINTMENTS = [
       weight: 55
     },
     appointmentDate: '2025-07-20T14:00:00Z',
-    bloodType: BLOOD_TYPES.A_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.RED_BLOOD_CELLS,
-    volumeMl: 300,
     status: APPOINTMENT_STATUS.PENDING,
-    location: 'Trung tâm Huyết học TP.HCM',
     notes: 'Lần hiến máu thứ 3',
     createdAt: '2025-06-15T14:20:00Z',
+    bloodType: null,
+    bloodComponent: null,
+    volumeMl: null,
+    location: null,
     healthCheck: null
   },
   {
@@ -68,16 +86,16 @@ const MOCK_APPOINTMENTS = [
       weight: 70
     },
     appointmentDate: '2025-06-20T10:00:00Z',
-    bloodType: BLOOD_TYPES.B_NEGATIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLASMA,
-    volumeMl: 200,
     status: APPOINTMENT_STATUS.COMPLETED,
-    location: 'Bệnh viện Đại học Y Dược',
     notes: 'Hiến plasma thành công',
     createdAt: '2025-06-10T09:15:00Z',
     completedAt: '2025-06-20T11:30:00Z',
+    bloodType: BLOOD_TYPES.B_NEGATIVE,
+    bloodComponent: BLOOD_COMPONENTS.PLASMA,
+    volumeMl: 200,
+    location: 'Bệnh viện Đại học Y Dược',
     healthCheck: {
-      id: 1,
+      id: 2,
       pulse: 68,
       bloodPressure: '115/75',
       resultSummary: 'Hiến máu thành công, không có biến chứng',
@@ -85,7 +103,7 @@ const MOCK_APPOINTMENTS = [
       ineligibleReason: null,
       bloodTypeId: BLOOD_TYPES.B_NEGATIVE,
       checkedAt: '2025-06-20T09:45:00Z',
-      staffId: 1,
+      staffId: 2,
       staffName: 'Bs. Trần Thị B'
     }
   },
@@ -101,16 +119,16 @@ const MOCK_APPOINTMENTS = [
       weight: 48
     },
     appointmentDate: '2025-07-25T11:00:00Z',
-    bloodType: BLOOD_TYPES.AB_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLATELETS,
-    volumeMl: 250,
     status: APPOINTMENT_STATUS.CANCELLED,
-    location: 'Bệnh viện Nhân dân 115',
     notes: 'Hủy do sức khỏe không đảm bảo',
     createdAt: '2025-06-25T16:45:00Z',
     cancelledAt: '2025-07-24T16:00:00Z',
+    bloodType: null,
+    bloodComponent: null,
+    volumeMl: null,
+    location: null,
     healthCheck: {
-      id: 2,
+      id: 3,
       pulse: 95,
       bloodPressure: '140/90',
       resultSummary: 'Huyết áp cao, không đủ điều kiện hiến máu',
@@ -118,7 +136,7 @@ const MOCK_APPOINTMENTS = [
       ineligibleReason: 'Huyết áp vượt quá giới hạn cho phép (140/90)',
       bloodTypeId: BLOOD_TYPES.AB_POSITIVE,
       checkedAt: '2025-07-24T15:30:00Z',
-      staffId: 2,
+      staffId: 3,
       staffName: 'Bs. Lê Văn C'
     }
   },
@@ -134,13 +152,13 @@ const MOCK_APPOINTMENTS = [
       weight: 80
     },
     appointmentDate: '2025-08-01T08:30:00Z',
-    bloodType: BLOOD_TYPES.O_NEGATIVE,
-    bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
-    volumeMl: 450,
     status: APPOINTMENT_STATUS.PENDING,
-    location: 'Trung tâm Huyết học TP.HCM',
     notes: 'Donor O- quý hiếm',
     createdAt: '2025-06-18T11:00:00Z',
+    bloodType: null,
+    bloodComponent: null,
+    volumeMl: null,
+    location: null,
     healthCheck: null
   }
 ];
@@ -217,6 +235,16 @@ const StaffAppointments = () => {
     setSelectedAppointment(null);
   };
 
+  const handleAppointmentUpdate = (appointmentId, updateData) => {
+    setAppointments(prev => 
+      prev.map(appointment => 
+        appointment.id === appointmentId 
+          ? { ...appointment, ...updateData }
+          : appointment
+      )
+    );
+  };
+
   const openDetailsModal = (appointment) => {
     setSelectedAppointment(appointment);
     setShowDetailsModal(true);
@@ -234,7 +262,8 @@ const StaffAppointments = () => {
       appointment.user.phone.includes(searchTerm);
     
     const matchesStatus = filterStatus === '' || appointment.status === filterStatus;
-    const matchesLocation = filterLocation === '' || appointment.location.includes(filterLocation);
+    const matchesLocation = filterLocation === '' || 
+      (appointment.location && appointment.location.includes(filterLocation));
     
     let matchesDate = true;
     if (filterDate) {
@@ -245,14 +274,15 @@ const StaffAppointments = () => {
     return matchesSearch && matchesStatus && matchesLocation && matchesDate;
   });
 
-  const locations = [...new Set(appointments.map(a => a.location))];
+  const locations = [...new Set(appointments.filter(a => a.location).map(a => a.location))];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
-          <p className="text-gray-600">Theo dõi và xử lý các lịch hẹn hiến máu</p>
+          <p className="text-gray-600">Xem và xử lý các lịch hẹn hiến máu từ thành viên</p>
         </div>
         
         <div className="flex items-center space-x-3">
@@ -266,6 +296,23 @@ const StaffAppointments = () => {
         </div>
       </div>
 
+      {/* Important Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <UserCheck className="w-5 h-5 text-blue-500 mt-0.5" />
+          <div className="text-sm text-blue-700">
+            <p className="font-medium mb-1">Quy trình xử lý lịch hẹn:</p>
+            <ol className="list-decimal list-inside space-y-1 text-xs">
+              <li>Thành viên đặt lịch hẹn với ngày/giờ → Trạng thái <strong>PENDING</strong></li>
+              <li>Staff tư vấn và thực hiện kiểm tra sức khỏe</li>
+              <li>Nếu đạt → <strong>SCHEDULED</strong>, nếu không đạt → <strong>CANCELLED</strong></li>
+              <li>Sau khi hiến máu thành công → <strong>COMPLETED</strong></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
@@ -281,6 +328,7 @@ const StaffAppointments = () => {
         </div>
       </div>
 
+      {/* Filters */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -349,8 +397,10 @@ const StaffAppointments = () => {
         </div>
       )}
 
+      {/* Statistics */}
       <StaffAppointmentStats appointments={filteredAppointments} />
 
+      {/* Appointments Table */}
       <StaffAppointmentTable
         appointments={filteredAppointments}
         bloodTypes={MOCK_BLOOD_TYPES}
@@ -360,6 +410,7 @@ const StaffAppointments = () => {
         onHealthCheck={openHealthCheckModal}
       />
 
+      {/* Modals */}
       {selectedAppointment && (
         <>
           <AppointmentDetailsModal
@@ -372,6 +423,7 @@ const StaffAppointments = () => {
             bloodTypes={MOCK_BLOOD_TYPES}
             bloodComponents={MOCK_BLOOD_COMPONENTS}
             onStatusUpdate={handleStatusUpdate}
+            onAppointmentUpdate={handleAppointmentUpdate}
           />
 
           <HealthCheckFormModal
