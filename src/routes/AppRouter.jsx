@@ -144,10 +144,14 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import Layout from '../components/layout/Layout';
-
 import { ROUTES } from '../utils/constants';
 
+// Import các route components
+import AdminRoutes from './adminRoutes';
+import MemberRoutes from './memberRoutes';
+import StaffRoutes from './staffRoutes';
+
+// Lazy load các pages khác
 const Landing = lazy(() => import('../pages/guest/Landing'));
 const About = lazy(() => import('../pages/guest/About'));
 const Contact = lazy(() => import('../pages/guest/Contact'));
@@ -155,18 +159,6 @@ const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
-
-const MemberDashboard = lazy(() => import('../pages/member/Dashboard'));
-const MemberProfile = lazy(() => import('../pages/member/Profile'));
-const MemberHistory = lazy(() => import('../pages/member/History'));
-const MemberRewards = lazy(() => import('../pages/member/Rewards'));
-
-const StaffDashboard = lazy(() => import('../pages/staff/Dashboard'));
-const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
-
-const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'));
-const AdminUsers = lazy(() => import('../pages/admin/UserManagement'));
-const AdminReports = lazy(() => import('../pages/admin/Reports'));
 
 const NotFound = lazy(() => import('../pages/error/NotFound'));
 const Unauthorized = lazy(() => import('../pages/error/Unauthorized'));
@@ -189,44 +181,9 @@ const AppRouter = () => {
         <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
         <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
 
-        <Route 
-          path="/member/*" 
-          element={
-            <Layout userType="MEMBER">
-              <Routes>
-                <Route path="dashboard" element={<MemberDashboard />} />
-                <Route path="profile" element={<MemberProfile />} />
-                <Route path="history" element={<MemberHistory />} />
-                <Route path="rewards" element={<MemberRewards />} />
-              </Routes>
-            </Layout>
-          } 
-        />
-
-        <Route 
-          path="/staff/*" 
-          element={
-            <Layout userType="STAFF">
-              <Routes>
-                <Route path="dashboard" element={<StaffDashboard />} />
-                <Route path="appointments" element={<StaffAppointments />} />               
-              </Routes>
-            </Layout>
-          } 
-        />
-
-        <Route 
-          path="/admin/*" 
-          element={
-            <Layout userType="ADMIN">
-              <Routes>
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="users" element={<AdminUsers />} />                
-                <Route path="reports" element={<AdminReports />} />
-              </Routes>
-            </Layout>
-          } 
-        />
+        <Route path="/member/*" element={<MemberRoutes />} />
+        <Route path="/staff/*" element={<StaffRoutes />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
 
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/server-error" element={<ServerError />} />

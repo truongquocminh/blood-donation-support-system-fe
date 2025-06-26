@@ -432,3 +432,172 @@ export const isCompatible = (receiverType, donorType, component) => {
       return false;
   }
 };
+
+export const isExpiringSoon = (expiryDate, daysThreshold = 7) => {
+  const today = new Date();
+  const expiry = new Date(expiryDate);
+  const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+  return diffDays <= daysThreshold && diffDays >= 0;
+};
+
+export const isExpired = (expiryDate) => {
+  const today = new Date();
+  const expiry = new Date(expiryDate);
+  return expiry < today;
+};
+
+export const isLowStock = (quantity, threshold = 5) => {
+  return quantity <= threshold;
+};
+
+export const getStockStatus = (quantity, expiryDate) => {
+  if (isExpired(expiryDate)) {
+    return { status: 'expired', color: 'red', label: 'Đã hết hạn' };
+  }
+  
+  if (isExpiringSoon(expiryDate)) {
+    return { status: 'expiring', color: 'yellow', label: 'Sắp hết hạn' };
+  }
+  
+  if (isLowStock(quantity)) {
+    return { status: 'low-stock', color: 'orange', label: 'Tồn kho thấp' };
+  }
+  
+  return { status: 'normal', color: 'green', label: 'Bình thường' };
+};
+
+export const getBloodTypeDisplay = (bloodTypes, typeId) => {
+  const type = bloodTypes.find(t => t.bloodTypeId === typeId);
+  return type ? type.typeName : 'N/A';
+};
+
+export const getBloodComponentDisplay = (bloodComponents, componentId) => {
+  const component = bloodComponents.find(c => c.componentId === componentId);
+  return component ? component.componentName : 'N/A';
+};
+
+export const filterInventories = (inventories, filters) => {
+  const { searchTerm = '', bloodType = '', bloodComponent = '', status = '' } = filters;
+  
+  return inventories.filter(inventory => {
+    const matchesSearch = !searchTerm || 
+      inventory.donorId.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = !bloodType || inventory.bloodType.toString() === bloodType;
+    
+    const matchesComponent = !bloodComponent || inventory.bloodComponent.toString() === bloodComponent;
+    
+    let matchesStatus = true;
+    if (status) {
+      const stockStatus = getStockStatus(inventory.quantity, inventory.expiryDate);
+      matchesStatus = stockStatus.status === status;
+    }
+    
+    return matchesSearch && matchesType && matchesComponent && matchesStatus;
+  });
+};
+
+export const calculateInventoryStats = (inventories) => {
+  const totalUnits = inventories.reduce((sum, inv) => sum + inv.quantity, 0);
+  
+  const uniqueTypes = new Set(inventories.map(inv => inv.bloodType)).size;
+  
+  const expiringSoon = inventories.filter(inv => 
+    isExpiringSoon(inv.expiryDate)
+  ).length;
+  
+  const lowStock = inventories.filter(inv => 
+    isLowStock(inv.quantity)
+  ).length;
+  
+  const expired = inventories.filter(inv => 
+    isExpired(inv.expiryDate)
+  ).length;
+  
+  return {
+    totalUnits,
+    uniqueTypes,
+    expiringSoon,
+    lowStock,
+    expired
+  };
+};
+
+export const validateInventoryForm = (formData, bloodTypes, bloodComponents) => {
+  const errors = {};
+  
+  if (!formData.bloodType) {
+    errors.bloodType = 'Vui lòng chọn nhóm máu';
+  }
+  
+  if (!formData.bloodComponent) {
+    errors.bloodComponent = 'Vui lòng chọn thành phần máu';
+  }
+  
+  if (!formData.quantity || parseInt(formData.quantity) <= 0) {
+    errors.quantity = 'Số lượng phải lớn hơn 0';
+  }
+  
+  if (!formData.expiryDate) {
+    errors.expiryDate = 'Vui lòng chọn ngày hết hạn';
+  } else {
+    const today = new Date();
+    const expiry = new Date(formData.expiryDate);
+    if (expiry <= today) {
+      errors.expiryDate = 'Ngày hết hạn phải sau ngày hôm nay';
+    }
+  }
+  
+  if (!formData.donorId?.trim()) {
+    errors.donorId = 'Vui lòng nhập mã người hiến';
+  }
+  
+  if (formData.bloodType && formData.bloodComponent) {
+    const compatible = isCompatible(
+      parseInt(formData.bloodType), 
+      parseInt(formData.bloodType), 
+      parseInt(formData.bloodComponent)
+    );
+    
+    if (!compatible) {
+      errors.compatibility = 'Nhóm máu và thành phần máu không tương thích';
+    }
+  }
+  
+  return errors;
+};
+
+export const sortInventories = (inventories, sortBy = 'id', sortOrder = 'asc') => {
+  return [...inventories].sort((a, b) => {
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
+    
+    if (sortBy === 'expiryDate') {
+      aValue = new Date(aValue);
+      bValue = new Date(bValue);
+    }
+    
+    if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+    
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+};
+
+export const prepareInventoryExport = (inventories, bloodTypes, bloodComponents) => {
+  return inventories.map(inventory => ({
+    'ID': inventory.id,
+    'Nhóm máu': getBloodTypeDisplay(bloodTypes, inventory.bloodType),
+    'Thành phần máu': getBloodComponentDisplay(bloodComponents, inventory.bloodComponent),
+    'Số lượng': inventory.quantity,
+    'Ngày hết hạn': formatDate(inventory.expiryDate),
+    'Mã người hiến': inventory.donorId,
+    'Trạng thái': getStockStatus(inventory.quantity, inventory.expiryDate).label
+  }));
+};
