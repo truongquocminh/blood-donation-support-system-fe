@@ -5,7 +5,6 @@ import DonationHistory from '../../components/donation/DonationHistory';
 import DonationFormModal from '../../components/donation/DonationFormModal';
 import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
 
-// Mock data for donations
 const MOCK_DONATIONS = [
   {
     id: 1,
@@ -78,7 +77,6 @@ const Donations = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Get current user info from localStorage (mock)
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
   const handleAddDonation = (donationData) => {
@@ -113,7 +111,6 @@ const Donations = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Hiến máu</h1>
@@ -139,7 +136,6 @@ const Donations = () => {
         </div>
       </div>
 
-      {/* Welcome Message */}
       <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-6">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-red-100 rounded-full">
@@ -156,7 +152,6 @@ const Donations = () => {
         </div>
       </div>
 
-      {/* Filters */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -181,10 +176,8 @@ const Donations = () => {
         </div>
       )}
 
-      {/* Statistics */}
       <DonationStats donations={filteredDonations} />
 
-      {/* Donation History */}
       <DonationHistory
         donations={filteredDonations}
         bloodTypes={MOCK_BLOOD_TYPES}
@@ -192,7 +185,6 @@ const Donations = () => {
         onCancel={handleCancelDonation}
       />
 
-      {/* Donation Form Modal */}
       <DonationFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

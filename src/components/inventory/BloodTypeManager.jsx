@@ -108,7 +108,6 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-medium text-gray-900">Quản lý nhóm máu</h3>
@@ -123,7 +122,6 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
         </button>
       </div>
 
-      {/* Blood Types Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {bloodTypes.map((bloodType) => (
           <div
@@ -177,7 +175,6 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
         )}
       </div>
 
-      {/* Form Modal */}
       <BloodTypeFormModal
         isOpen={isModalOpen}
         onClose={() => {

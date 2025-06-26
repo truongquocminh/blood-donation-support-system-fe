@@ -134,7 +134,6 @@ const Inventory = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý kho máu</h1>
@@ -162,7 +161,6 @@ const Inventory = () => {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {[
@@ -185,7 +183,6 @@ const Inventory = () => {
         </nav>
       </div>
 
-      {/* Search and Filters */}
       {activeTab === 'inventory' && (
         <div className="space-y-4">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -247,7 +244,6 @@ const Inventory = () => {
         </div>
       )}
 
-      {/* Tab Content */}
       {activeTab === 'inventory' && (
         <>
           <InventoryStats inventories={inventories} />
@@ -282,7 +278,6 @@ const Inventory = () => {
         />
       )}
 
-      {/* Inventory Form Modal */}
       <InventoryFormModal
         isOpen={isModalOpen}
         onClose={() => {

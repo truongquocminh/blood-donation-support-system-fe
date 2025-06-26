@@ -120,7 +120,6 @@ const InventoryFormModal = ({
   return (
     <div className="mt-0-important fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             {inventory ? 'Chỉnh sửa kho máu' : 'Thêm kho máu mới'}
@@ -133,9 +132,7 @@ const InventoryFormModal = ({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Compatibility Warning */}
           {errors.compatibility && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -143,7 +140,6 @@ const InventoryFormModal = ({
             </div>
           )}
 
-          {/* Blood Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nhóm máu <span className="text-red-500">*</span>
@@ -165,7 +161,6 @@ const InventoryFormModal = ({
             {errors.bloodType && <p className="text-sm text-red-500 mt-1">{errors.bloodType}</p>}
           </div>
 
-          {/* Blood Component */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Thành phần máu <span className="text-red-500">*</span>
@@ -187,7 +182,6 @@ const InventoryFormModal = ({
             {errors.bloodComponent && <p className="text-sm text-red-500 mt-1">{errors.bloodComponent}</p>}
           </div>
 
-          {/* Compatibility Check */}
           {compatibilityCheck !== null && (
             <div className={`p-3 rounded-lg flex items-center space-x-2 ${
               compatibilityCheck ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
@@ -203,7 +197,6 @@ const InventoryFormModal = ({
             </div>
           )}
 
-          {/* Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Số lượng (đơn vị) <span className="text-red-500">*</span>
@@ -221,7 +214,6 @@ const InventoryFormModal = ({
             {errors.quantity && <p className="text-sm text-red-500 mt-1">{errors.quantity}</p>}
           </div>
 
-          {/* Expiry Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Ngày hết hạn <span className="text-red-500">*</span>
@@ -238,7 +230,6 @@ const InventoryFormModal = ({
             {errors.expiryDate && <p className="text-sm text-red-500 mt-1">{errors.expiryDate}</p>}
           </div>
 
-          {/* Donor ID */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mã người hiến <span className="text-red-500">*</span>
@@ -255,7 +246,6 @@ const InventoryFormModal = ({
             {errors.donorId && <p className="text-sm text-red-500 mt-1">{errors.donorId}</p>}
           </div>
 
-          {/* Form Actions */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"

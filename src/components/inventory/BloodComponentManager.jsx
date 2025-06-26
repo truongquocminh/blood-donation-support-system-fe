@@ -135,7 +135,6 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete }) => 
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-medium text-gray-900">Quản lý thành phần máu</h3>
@@ -150,7 +149,6 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete }) => 
         </button>
       </div>
 
-      {/* Blood Components Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {bloodComponents.map((component) => (
           <div
@@ -206,7 +204,6 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete }) => 
         )}
       </div>
 
-      {/* Usage Info */}
       {bloodComponents.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="text-sm font-medium text-blue-800 mb-2">Thông tin về tương thích:</h4>
@@ -219,7 +216,6 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete }) => 
         </div>
       )}
 
-      {/* Form Modal */}
       <BloodComponentFormModal
         isOpen={isModalOpen}
         onClose={() => {

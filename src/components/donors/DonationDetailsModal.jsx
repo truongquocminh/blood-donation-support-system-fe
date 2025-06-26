@@ -49,7 +49,6 @@ const DonationDetailsModal = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             Chi tiết đăng ký hiến máu #{donation.id}
@@ -63,7 +62,6 @@ const DonationDetailsModal = ({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Donor Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
               <User className="w-5 h-5 mr-2" />
@@ -111,7 +109,6 @@ const DonationDetailsModal = ({
             </div>
           </div>
 
-          {/* Donation Information */}
           <div className="bg-blue-50 rounded-lg p-4">
             <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
               <Droplets className="w-5 h-5 mr-2" />
@@ -160,7 +157,6 @@ const DonationDetailsModal = ({
             </div>
           </div>
 
-          {/* Health Check Information */}
           {donation.healthCheck && (
             <div className="bg-green-50 rounded-lg p-4">
               <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
@@ -220,7 +216,6 @@ const DonationDetailsModal = ({
             </div>
           )}
 
-          {/* Notes */}
           {donation.notes && (
             <div>
               <h4 className="text-md font-medium text-gray-900 mb-2 flex items-center">
@@ -233,7 +228,6 @@ const DonationDetailsModal = ({
             </div>
           )}
 
-          {/* Timeline */}
           <div>
             <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center">
               <Clock className="w-5 h-5 mr-2" />
@@ -282,7 +276,6 @@ const DonationDetailsModal = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           {(donation.status === 'PENDING' || donation.status === 'CONFIRMED') && (
             <div className="border-t border-gray-200 pt-4">
               <h4 className="text-md font-medium text-gray-900 mb-4">Thao tác</h4>

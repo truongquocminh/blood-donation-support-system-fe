@@ -6,7 +6,6 @@ import DonationDetailsModal from '../../components/donors/DonationDetailsModal';
 import HealthCheckModal from '../../components/donors/HealthCheckModal';
 import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
 
-// Mock data for all donation registrations
 const MOCK_DONATIONS = [
   {
     id: 1,
@@ -190,7 +189,6 @@ const Donors = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showHealthCheckModal, setShowHealthCheckModal] = useState(false);
 
-  // Handle status updates
   const handleStatusUpdate = (donationId, newStatus) => {
     setDonations(prev => 
       prev.map(donation => 
@@ -205,7 +203,6 @@ const Donors = () => {
     );
   };
 
-  // Handle health check
   const handleHealthCheck = (donationId, healthCheckData) => {
     setDonations(prev => 
       prev.map(donation => 
@@ -222,7 +219,6 @@ const Donors = () => {
     setSelectedDonation(null);
   };
 
-  // Open modals
   const openDetailsModal = (donation) => {
     setSelectedDonation(donation);
     setShowDetailsModal(true);
@@ -233,7 +229,6 @@ const Donors = () => {
     setShowHealthCheckModal(true);
   };
 
-  // Filter donations
   const filteredDonations = donations.filter(donation => {
     const matchesSearch = searchTerm === '' || 
       donation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -251,7 +246,6 @@ const Donors = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý người hiến máu</h1>
@@ -269,7 +263,6 @@ const Donors = () => {
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
@@ -285,7 +278,6 @@ const Donors = () => {
         </div>
       </div>
 
-      {/* Filters */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -360,10 +352,8 @@ const Donors = () => {
         </div>
       )}
 
-      {/* Statistics */}
       <DonorStats donations={filteredDonations} />
 
-      {/* Donations Table */}
       <DonorTable
         donations={filteredDonations}
         bloodTypes={MOCK_BLOOD_TYPES}
@@ -373,7 +363,6 @@ const Donors = () => {
         onHealthCheck={openHealthCheckModal}
       />
 
-      {/* Modals */}
       {selectedDonation && (
         <>
           <DonationDetailsModal
