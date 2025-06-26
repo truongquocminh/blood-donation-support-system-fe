@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  X, Home, Calendar, User, Award, History, Users, 
+import {
+  X, Home, Calendar, User, Award, History, Users,
   BarChart3, Settings, FileText, MapPin, Package,
   Heart, Shield, Database, ChevronDown, ChevronRight
 } from 'lucide-react';
@@ -50,7 +50,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             children: [
               { label: 'Lịch sử hiến máu', path: ROUTES.ADMIN_DONATIONS + '/history' },
               { label: 'Lịch hẹn', path: ROUTES.ADMIN_DONATIONS + '/appointments' },
-              { label: 'Kho máu', path: ROUTES.ADMIN_DONATIONS + '/inventory' }
+              { label: 'Kho máu', path: ROUTES.ADMIN_DONATIONS + '/inventories' }
             ]
           },
           {
@@ -92,15 +92,15 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.STAFF_APPOINTMENTS,
             badge: 5
           },
-          {
-            icon: Heart,
-            label: 'Hiến máu',
-            path: ROUTES.STAFF_DONATIONS,
-            children: [
-              { label: 'Quy trình hiến máu', path: ROUTES.STAFF_DONATIONS + '/process' },
-              { label: 'Lịch sử', path: ROUTES.STAFF_DONATIONS + '/history' }
-            ]
-          },
+          // {
+          //   icon: Heart,
+          //   label: 'Hiến máu',
+          //   path: ROUTES.STAFF_DONATIONS,
+          //   children: [
+          //     { label: 'Quy trình hiến máu', path: ROUTES.STAFF_DONATIONS + '/process' },
+          //     { label: 'Lịch sử', path: ROUTES.STAFF_DONATIONS + '/history' }
+          //   ]
+          // },
           {
             icon: Users,
             label: 'Người hiến máu',
@@ -110,7 +110,13 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           {
             icon: Package,
             label: 'Kho máu',
-            path: ROUTES.STAFF_INVENTORY,
+            path: ROUTES.STAFF_INVENTORIES,
+            badge: null
+          },
+          {
+            icon: History,
+            label: 'Nhắc nhở',
+            path: ROUTES.STAFF_REMINDERS,
             badge: null
           },
           {
@@ -137,16 +143,16 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             badge: null
           },
           {
+            icon: Heart,
+            label: 'Hiến máu',
+            path: ROUTES.MEMBER_DONATIONS,
+            badge: null
+          },
+          {
             icon: Calendar,
             label: 'Lịch hẹn',
             path: ROUTES.MEMBER_APPOINTMENTS,
             badge: 2
-          },
-          {
-            icon: History,
-            label: 'Lịch sử hiến máu',
-            path: ROUTES.MEMBER_HISTORY,
-            badge: null
           },
           {
             icon: Award,
@@ -161,7 +167,6 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             badge: null
           }
         ];
-
       default:
         return baseItems;
     }
@@ -195,8 +200,8 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
         <div
           className={cn(
             'flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors',
-            active 
-              ? 'bg-red-100 text-red-700 border-r-2 border-red-500' 
+            active
+              ? 'bg-red-100 text-red-700 border-r-2 border-red-500'
               : 'text-gray-700 hover:bg-gray-100'
           )}
           onClick={() => hasChildren ? toggleSection(index) : handleNavigation(item.path)}
@@ -205,7 +210,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             <item.icon className={cn('w-5 h-5', active ? 'text-red-600' : 'text-gray-500')} />
             <span className="font-medium">{item.label}</span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {item.badge && (
               <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">

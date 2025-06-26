@@ -5,6 +5,7 @@ import Layout from '../components/layout/Layout';
 const StaffDashboard = lazy(() => import('../pages/staff/Dashboard'));
 const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
 const Inventory = lazy(() => import('../pages/staff/Inventory'));
+const Reminders = lazy(() => import('../pages/staff/Reminders'));
 
 const StaffRoutes = () => {
   return (
@@ -12,7 +13,8 @@ const StaffRoutes = () => {
       <Routes>
         <Route path="dashboard" element={<StaffDashboard />} />
         <Route path="appointments" element={<StaffAppointments />} />               
-        <Route path="inventory" element={<Inventory />} />               
+        <Route path="inventories" element={<Inventory />} />               
+        <Route path="reminders" element={<Reminders />} />               
       </Routes>
     </Layout>
   );
