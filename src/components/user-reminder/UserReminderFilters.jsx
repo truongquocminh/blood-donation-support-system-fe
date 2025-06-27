@@ -1,25 +1,35 @@
 import React from 'react';
-import { Search, Filter, Calendar, Plus } from 'lucide-react';
+import { Search, Filter, Calendar, Bell } from 'lucide-react';
 import { REMINDER_TYPE, REMINDER_TYPE_LABELS } from '../../utils/constants';
 
-const ReminderFilters = ({
+const UserReminderFilters = ({
   searchTerm,
   setSearchTerm,
   filterType,
   setFilterType,
   filterStatus,
   setFilterStatus,
-  onCreateNew
+  totalCount
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex flex-col sm:flex-row gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex items-center space-x-2">
+          <Bell className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-900">
+            Nhắc nhở của tôi
+          </h2>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {totalCount}
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-2xl">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tin nhắn, mã người dùng..."
+              placeholder="Tìm kiếm trong tin nhắn..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -49,24 +59,17 @@ const ReminderFilters = ({
               onChange={(e) => setFilterStatus(e.target.value)}
               className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white min-w-[150px]"
             >
-              <option value="">Tất cả trạng thái</option>
-              <option value="sent">Đã gửi</option>
-              <option value="pending">Chờ gửi</option>
+              <option value="">Tất cả</option>
+              <option value="upcoming">Sắp tới</option>
               <option value="today">Hôm nay</option>
+              <option value="received">Đã nhận</option>
+              <option value="pending">Chưa nhận</option>
             </select>
           </div>
         </div>
-
-        <button
-          onClick={onCreateNew}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tạo nhắc nhở mới
-        </button>
       </div>
     </div>
   );
 };
 
-export default ReminderFilters;
+export default UserReminderFilters;

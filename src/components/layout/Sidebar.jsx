@@ -155,6 +155,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             badge: 2
           },
           {
+            icon: History,
+            label: 'Nhắc nhở',
+            path: ROUTES.MEMBER_REMINDERS,
+            badge: null
+          },
+          {
             icon: Award,
             label: 'Phần thưởng',
             path: ROUTES.MEMBER_REWARDS,

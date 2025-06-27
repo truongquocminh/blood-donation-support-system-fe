@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, CheckCircle, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -16,54 +16,59 @@ const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
   </div>
 );
 
-const ReminderStats = ({ reminders }) => {
+const UserReminderStats = ({ reminders }) => {
+  const today = new Date();
+  
   const totalReminders = reminders.length;
   
-  const sentReminders = reminders.filter(reminder => reminder.sent).length;
-  
-  const pendingReminders = reminders.filter(reminder => !reminder.sent).length;
+  const upcomingReminders = reminders.filter(reminder => {
+    const reminderDate = new Date(reminder.nextDate);
+    const diffDays = Math.ceil((reminderDate - today) / (1000 * 60 * 60 * 24));
+    return diffDays <= 7 && diffDays >= 0 && !reminder.sent;
+  }).length;
   
   const todayReminders = reminders.filter(reminder => {
-    const today = new Date();
     const reminderDate = new Date(reminder.nextDate);
     return reminderDate.toDateString() === today.toDateString();
   }).length;
+  
+  const receivedReminders = reminders.filter(reminder => reminder.sent).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatsCard
         title="Tổng nhắc nhở"
         value={totalReminders}
-        icon={Bell}
+        icon={Calendar}
         color="text-blue-600"
         subtitle="Tất cả nhắc nhở"
       />
       
       <StatsCard
-        title="Đã gửi"
-        value={sentReminders}
-        icon={CheckCircle}
-        color="text-green-600"
-        subtitle="Nhắc nhở đã gửi"
-      />
-      
-      <StatsCard
-        title="Chờ gửi"
-        value={pendingReminders}
+        title="Sắp tới"
+        value={upcomingReminders}
         icon={Clock}
-        color="text-yellow-600"
-        subtitle="Nhắc nhở chưa gửi"
+        color="text-orange-600"
+        subtitle="Trong 7 ngày tới"
       />
       
       <StatsCard
         title="Hôm nay"
         value={todayReminders}
-        icon={Users}
+        icon={AlertCircle}
         color="text-purple-600"
-        subtitle="Nhắc nhở hôm nay"
+        subtitle="Cần chú ý"
+      />
+      
+      <StatsCard
+        title="Đã nhận"
+        value={receivedReminders}
+        icon={CheckCircle}
+        color="text-green-600"
+        subtitle="Đã xem qua"
       />
     </div>
   );
 };
 
-export default ReminderStats;
+export default UserReminderStats;

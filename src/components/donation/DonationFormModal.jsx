@@ -27,7 +27,6 @@ const DonationFormModal = ({
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
 
-    // Check compatibility when blood type or component changes
     if (field === 'bloodType' || field === 'bloodComponent') {
       const newFormData = { ...formData, [field]: value };
       if (newFormData.bloodType && newFormData.bloodComponent) {
@@ -102,7 +101,6 @@ const DonationFormModal = ({
       notes: formData.notes.trim() || 'Đăng ký hiến máu mới'
     });
 
-    // Reset form
     setFormData({
       donationDate: '',
       bloodType: '',

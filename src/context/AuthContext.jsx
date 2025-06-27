@@ -95,8 +95,6 @@ export const AuthProvider = ({ children }) => {
       const storedAuth = getStoredAuth();
       
       if (storedAuth?.token) {
-        // Verify token by making a request to get user info
-        // You might need to create a verifyToken endpoint or use refresh token
         try {
           const response = await authService.refreshToken();
           const { user, token } = response.data;
@@ -109,7 +107,6 @@ export const AuthProvider = ({ children }) => {
             },
           });
         } catch (error) {
-          // Token invalid, remove stored auth
           removeStoredAuth();
           dispatch({
             type: AUTH_ACTIONS.AUTH_INITIALIZE,
@@ -138,7 +135,6 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authService.login(credentials);
       
-      // Assuming API returns { user, token } or { data: { user, token } }
       const { user, token } = response.data || response;
 
       setStoredAuth({ token, user });
@@ -172,7 +168,6 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authService.register(userData);
       
-      // Assuming API returns { user, token } or { data: { user, token } }
       const { user, token } = response.data || response;
 
       setStoredAuth({ token, user });

@@ -3,15 +3,7 @@ import { Plus, Calendar, Filter, Clock } from 'lucide-react';
 import AppointmentStats from '../../components/appointments/AppointmentStats';
 import AppointmentHistory from '../../components/appointments/AppointmentHistory';
 import AppointmentFormModal from '../../components/appointments/AppointmentFormModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
-
-// Appointment statuses
-export const APPOINTMENT_STATUS = {
-  PENDING: "PENDING",
-  SCHEDULED: "SCHEDULED", 
-  COMPLETED: "COMPLETED",
-  CANCELLED: "CANCELLED",
-};
+import { BLOOD_TYPES, BLOOD_COMPONENTS, APPOINTMENT_STATUS } from '../../utils/constants';
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -20,7 +12,6 @@ const STATUS_LABELS = {
   CANCELLED: 'Đã hủy'
 };
 
-// Mock data for member appointments (simplified)
 const MOCK_APPOINTMENTS = [
   {
     id: 1,
@@ -29,7 +20,6 @@ const MOCK_APPOINTMENTS = [
     status: APPOINTMENT_STATUS.SCHEDULED,
     notes: 'Lịch hẹn hiến máu định kỳ',
     createdAt: '2025-06-20T10:30:00Z',
-    // These fields will be filled by staff during consultation
     bloodType: BLOOD_TYPES.O_POSITIVE,
     bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
     volumeMl: 450,
@@ -53,7 +43,6 @@ const MOCK_APPOINTMENTS = [
     status: APPOINTMENT_STATUS.PENDING,
     notes: 'Muốn hiến máu giúp đỡ cộng đồng',
     createdAt: '2025-06-25T16:45:00Z',
-    // These will be null until staff consultation
     bloodType: null,
     bloodComponent: null,
     volumeMl: null,
@@ -135,7 +124,6 @@ const Appointments = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Get current user info from localStorage (mock)
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
   const handleAddAppointment = (appointmentData) => {
@@ -173,7 +161,6 @@ const Appointments = () => {
     return appointment.status === filterStatus;
   });
 
-  // Check if user can create new appointment (not within 12 weeks of last donation)
   const lastCompletedAppointment = appointments
     .filter(a => a.status === APPOINTMENT_STATUS.COMPLETED)
     .sort((a, b) => new Date(b.completedAt || b.appointmentDate) - new Date(a.completedAt || a.appointmentDate))[0];

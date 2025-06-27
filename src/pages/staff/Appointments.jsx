@@ -278,7 +278,6 @@ const StaffAppointments = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
@@ -296,7 +295,6 @@ const StaffAppointments = () => {
         </div>
       </div>
 
-      {/* Important Notice */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start space-x-3">
           <UserCheck className="w-5 h-5 text-blue-500 mt-0.5" />
@@ -312,7 +310,6 @@ const StaffAppointments = () => {
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
           <div className="relative">
@@ -328,7 +325,6 @@ const StaffAppointments = () => {
         </div>
       </div>
 
-      {/* Filters */}
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -397,10 +393,8 @@ const StaffAppointments = () => {
         </div>
       )}
 
-      {/* Statistics */}
       <StaffAppointmentStats appointments={filteredAppointments} />
 
-      {/* Appointments Table */}
       <StaffAppointmentTable
         appointments={filteredAppointments}
         bloodTypes={MOCK_BLOOD_TYPES}
@@ -410,7 +404,6 @@ const StaffAppointments = () => {
         onHealthCheck={openHealthCheckModal}
       />
 
-      {/* Modals */}
       {selectedAppointment && (
         <>
           <AppointmentDetailsModal

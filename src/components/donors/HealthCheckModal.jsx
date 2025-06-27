@@ -20,14 +20,12 @@ const HealthCheckModal = ({ isOpen, onClose, donation, onSubmit }) => {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
 
-    // Auto-check health criteria
     checkHealthCriteria({ ...formData, [field]: value });
   };
 
   const checkHealthCriteria = (data) => {
     const { bloodPressure, heartRate, hemoglobin, weight, temperature } = data;
     
-    // Only check if all values are present
     if (!bloodPressure || !heartRate || !hemoglobin || !weight || !temperature) {
       setAutoApproval(null);
       return;
@@ -35,7 +33,6 @@ const HealthCheckModal = ({ isOpen, onClose, donation, onSubmit }) => {
 
     const issues = [];
 
-    // Blood pressure check (format: "120/80")
     if (bloodPressure.includes('/')) {
       const [systolic, diastolic] = bloodPressure.split('/').map(Number);
       if (systolic > 180 || systolic < 90 || diastolic > 100 || diastolic < 60) {
@@ -43,25 +40,21 @@ const HealthCheckModal = ({ isOpen, onClose, donation, onSubmit }) => {
       }
     }
 
-    // Heart rate check
     const hr = parseFloat(heartRate);
     if (hr > 100 || hr < 50) {
       issues.push('Nhịp tim không trong giới hạn cho phép (50-100 bpm)');
     }
 
-    // Hemoglobin check (different for male/female, assuming general criteria)
     const hb = parseFloat(hemoglobin);
     if (hb < 12.5 || hb > 18) {
       issues.push('Nồng độ hemoglobin không đạt tiêu chuẩn (12.5-18 g/dL)');
     }
 
-    // Weight check
     const w = parseFloat(weight);
     if (w < 45) {
       issues.push('Cân nặng dưới 45kg');
     }
 
-    // Temperature check
     const temp = parseFloat(temperature);
     if (temp > 37.5 || temp < 36) {
       issues.push('Nhiệt độ cơ thể không bình thường (36-37.5°C)');

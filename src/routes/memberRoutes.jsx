@@ -7,6 +7,7 @@ const MemberProfile = lazy(() => import('../pages/member/Profile'));
 const MemberDonations = lazy(() => import('../pages/member/Donations'));
 const Appointments = lazy(() => import('../pages/member/Appointments'));
 const MemberRewards = lazy(() => import('../pages/member/Rewards'));
+const Reminders = lazy(() => import('../pages/member/Reminders'));
 
 const MemberRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const MemberRoutes = () => {
         <Route path="profile" element={<MemberProfile />} />
         <Route path="donations" element={<MemberDonations />} />
         <Route path="appointments" element={<Appointments />} />
+        <Route path="reminders" element={<Reminders />} />
         <Route path="rewards" element={<MemberRewards />} />
       </Routes>
     </Layout>
