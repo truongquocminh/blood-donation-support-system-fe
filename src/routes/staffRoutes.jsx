@@ -1,6 +1,7 @@
-import React, { lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const StaffDashboard = lazy(() => import('../pages/staff/Dashboard'));
 const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
@@ -11,13 +12,19 @@ const Reminders = lazy(() => import('../pages/staff/Reminders'));
 const StaffRoutes = () => {
   return (
     <Layout userType="STAFF">
-      <Routes>
-        <Route path="dashboard" element={<StaffDashboard />} />
-        <Route path="appointments" element={<StaffAppointments />} />               
-        <Route path="donors" element={<Donors />} />               
-        <Route path="inventories" element={<Inventory />} />               
-        <Route path="reminders" element={<Reminders />} />               
-      </Routes>
+      <Suspense fallback={
+        <div className="flex items-center justify-center p-8">
+          <LoadingSpinner size="medium" />
+        </div>
+      }>
+        <Routes>
+          <Route path="dashboard" element={<StaffDashboard />} />
+          <Route path="appointments" element={<StaffAppointments />} />               
+          <Route path="donors" element={<Donors />} />               
+          <Route path="inventories" element={<Inventory />} />               
+          <Route path="reminders" element={<Reminders />} />               
+        </Routes>
+      </Suspense>
     </Layout>
   );
 };

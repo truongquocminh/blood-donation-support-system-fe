@@ -63,6 +63,7 @@ api.interceptors.response.use(
 
     if (error.response) {
       const { status, data } = error.response;
+      console.log("error api: ", error)
 
       switch (status) {
         case 401:

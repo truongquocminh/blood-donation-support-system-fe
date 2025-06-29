@@ -94,19 +94,24 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedAuth = getStoredAuth();
       
-      if (storedAuth?.token) {
+      if (storedAuth?.token && storedAuth?.user) {
         try {
-          const response = await authService.refreshToken();
-          const { user, token } = response.data;
+          const refreshResponse = await authService.refreshToken();
+          const newToken = refreshResponse.data.data.token;
+          
+          const userData = {
+            user: storedAuth.user,
+            token: newToken,
+          };
+          
+          setStoredAuth(userData);
           
           dispatch({
             type: AUTH_ACTIONS.AUTH_INITIALIZE,
-            payload: {
-              user,
-              token,
-            },
+            payload: userData,
           });
         } catch (error) {
+          console.error('Token refresh failed:', error);
           removeStoredAuth();
           dispatch({
             type: AUTH_ACTIONS.AUTH_INITIALIZE,
@@ -129,14 +134,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
   const login = useCallback(async (credentials) => {
     try {
       dispatch({ type: AUTH_ACTIONS.AUTH_START });
 
       const response = await authService.login(credentials);
-      
-      const { user, token } = response.data || response;
-
+      const { user, token, refresh_token } = response.data.data;
       setStoredAuth({ token, user });
 
       dispatch({
@@ -168,7 +175,7 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authService.register(userData);
       
-      const { user, token } = response.data || response;
+      const { user, token } = response.data.data || response;
 
       setStoredAuth({ token, user });
 
@@ -208,11 +215,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const updateUser = useCallback((userData) => {
+    const updatedUser = { ...state.user, ...userData };
+    
+    // Cập nhật storage
+    const storedAuth = getStoredAuth();
+    if (storedAuth) {
+      setStoredAuth({ ...storedAuth, user: updatedUser });
+    }
+    
     dispatch({
       type: AUTH_ACTIONS.UPDATE_USER,
       payload: userData,
     });
-  }, []);
+  }, [state.user]);
 
   const clearError = useCallback(() => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });

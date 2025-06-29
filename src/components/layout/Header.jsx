@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Heart, Menu, Bell, Search, User, Settings, LogOut, 
-  ChevronDown, MessageSquare, Shield, Calendar, HelpCircle 
+import {
+  Heart, Menu, Bell, Search, User, Settings, LogOut,
+  ChevronDown, MessageSquare, Shield, Calendar, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../utils/constants';
@@ -13,49 +13,16 @@ const Header = ({ userType, onMenuClick }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const profileMenuRef = useRef(null);
-  const notificationRef = useRef(null);
-
-  const notifications = [
-    {
-      id: 1,
-      title: "Lịch hẹn sắp tới",
-      message: "Bạn có lịch hiến máu vào ngày 15/06/2025",
-      time: "2 giờ trước",
-      type: "appointment",
-      unread: true
-    },
-    {
-      id: 2,
-      title: "Cảm ơn bạn!",
-      message: "Đơn vị máu của bạn đã giúp cứu sống 1 người",
-      time: "1 ngày trước",
-      type: "success",
-      unread: true
-    },
-    {
-      id: 3,
-      title: "Nhắc nhở",
-      message: "Đã đến lúc có thể hiến máu lại",
-      time: "3 ngày trước",
-      type: "reminder",
-      unread: false
-    }
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setShowProfileMenu(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
+
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -118,7 +85,7 @@ const Header = ({ userType, onMenuClick }) => {
 
             <div className="hidden md:block">
               <p className="text-sm text-gray-600">
-                {getGreeting()}, <span className="font-medium text-gray-900">{user?.firstName || 'Người dùng'}</span>
+                {getGreeting()}, <span className="font-medium text-gray-900">{user?.fullName || 'Người dùng'}</span>
               </p>
             </div>
           </div>
@@ -154,75 +121,7 @@ const Header = ({ userType, onMenuClick }) => {
               </Button>
             </div>
 
-            <div className="relative" ref={notificationRef}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative"
-                icon={<Bell />}
-              >
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </Button>
 
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
-                  <div className="p-4 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Thông báo</h3>
-                      {unreadCount > 0 && (
-                        <span className="text-sm text-red-600 font-medium">
-                          {unreadCount} mới
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                          notification.unread ? 'bg-blue-50' : ''
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className={`w-2 h-2 rounded-full mt-2 ${
-                            notification.unread ? 'bg-blue-500' : 'bg-gray-300'
-                          }`} />
-                          <div className="flex-1">
-                            <h4 className="text-sm font-medium text-gray-900">
-                              {notification.title}
-                            </h4>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-2">
-                              {notification.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="p-4 border-t border-gray-200">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-center"
-                      onClick={() => console.log('View all notifications')}
-                    >
-                      Xem tất cả
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div className="relative" ref={profileMenuRef}>
               <Button
@@ -236,10 +135,7 @@ const Header = ({ userType, onMenuClick }) => {
                 </div>
                 <div className="hidden sm:block text-left">
                   <div className="text-sm font-medium text-gray-900">
-                    {user?.firstName} {user?.lastName}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {user?.email}
+                    <p>{user?.fullName}</p>
                   </div>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -254,7 +150,7 @@ const Header = ({ userType, onMenuClick }) => {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {user?.firstName} {user?.lastName}
+                          {user?.fullName}
                         </div>
                         <div className="text-xs text-gray-500">
                           {getUserTypeLabel()}
