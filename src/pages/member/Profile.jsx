@@ -1,28 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Droplets, Calendar, Edit3, Save, X, Users } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-
-const BLOOD_TYPES = {
-  O_NEGATIVE: 0,
-  O_POSITIVE: 1,
-  A_NEGATIVE: 2,
-  A_POSITIVE: 3,
-  B_NEGATIVE: 4,
-  B_POSITIVE: 5,
-  AB_NEGATIVE: 6,
-  AB_POSITIVE: 7,
-};
-
-const BLOOD_TYPE_LABELS = {
-  0: 'O-',
-  1: 'O+',
-  2: 'A-',
-  3: 'A+',
-  4: 'B-',
-  5: 'B+',
-  6: 'AB-',
-  7: 'AB+',
-};
+import { getCurrentUser, updateUser } from '../../services/userService';
+import { getBloodTypes } from '../../services/bloodTypeService';
 
 const GENDER_OPTIONS = {
   MALE: 'Nam',
@@ -30,44 +10,95 @@ const GENDER_OPTIONS = {
   OTHER: 'Khác'
 };
 
-const VIETNAM_PROVINCES = [
-  { id: 1, name: 'Hồ Chí Minh' },
-  { id: 2, name: 'Hà Nội' },
-  { id: 3, name: 'Đà Nẵng' },
-  { id: 4, name: 'Cần Thơ' },
-  { id: 5, name: 'Hải Phòng' },
-];
-
 const MemberProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [member, setMember] = useState({
-    fullName: 'Nguyễn Văn A',
-    email: 'nguyenvana@email.com',
-    phoneNumber: '+84 123 456 789',
-    address: '123 Lê Lợi, Quận 1, Hồ Chí Minh',
-    gender: 'MALE',
-    bloodTypeId: 3,
-    dateOfBirth: '1990-05-15',
-    latitude: 10.7769,
-    longitude: 106.7009,
-    lastDonation: '2024-02-15',
-    totalDonations: 8,
-    nextEligibleDate: '2024-06-15',
-    donationHistory: [
-      { date: '2024-02-15', location: 'Ngân hàng máu trung ương', type: 'Máu toàn phần', status: 'Hoàn thành' },
-      { date: '2023-10-15', location: 'Xe lưu động - Quận 3', type: 'Huyết tương', status: 'Hoàn thành' },
-      { date: '2023-06-15', location: 'Ngân hàng máu trung ương', type: 'Máu toàn phần', status: 'Hoàn thành' },
-    ],
+    id: null,
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    gender: null,
+    bloodTypeId: null,
+    dateOfBirth: '',
+    latitude: null,
+    longitude: null,
+    role: '',
+    status: true,
   });
+  const [bloodTypes, setBloodTypes] = useState([]);
 
   const [editForm, setEditForm] = useState({});
-  const [selectedProvince, setSelectedProvince] = useState('');
+
+  useEffect(() => {
+    loadUserData();
+    loadBloodTypes();
+  }, []);
 
   useEffect(() => {
     if (isEditing) {
-      setEditForm({ ...member });
+      setEditForm({
+        fullName: member.fullName || '',
+        email: member.email || '',
+        phoneNumber: member.phoneNumber || '',
+        address: member.address || '',
+        gender: member.gender || 'MALE',
+        bloodTypeId: member.bloodTypeId !== null ? member.bloodTypeId : 0,
+        dateOfBirth: member.dateOfBirth || '',
+        latitude: member.latitude || 0,
+        longitude: member.longitude || 0,
+      });
     }
   }, [isEditing, member]);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const response = await getCurrentUser();
+      console.log("response: ", response)
+      if (response.status === 200 && response.data.data) {
+        const userData = response.data.data;
+        setMember(prev => ({
+          ...prev,
+          id: userData.id,
+          fullName: userData.fullName || '',
+          email: userData.email || '',
+          phoneNumber: userData.phoneNumber || '',
+          address: userData.address || '',
+          gender: userData.gender,
+          bloodTypeId: userData.bloodType !== null ? userData.bloodType : null,
+          dateOfBirth: userData.dateOfBirth || '',
+          latitude: userData.latitude,
+          longitude: userData.longitude,
+          role: userData.role,
+          status: userData.status,
+        }));
+      } else {
+        toast.error('Không thể tải thông tin người dùng');
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toast.error('Có lỗi xảy ra khi tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBloodTypes = async () => {
+    try {
+      const res = await getBloodTypes();
+      if (res.status === 200 && res.data.data?.content) {
+        setBloodTypes(res.data.data.content);
+      } else {
+        toast.error("Không thể tải nhóm máu");
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải nhóm máu:", err);
+      toast.error("Lỗi khi tải danh sách nhóm máu");
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -78,10 +109,40 @@ const MemberProfile = () => {
     setEditForm({});
   };
 
-  const handleSave = () => {
-    setMember({ ...member, ...editForm });
-    setIsEditing(false);
-    toast.success('Cập nhật thông tin thành công!');
+  const handleSave = async () => {
+    try {
+      setUpdating(true);
+
+      const updateData = {
+        fullName: editForm.fullName,
+        phoneNumber: editForm.phoneNumber,
+        address: editForm.address,
+        gender: editForm.gender,
+        bloodTypeId: parseInt(editForm.bloodTypeId),
+        dateOfBirth: editForm.dateOfBirth,
+        latitude: parseFloat(editForm.latitude),
+        longitude: parseFloat(editForm.longitude),
+      };
+
+      const response = await updateUser(member.id, updateData);
+
+      if (response.status === 200) {
+        setMember(prev => ({
+          ...prev,
+          ...updateData,
+          bloodTypeId: updateData.bloodTypeId,
+        }));
+        setIsEditing(false);
+        toast.success('Cập nhật thông tin thành công!');
+      } else {
+        toast.error(response.message || 'Có lỗi xảy ra khi cập nhật thông tin');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Có lỗi xảy ra khi cập nhật thông tin');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -112,28 +173,30 @@ const MemberProfile = () => {
     }
   };
 
-  const InfoItem = ({ icon: Icon, label, value, isEditing = false, field, type = 'text' }) => (
+  const InfoItem = ({ icon: Icon, label, value, isEditing = false, field, type = 'text', disabled = false }) => (
     <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm">
       <div className="p-3 bg-red-50 rounded-full">
         <Icon className="w-5 h-5 text-red-500" />
       </div>
       <div className="flex-1">
         <p className="text-sm text-gray-500">{label}</p>
-        {isEditing ? (
+        {isEditing && !disabled ? (
           <div>
             {type === 'select' && field === 'bloodTypeId' ? (
               <select
-                value={editForm[field] || ''}
+                value={editForm[field] || 0}
                 onChange={(e) => handleInputChange(field, parseInt(e.target.value))}
                 className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
-                {Object.entries(BLOOD_TYPE_LABELS).map(([id, label]) => (
-                  <option key={id} value={id}>{label}</option>
+                {bloodTypes.map((bt) => (
+                  <option key={bt.id} value={bt.id}>
+                    {bt.typeName}
+                  </option>
                 ))}
               </select>
             ) : type === 'select' && field === 'gender' ? (
               <select
-                value={editForm[field] || ''}
+                value={editForm[field] || 'MALE'}
                 onChange={(e) => handleInputChange(field, e.target.value)}
                 className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
@@ -165,15 +228,23 @@ const MemberProfile = () => {
             )}
           </div>
         ) : (
-          <p className="text-gray-800 font-medium">{value}</p>
+          <p className="text-gray-800 font-medium">{value || 'Chưa cập nhật'}</p>
         )}
       </div>
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="">
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -200,32 +271,34 @@ const MemberProfile = () => {
               <User className="w-16 h-16 text-gray-400" />
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-2xl font-bold text-gray-800">{member.fullName}</h1>
-              <p className="text-gray-500">Mã thành viên: #123456</p>
+              <h1 className="text-2xl font-bold text-gray-800">{member.fullName || 'Chưa cập nhật'}</h1>
+              <p className="text-gray-500">Mã thành viên: #{member.id}</p>
               <div className="mt-2 flex items-center justify-center md:justify-start space-x-2">
                 <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm font-medium">
-                  Nhóm máu: {BLOOD_TYPE_LABELS[member.bloodTypeId]}
+                  Nhóm máu: {bloodTypes.find(bt => bt.id === member.bloodTypeId)?.typeName || 'Chưa cập nhật'}
                 </span>
                 <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
-                  Người hiến tích cực
+                  {member.role}
                 </span>
               </div>
             </div>
           </div>
-          
+
           <div className="flex space-x-2">
             {isEditing ? (
               <>
                 <button
                   onClick={handleSave}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  disabled={updating}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Lưu</span>
+                  <span>{updating ? 'Đang lưu...' : 'Lưu'}</span>
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  disabled={updating}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4" />
                   <span>Hủy</span>
@@ -245,49 +318,50 @@ const MemberProfile = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <InfoItem 
-          icon={User} 
-          label="Họ và tên" 
+        <InfoItem
+          icon={User}
+          label="Họ và tên"
           value={member.fullName}
           isEditing={isEditing}
           field="fullName"
         />
-        <InfoItem 
-          icon={Mail} 
-          label="Email" 
+        <InfoItem
+          icon={Mail}
+          label="Email"
           value={member.email}
           isEditing={isEditing}
           field="email"
           type="email"
+          disabled={true}
         />
-        <InfoItem 
-          icon={Phone} 
-          label="Số điện thoại" 
+        <InfoItem
+          icon={Phone}
+          label="Số điện thoại"
           value={member.phoneNumber}
           isEditing={isEditing}
           field="phoneNumber"
-          type="tel"
+          type="text"
         />
-        <InfoItem 
-          icon={Users} 
-          label="Giới tính" 
-          value={GENDER_OPTIONS[member.gender]}
+        <InfoItem
+          icon={Users}
+          label="Giới tính"
+          value={member.gender ? GENDER_OPTIONS[member.gender] : 'Chưa cập nhật'}
           isEditing={isEditing}
           field="gender"
           type="select"
         />
-        <InfoItem 
-          icon={Droplets} 
-          label="Nhóm máu" 
-          value={BLOOD_TYPE_LABELS[member.bloodTypeId]}
+        <InfoItem
+          icon={Droplets}
+          label="Nhóm máu"
+          value={bloodTypes.find(bt => bt.id === member.bloodTypeId)?.typeName || 'Chưa cập nhật'}
           isEditing={isEditing}
           field="bloodTypeId"
           type="select"
         />
-        <InfoItem 
-          icon={Calendar} 
-          label="Ngày sinh" 
-          value={new Date(member.dateOfBirth).toLocaleDateString('vi-VN')}
+        <InfoItem
+          icon={Calendar}
+          label="Ngày sinh"
+          value={member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
           isEditing={isEditing}
           field="dateOfBirth"
           type="date"
@@ -295,9 +369,9 @@ const MemberProfile = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <InfoItem 
-          icon={MapPin} 
-          label="Địa chỉ" 
+        <InfoItem
+          icon={MapPin}
+          label="Địa chỉ"
           value={member.address}
           isEditing={isEditing}
           field="address"
@@ -318,7 +392,7 @@ const MemberProfile = () => {
                       step="any"
                       placeholder="Latitude"
                       value={editForm.latitude || ''}
-                      onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value))}
+                      onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value) || 0)}
                       className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <input
@@ -326,7 +400,7 @@ const MemberProfile = () => {
                       step="any"
                       placeholder="Longitude"
                       value={editForm.longitude || ''}
-                      onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value))}
+                      onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value) || 0)}
                       className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                   </div>
@@ -339,91 +413,13 @@ const MemberProfile = () => {
                 </div>
               ) : (
                 <p className="text-gray-800 font-medium">
-                  {member.latitude?.toFixed(6)}, {member.longitude?.toFixed(6)}
+                  {member.latitude !== null && member.longitude !== null
+                    ? `${member.latitude?.toFixed(6)}, ${member.longitude?.toFixed(6)}`
+                    : 'Chưa cập nhật'}
                 </p>
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-red-50 rounded-full">
-              <Droplets className="w-5 h-5 text-red-500" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Tổng số lần hiến</p>
-              <p className="text-gray-800 font-medium">{member.totalDonations}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-green-50 rounded-full">
-              <Calendar className="w-5 h-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Lần hiến cuối</p>
-              <p className="text-gray-800 font-medium">{new Date(member.lastDonation).toLocaleDateString('vi-VN')}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-50 rounded-full">
-              <Calendar className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Có thể hiến tiếp</p>
-              <p className="text-gray-800 font-medium">{new Date(member.nextEligibleDate).toLocaleDateString('vi-VN')}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Lịch sử hiến máu</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Địa điểm
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Loại
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {member.donationHistory.map((donation, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(donation.date).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {donation.location}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {donation.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      {donation.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

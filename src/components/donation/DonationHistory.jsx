@@ -1,25 +1,27 @@
 import React from 'react';
-import { 
-  MapPin, Calendar, Droplets, X, 
-  CheckCircle, Clock, XCircle, AlertCircle, 
+import {
+  MapPin, Calendar, Droplets, X,
+  CheckCircle, Clock, XCircle, AlertCircle,
   Heart
 } from 'lucide-react';
 
-const DonationHistory = ({ 
-  donations, 
-  bloodTypes, 
-  bloodComponents, 
-  onCancel 
+const DonationHistory = ({
+  donations,
+  bloodTypes,
+  onCancel
 }) => {
   const getBloodTypeName = (typeId) => {
-    const type = bloodTypes.find(t => t.bloodTypeId === typeId);
+    const type = bloodTypes.find(t => t.id === typeId);
     return type ? type.typeName : 'N/A';
   };
 
-  const getComponentName = (componentId) => {
-    const component = bloodComponents.find(c => c.componentId === componentId);
+
+  const getComponentName = (bloodTypeId, componentId) => {
+    const bloodType = bloodTypes.find(t => t.id === bloodTypeId);
+    const component = bloodType?.components.find(c => c.componentId === componentId);
     return component ? component.componentName : 'N/A';
   };
+
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -62,13 +64,13 @@ const DonationHistory = ({
   };
 
   const canCancel = (donation) => {
-    return ['PENDING', 'CONFIRMED'].includes(donation.status) && 
-           new Date(donation.donationDate) > new Date();
+    return ['PENDING', 'CONFIRMED'].includes(donation.status) &&
+      new Date(donation.donationDate) > new Date();
   };
 
   const isPastDue = (donationDate, status) => {
-    return new Date(donationDate) < new Date() && 
-           ['PENDING', 'CONFIRMED'].includes(status);
+    return new Date(donationDate) < new Date() &&
+      ['PENDING', 'CONFIRMED'].includes(status);
   };
 
   return (
@@ -98,7 +100,8 @@ const DonationHistory = ({
                         {getBloodTypeName(donation.bloodType)}
                       </span>
                       <span className="text-sm font-medium text-gray-900">
-                        {getComponentName(donation.bloodComponent)}
+                        {getComponentName(donation.bloodType, donation.bloodComponent)}
+
                       </span>
                     </div>
                     {getStatusBadge(donation.status)}
@@ -114,12 +117,12 @@ const DonationHistory = ({
                         )}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Droplets className="w-4 h-4 text-gray-400" />
                       <span>{donation.volumeMl}ml</span>
                     </div>
-                    
+
                     {donation.location && (
                       <div className="flex items-center space-x-2">
                         <MapPin className="w-4 h-4 text-gray-400" />

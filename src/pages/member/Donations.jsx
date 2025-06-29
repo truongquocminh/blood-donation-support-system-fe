@@ -1,67 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calendar, Filter, Heart } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { createBloodDonation, getBloodDonations } from '../../services/bloodDonationService';
 import DonationStats from '../../components/donation/DonationStats';
 import DonationHistory from '../../components/donation/DonationHistory';
 import DonationFormModal from '../../components/donation/DonationFormModal';
 import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
-
-const MOCK_DONATIONS = [
-  {
-    id: 1,
-    user: 1,
-    donationDate: '2025-07-15',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
-    volumeMl: 450,
-    status: 'COMPLETED',
-    healthCheck: 1,
-    location: 'Bệnh viện Chợ Rẫy',
-    notes: 'Hiến máu thành công, sức khỏe tốt'
-  },
-  {
-    id: 2,
-    user: 1,
-    donationDate: '2025-08-01',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.RED_BLOOD_CELLS,
-    volumeMl: 300,
-    status: 'PENDING',
-    healthCheck: null,
-    location: 'Trung tâm Huyết học TP.HCM',
-    notes: 'Đã đăng ký, chờ xác nhận'
-  },
-  {
-    id: 3,
-    user: 1,
-    donationDate: '2025-06-20',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLATELETS,
-    volumeMl: 250,
-    status: 'CANCELLED',
-    healthCheck: null,
-    location: 'Bệnh viện Đại học Y Dược',
-    notes: 'Hủy do sức khỏe không đảm bảo'
-  }
-];
-
-const MOCK_BLOOD_TYPES = [
-  { bloodTypeId: BLOOD_TYPES.O_NEGATIVE, typeName: 'O-' },
-  { bloodTypeId: BLOOD_TYPES.O_POSITIVE, typeName: 'O+' },
-  { bloodTypeId: BLOOD_TYPES.A_NEGATIVE, typeName: 'A-' },
-  { bloodTypeId: BLOOD_TYPES.A_POSITIVE, typeName: 'A+' },
-  { bloodTypeId: BLOOD_TYPES.B_NEGATIVE, typeName: 'B-' },
-  { bloodTypeId: BLOOD_TYPES.B_POSITIVE, typeName: 'B+' },
-  { bloodTypeId: BLOOD_TYPES.AB_NEGATIVE, typeName: 'AB-' },
-  { bloodTypeId: BLOOD_TYPES.AB_POSITIVE, typeName: 'AB+' },
-];
-
-const MOCK_BLOOD_COMPONENTS = [
-  { componentId: BLOOD_COMPONENTS.WHOLE_BLOOD, componentName: 'Máu toàn phần' },
-  { componentId: BLOOD_COMPONENTS.RED_BLOOD_CELLS, componentName: 'Hồng cầu' },
-  { componentId: BLOOD_COMPONENTS.PLATELETS, componentName: 'Tiểu cầu' },
-  { componentId: BLOOD_COMPONENTS.PLASMA, componentName: 'Huyết tương' },
-  { componentId: BLOOD_COMPONENTS.WHITE_BLOOD_CELLS, componentName: 'Bạch cầu' },
-];
+import toast from 'react-hot-toast';
+import { getBloodTypes } from '../../services/bloodTypeService';
 
 const DONATION_STATUSES = {
   PENDING: 'Chờ xác nhận',
@@ -72,35 +18,185 @@ const DONATION_STATUSES = {
 };
 
 const Donations = () => {
-  const [donations, setDonations] = useState(MOCK_DONATIONS);
+  const { user } = useAuth();
+  const [donations, setDonations] = useState([]);
+  const [bloodTypes, setBloodTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  useEffect(() => {
+    loadDonations();
+    loadBloodTypes();
+  }, [currentPage, pageSize]);
 
-  const handleAddDonation = (donationData) => {
-    const newDonation = {
-      id: Math.max(...donations.map(d => d.id)) + 1,
-      user: currentUser.id || 1,
-      ...donationData,
-      status: 'PENDING',
-      healthCheck: null,
-      notes: 'Đăng ký hiến máu mới'
-    };
-    setDonations(prev => [newDonation, ...prev]);
-    setIsModalOpen(false);
+  const loadBloodTypes = async () => {
+    try {
+      const res = await getBloodTypes();
+      if (res.status === 200 && res.data.data?.content) {
+        setBloodTypes(res.data.data.content);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải blood types:", err);
+      toast.error("Không thể tải nhóm máu");
+    }
   };
+
+  const loadDonations = async () => {
+    try {
+      setLoading(true);
+      const response = await getBloodDonations(currentPage, pageSize);
+
+      if (response.status === 200 && response.data.data) {
+        const { content, page } = response.data.data;
+        setDonations(content || []);
+        setTotalElements(page.totalElements);
+        setTotalPages(page.totalPages);
+      } else {
+        setDonations([]);
+        setTotalElements(0);
+        setTotalPages(0);
+      }
+    } catch (error) {
+      console.error('Error loading donations:', error);
+      toast.error('Có lỗi xảy ra khi tải danh sách hiến máu');
+      setDonations([]);
+      setTotalElements(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size) => {
+    setPageSize(size);
+    setCurrentPage(0);
+  };
+
+  const Pagination = () => {
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisiblePages = 5;
+
+      if (totalPages <= maxVisiblePages) {
+        for (let i = 0; i < totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        const start = Math.max(0, currentPage - 2);
+        const end = Math.min(totalPages - 1, start + maxVisiblePages - 1);
+
+        for (let i = start; i <= end; i++) {
+          pages.push(i);
+        }
+      }
+
+      return pages;
+    };
+
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-200 rounded-lg">
+        <div className="flex items-center text-sm text-gray-700">
+          <span>
+            Hiển thị {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} kết quả
+          </span>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <select
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-red-500 focus:border-red-500"
+          >
+            <option value={5}>5/trang</option>
+            <option value={10}>10/trang</option>
+            <option value={20}>20/trang</option>
+            <option value={50}>50/trang</option>
+          </select>
+
+          <div className="flex space-x-1">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+
+            {getPageNumbers().map(page => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-1 border border-gray-300 rounded-md text-sm ${currentPage === page
+                  ? 'bg-red-500 text-white border-red-500'
+                  : 'hover:bg-gray-50'
+                  }`}
+              >
+                {page + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleAddDonation = async (donationData) => {
+    try {
+      const payload = {
+        user: user.id,
+        donationDate: donationData.donationDate,
+        bloodType: donationData.bloodType,
+        bloodComponent: donationData.bloodComponent,
+        volumeMl: donationData.volumeMl,
+        status: 'PENDING',
+        healthCheck: 0
+      };
+
+      const res = await createBloodDonation(payload);
+      if (res.status === 200) {
+        toast.success('Đăng ký hiến máu thành công!');
+        setIsModalOpen(false);
+        loadDonations();
+      } else {
+        toast.error(res?.message || 'Đăng ký thất bại');
+      }
+    } catch (error) {
+      console.error('Lỗi khi tạo hiến máu:', error);
+      toast.error('Có lỗi xảy ra khi đăng ký');
+    }
+  };
+
 
   const handleCancelDonation = (id) => {
     if (window.confirm('Bạn có chắc chắn muốn hủy đăng ký hiến máu này?')) {
-      setDonations(prev => 
-        prev.map(donation => 
-          donation.id === id 
+      setDonations(prev =>
+        prev.map(donation =>
+          donation.id === id
             ? { ...donation, status: 'CANCELLED', notes: 'Đã hủy bởi người dùng' }
             : donation
         )
       );
+      toast.success('Đã hủy đăng ký hiến máu');
     }
   };
 
@@ -109,6 +205,14 @@ const Donations = () => {
     return donation.status === filterStatus;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -116,7 +220,7 @@ const Donations = () => {
           <h1 className="text-2xl font-bold text-gray-900">Hiến máu</h1>
           <p className="text-gray-600">Đăng ký hiến máu và theo dõi lịch sử hiến máu của bạn</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -125,7 +229,7 @@ const Donations = () => {
             <Filter className="w-4 h-4" />
             <span>Lọc</span>
           </button>
-          
+
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -180,18 +284,21 @@ const Donations = () => {
 
       <DonationHistory
         donations={filteredDonations}
-        bloodTypes={MOCK_BLOOD_TYPES}
-        bloodComponents={MOCK_BLOOD_COMPONENTS}
+        bloodTypes={bloodTypes}
         onCancel={handleCancelDonation}
       />
+
+
+      <Pagination />
 
       <DonationFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddDonation}
-        bloodTypes={MOCK_BLOOD_TYPES}
-        bloodComponents={MOCK_BLOOD_COMPONENTS}
+        bloodTypes={bloodTypes}
+        bloodComponents={[]}
       />
+
     </div>
   );
 };

@@ -1,45 +1,30 @@
 import React, { useState } from 'react';
 import { X, Heart, AlertTriangle, Info, CheckCircle } from 'lucide-react';
-import { isCompatible } from '../../utils/helpers';
 
-const DonationFormModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  bloodTypes, 
-  bloodComponents 
+const DonationFormModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  bloodTypes,
+  bloodComponents
 }) => {
   const [formData, setFormData] = useState({
     donationDate: '',
     bloodType: '',
     bloodComponent: '',
     volumeMl: '',
-    location: '',
     notes: ''
   });
   const [errors, setErrors] = useState({});
-  const [compatibilityCheck, setCompatibilityCheck] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
 
-    if (field === 'bloodType' || field === 'bloodComponent') {
-      const newFormData = { ...formData, [field]: value };
-      if (newFormData.bloodType && newFormData.bloodComponent) {
-        const compatible = isCompatible(
-          parseInt(newFormData.bloodType),
-          parseInt(newFormData.bloodType),
-          parseInt(newFormData.bloodComponent)
-        );
-        setCompatibilityCheck(compatible);
-      } else {
-        setCompatibilityCheck(null);
-      }
-    }
+
   };
 
   const validateForm = () => {
@@ -72,20 +57,14 @@ const DonationFormModal = ({
       }
     }
 
-    if (!formData.location?.trim()) {
-      newErrors.location = 'Vui lòng nhập địa điểm hiến máu';
-    }
 
-    if (compatibilityCheck === false) {
-      newErrors.compatibility = 'Nhóm máu và thành phần máu không tương thích';
-    }
 
     return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -97,7 +76,6 @@ const DonationFormModal = ({
       bloodType: parseInt(formData.bloodType),
       bloodComponent: parseInt(formData.bloodComponent),
       volumeMl: parseInt(formData.volumeMl),
-      location: formData.location.trim(),
       notes: formData.notes.trim() || 'Đăng ký hiến máu mới'
     });
 
@@ -106,22 +84,20 @@ const DonationFormModal = ({
       bloodType: '',
       bloodComponent: '',
       volumeMl: '',
-      location: '',
       notes: ''
     });
     setErrors({});
-    setCompatibilityCheck(null);
   };
 
   if (!isOpen) return null;
 
   const getRecommendedVolume = (componentId) => {
     switch (parseInt(componentId)) {
-      case 0: return '450'; // Whole blood
-      case 1: return '300'; // Red blood cells
-      case 2: return '250'; // Platelets
-      case 3: return '200'; // Plasma
-      case 4: return '200'; // White blood cells
+      case 0: return '450'; 
+      case 1: return '300'; 
+      case 2: return '250'; 
+      case 3: return '200'; 
+      case 4: return '200'; 
       default: return '300';
     }
   };
@@ -178,9 +154,8 @@ const DonationFormModal = ({
                 type="date"
                 value={formData.donationDate}
                 onChange={(e) => handleInputChange('donationDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                  errors.donationDate ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.donationDate ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
               />
               {errors.donationDate && <p className="text-sm text-red-500 mt-1">{errors.donationDate}</p>}
@@ -193,15 +168,15 @@ const DonationFormModal = ({
               <select
                 value={formData.bloodType}
                 onChange={(e) => handleInputChange('bloodType', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                  errors.bloodType ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.bloodType ? 'border-red-500' : 'border-gray-300'
+                  }`}
               >
                 <option value="">Chọn nhóm máu</option>
                 {bloodTypes.map(type => (
-                  <option key={type.bloodTypeId} value={type.bloodTypeId}>
+                  <option key={type.id} value={type.id}>
                     {type.typeName}
                   </option>
+
                 ))}
               </select>
               {errors.bloodType && <p className="text-sm text-red-500 mt-1">{errors.bloodType}</p>}
@@ -222,16 +197,16 @@ const DonationFormModal = ({
                     handleInputChange('volumeMl', getRecommendedVolume(e.target.value));
                   }
                 }}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                  errors.bloodComponent ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.bloodComponent ? 'border-red-500' : 'border-gray-300'
+                  }`}
               >
                 <option value="">Chọn thành phần máu</option>
-                {bloodComponents.map(component => (
-                  <option key={component.componentId} value={component.componentId}>
-                    {component.componentName}
+                {bloodTypes.find(bt => bt.id === parseInt(formData.bloodType))?.components.map(comp => (
+                  <option key={comp.componentId} value={comp.componentId}>
+                    {comp.componentName}
                   </option>
-                ))}
+                )) || []}
+
               </select>
               {errors.bloodComponent && <p className="text-sm text-red-500 mt-1">{errors.bloodComponent}</p>}
             </div>
@@ -246,51 +221,13 @@ const DonationFormModal = ({
                 max="500"
                 value={formData.volumeMl}
                 onChange={(e) => handleInputChange('volumeMl', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                  errors.volumeMl ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.volumeMl ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 placeholder="Nhập thể tích máu"
               />
               {errors.volumeMl && <p className="text-sm text-red-500 mt-1">{errors.volumeMl}</p>}
               <p className="text-xs text-gray-500 mt-1">Thể tích từ 50ml đến 500ml</p>
             </div>
-          </div>
-
-          {compatibilityCheck !== null && (
-            <div className={`p-3 rounded-lg flex items-center space-x-2 ${
-              compatibilityCheck ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-            }`}>
-              {compatibilityCheck ? (
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              ) : (
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              )}
-              <span className={`text-sm ${compatibilityCheck ? 'text-green-600' : 'text-red-600'}`}>
-                {compatibilityCheck ? 'Tương thích' : 'Không tương thích - Vui lòng chọn lại'}
-              </span>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Địa điểm hiến máu <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                errors.location ? 'border-red-500' : 'border-gray-300'
-              }`}
-            >
-              <option value="">Chọn địa điểm</option>
-              <option value="Bệnh viện Chợ Rẫy">Bệnh viện Chợ Rẫy</option>
-              <option value="Trung tâm Huyết học TP.HCM">Trung tâm Huyết học TP.HCM</option>
-              <option value="Bệnh viện Đại học Y Dược">Bệnh viện Đại học Y Dược</option>
-              <option value="Bệnh viện Nhân dân 115">Bệnh viện Nhân dân 115</option>
-              <option value="Bệnh viện Từ Dũ">Bệnh viện Từ Dũ</option>
-              <option value="Khác">Khác (ghi rõ trong ghi chú)</option>
-            </select>
-            {errors.location && <p className="text-sm text-red-500 mt-1">{errors.location}</p>}
           </div>
 
           <div>
@@ -327,7 +264,6 @@ const DonationFormModal = ({
             </button>
             <button
               type="submit"
-              disabled={compatibilityCheck === false}
               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Đăng ký hiến máu
