@@ -8,12 +8,7 @@ const INVENTORY_ENDPOINTS = {
 };
 
 export const getInventories = async (page = 0, size = 10) => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    size: size.toString(),
-  });
-
-  return apiGet(`${INVENTORY_ENDPOINTS.GET_INVENTORIES}?${params.toString()}`);
+  return apiGet(`${INVENTORY_ENDPOINTS.GET_INVENTORIES}?page=${page}&size=${size}`);
 };
 
 export const getInventoryById = async (id) => {

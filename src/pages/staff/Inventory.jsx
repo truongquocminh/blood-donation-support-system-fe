@@ -5,40 +5,20 @@ import InventoryTable from '../../components/inventory/InventoryTable';
 import InventoryFormModal from '../../components/inventory/InventoryFormModal';
 import BloodTypeManager from '../../components/inventory/BloodTypeManager';
 import BloodComponentManager from '../../components/inventory/BloodComponentManager';
-import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
-
-const MOCK_INVENTORIES = [
-  { id: 1, bloodType: BLOOD_TYPES.O_NEGATIVE, bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD, quantity: 15, expiryDate: '2025-07-15', donorId: 'D001' },
-  { id: 2, bloodType: BLOOD_TYPES.A_POSITIVE, bloodComponent: BLOOD_COMPONENTS.RED_BLOOD_CELLS, quantity: 8, expiryDate: '2025-07-20', donorId: 'D002' },
-  { id: 3, bloodType: BLOOD_TYPES.B_NEGATIVE, bloodComponent: BLOOD_COMPONENTS.PLASMA, quantity: 12, expiryDate: '2025-08-01', donorId: 'D003' },
-  { id: 4, bloodType: BLOOD_TYPES.AB_POSITIVE, bloodComponent: BLOOD_COMPONENTS.PLATELETS, quantity: 5, expiryDate: '2025-07-10', donorId: 'D004' },
-  { id: 5, bloodType: BLOOD_TYPES.O_POSITIVE, bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD, quantity: 20, expiryDate: '2025-07-25', donorId: 'D005' },
-];
-
-const MOCK_BLOOD_TYPES = [
-  { bloodTypeId: BLOOD_TYPES.O_NEGATIVE, typeName: 'O-' },
-  { bloodTypeId: BLOOD_TYPES.O_POSITIVE, typeName: 'O+' },
-  { bloodTypeId: BLOOD_TYPES.A_NEGATIVE, typeName: 'A-' },
-  { bloodTypeId: BLOOD_TYPES.A_POSITIVE, typeName: 'A+' },
-  { bloodTypeId: BLOOD_TYPES.B_NEGATIVE, typeName: 'B-' },
-  { bloodTypeId: BLOOD_TYPES.B_POSITIVE, typeName: 'B+' },
-  { bloodTypeId: BLOOD_TYPES.AB_NEGATIVE, typeName: 'AB-' },
-  { bloodTypeId: BLOOD_TYPES.AB_POSITIVE, typeName: 'AB+' },
-];
-
-const MOCK_BLOOD_COMPONENTS = [
-  { componentId: BLOOD_COMPONENTS.WHOLE_BLOOD, componentName: 'Máu toàn phần' },
-  { componentId: BLOOD_COMPONENTS.RED_BLOOD_CELLS, componentName: 'Hồng cầu' },
-  { componentId: BLOOD_COMPONENTS.PLATELETS, componentName: 'Tiểu cầu' },
-  { componentId: BLOOD_COMPONENTS.PLASMA, componentName: 'Huyết tương' },
-  { componentId: BLOOD_COMPONENTS.WHITE_BLOOD_CELLS, componentName: 'Bạch cầu' },
-];
+import { getInventories } from '../../services/inventoryService';
+import toast from 'react-hot-toast';
+import { getBloodTypes } from '../../services/bloodTypeService';
+import { getBloodComponents } from '../../services/bloodComponentService';
 
 const Inventory = () => {
-  const [inventories, setInventories] = useState(MOCK_INVENTORIES);
-  const [bloodTypes, setBloodTypes] = useState(MOCK_BLOOD_TYPES);
-  const [bloodComponents, setBloodComponents] = useState(MOCK_BLOOD_COMPONENTS);
-  
+  const [inventories, setInventories] = useState([]);
+  const [bloodTypes, setBloodTypes] = useState([]);
+  const [bloodComponents, setBloodComponents] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
   const [activeTab, setActiveTab] = useState('inventory');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInventory, setEditingInventory] = useState(null);
@@ -57,9 +37,9 @@ const Inventory = () => {
   };
 
   const handleEditInventory = (inventoryData) => {
-    setInventories(prev => 
-      prev.map(inv => 
-        inv.id === editingInventory.id 
+    setInventories(prev =>
+      prev.map(inv =>
+        inv.id === editingInventory.id
           ? { ...inv, ...inventoryData }
           : inv
       )
@@ -93,9 +73,9 @@ const Inventory = () => {
   };
 
   const handleEditBloodType = (id, bloodTypeData) => {
-    setBloodTypes(prev => 
-      prev.map(bt => 
-        bt.bloodTypeId === id 
+    setBloodTypes(prev =>
+      prev.map(bt =>
+        bt.bloodTypeId === id
           ? { ...bt, ...bloodTypeData }
           : bt
       )
@@ -117,9 +97,9 @@ const Inventory = () => {
   };
 
   const handleEditBloodComponent = (id, componentData) => {
-    setBloodComponents(prev => 
-      prev.map(bc => 
-        bc.componentId === id 
+    setBloodComponents(prev =>
+      prev.map(bc =>
+        bc.componentId === id
           ? { ...bc, ...componentData }
           : bc
       )
@@ -132,6 +112,60 @@ const Inventory = () => {
     }
   };
 
+  useEffect(() => {
+    fetchInventories();
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    fetchBloodData();
+  }, []);
+
+  const fetchBloodData = async () => {
+    try {
+      const [typesRes, componentsRes] = await Promise.all([
+        getBloodTypes(),
+        getBloodComponents()
+      ]);
+
+      if (typesRes.status === 200 && typesRes.data.data?.content) {
+        setBloodTypes(typesRes.data.data.content);
+      } else {
+        toast.error('Không thể tải danh sách nhóm máu');
+      }
+
+      if (componentsRes.status === 200 && componentsRes.data.data?.content) {
+        setBloodComponents(componentsRes.data.data.content);
+      } else {
+        toast.error('Không thể tải danh sách thành phần máu');
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu máu:', error);
+      toast.error('Lỗi khi gọi API nhóm máu hoặc thành phần máu');
+    }
+  };
+
+  const fetchInventories = async () => {
+    try {
+      const res = await getInventories(currentPage, pageSize);
+      if (res.status === 200 && res.data.data) {
+        const { content, page } = res.data.data;
+        setInventories(content);
+        setTotalPages(page.totalPages);
+        setTotalElements(page.totalElements);
+      } else {
+        setInventories([]);
+        setTotalPages(0);
+        setTotalElements(0);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải kho máu:", error);
+      toast.error("Không thể tải kho máu");
+      setInventories([]);
+      setTotalPages(0);
+      setTotalElements(0);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -139,7 +173,7 @@ const Inventory = () => {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý kho máu</h1>
           <p className="text-gray-600">Theo dõi và quản lý tồn kho máu</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -148,7 +182,7 @@ const Inventory = () => {
             <Filter className="w-4 h-4" />
             <span>Lọc</span>
           </button>
-          
+
           {activeTab === 'inventory' && (
             <button
               onClick={openAddModal}
@@ -171,11 +205,10 @@ const Inventory = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
-                  ? 'border-red-500 text-red-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                ? 'border-red-500 text-red-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               {tab.label}
             </button>
@@ -220,7 +253,7 @@ const Inventory = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Lọc theo thành phần
@@ -257,6 +290,52 @@ const Inventory = () => {
             filterType={filterType}
             filterComponent={filterComponent}
           />
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-700">
+                Hiển thị {currentPage * pageSize + 1} – {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} bản ghi
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+                  disabled={currentPage === 0}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Trước
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i)}
+                    className={`px-3 py-1 border rounded ${i === currentPage ? 'bg-red-500 text-white' : ''}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+                  disabled={currentPage === totalPages - 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Sau
+                </button>
+              </div>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(parseInt(e.target.value));
+                  setCurrentPage(0);
+                }}
+                className="ml-4 border px-2 py-1 rounded"
+              >
+                <option value={5}>5/trang</option>
+                <option value={10}>10/trang</option>
+                <option value={20}>20/trang</option>
+              </select>
+            </div>
+          )}
+
         </>
       )}
 

@@ -125,7 +125,7 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {bloodTypes.map((bloodType) => (
           <div
-            key={bloodType.bloodTypeId}
+            key={bloodType.id}
             className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between mb-4">
@@ -135,7 +135,7 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">{bloodType.typeName}</h4>
-                  <p className="text-sm text-gray-500">ID: {bloodType.bloodTypeId}</p>
+                  <p className="text-sm text-gray-500">ID: {bloodType.id}</p>
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@ const BloodTypeManager = ({ bloodTypes, onAdd, onEdit, onDelete }) => {
                 <span className="text-sm">Sửa</span>
               </button>
               <button
-                onClick={() => onDelete(bloodType.bloodTypeId)}
+                onClick={() => onDelete(bloodType.id)}
                 className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
