@@ -1,14 +1,113 @@
 import React from 'react';
-import { Edit, Trash2, Bell, CheckCircle, Clock, User, MessageSquare } from 'lucide-react';
+import { Edit, Trash2, Bell, CheckCircle, Clock, User, MessageSquare, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { REMINDER_TYPE_LABELS, REMINDER_TYPE_COLORS } from '../../utils/constants';
+
+const SkeletonRow = () => (
+  <tr className="hover:bg-gray-50">
+    {[...Array(7)].map((_, index) => (
+      <td key={index} className="px-6 py-4 whitespace-nowrap">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+        </div>
+      </td>
+    ))}
+  </tr>
+);
+
+const Pagination = ({ pagination, onPageChange, onPageSizeChange }) => {
+  const { number: currentPage, totalPages, totalElements, size } = pagination;
+  
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(0, currentPage - 2);
+      const endPage = Math.min(totalPages - 1, startPage + maxVisiblePages - 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+      <div className="flex items-center gap-4">
+        <div className="text-sm text-gray-700">
+          Hiển thị <span className="font-medium">{currentPage * size + 1}</span> đến{' '}
+          <span className="font-medium">
+            {Math.min((currentPage + 1) * size, totalElements)}
+          </span>{' '}
+          trong tổng số <span className="font-medium">{totalElements}</span> kết quả
+        </div>
+        
+        <select
+          value={size}
+          onChange={(e) => onPageSizeChange(parseInt(e.target.value))}
+          className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value={10}>10 / trang</option>
+          <option value={20}>20 / trang</option>
+          <option value={50}>50 / trang</option>
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 0}
+          className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        {getPageNumbers().map((pageNum) => (
+          <button
+            key={pageNum}
+            onClick={() => onPageChange(pageNum)}
+            className={`px-3 py-1 text-sm rounded ${
+              currentPage === pageNum
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            {pageNum + 1}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages - 1}
+          className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const ReminderTable = ({ 
   reminders, 
   onEdit, 
   onDelete,
+  onViewDetail,
   searchTerm,
   filterType,
-  filterStatus
+  filterStatus,
+  loading = false,
+  pagination,
+  onPageChange,
+  onPageSizeChange
 }) => {
   const getReminderTypeBadge = (type) => {
     const colorClass = REMINDER_TYPE_COLORS[type] || 'bg-gray-100 text-gray-800';
@@ -58,32 +157,11 @@ const ReminderTable = ({
     return diffDays <= 3 && diffDays >= 0;
   };
 
-  const filteredReminders = reminders.filter(reminder => {
-    const matchesSearch = searchTerm === '' || 
-      reminder.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reminder.userId.toString().includes(searchTerm.toLowerCase());
-    
-    const matchesType = filterType === '' || reminder.reminderType === filterType;
-    
-    let matchesStatus = true;
-    if (filterStatus === 'sent') {
-      matchesStatus = reminder.sent;
-    } else if (filterStatus === 'pending') {
-      matchesStatus = !reminder.sent;
-    } else if (filterStatus === 'today') {
-      const today = new Date();
-      const reminderDate = new Date(reminder.nextDate);
-      matchesStatus = reminderDate.toDateString() === today.toDateString();
-    }
-    
-    return matchesSearch && matchesType && matchesStatus;
-  });
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">
-          Danh sách nhắc nhở ({filteredReminders.length})
+          Danh sách nhắc nhở ({pagination?.totalElements || 0})
         </h3>
       </div>
       
@@ -115,7 +193,10 @@ const ReminderTable = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredReminders.length === 0 ? (
+            {loading ? (
+              // Skeleton loading
+              [...Array(5)].map((_, index) => <SkeletonRow key={index} />)
+            ) : reminders.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                   <Bell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -124,7 +205,7 @@ const ReminderTable = ({
                 </td>
               </tr>
             ) : (
-              filteredReminders.map((reminder) => (
+              reminders.map((reminder) => (
                 <tr key={reminder.reminderId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     #{reminder.reminderId}
@@ -160,6 +241,13 @@ const ReminderTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
+                        onClick={() => onViewDetail(reminder.reminderId)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => onEdit(reminder)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Chỉnh sửa"
@@ -181,6 +269,12 @@ const ReminderTable = ({
           </tbody>
         </table>
       </div>
+
+      {!loading && <Pagination 
+        pagination={pagination}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />}
     </div>
   );
 };
