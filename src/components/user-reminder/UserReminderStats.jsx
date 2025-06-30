@@ -27,7 +27,6 @@ const UserReminderStats = ({ reminders, onFilterChange }) => {
   
   const totalReminders = reminders.length;
   
-  // Upcoming reminders (next 7 days, not sent)
   const upcomingReminders = reminders.filter(reminder => {
     if (reminder.sent) return false;
     
@@ -38,7 +37,6 @@ const UserReminderStats = ({ reminders, onFilterChange }) => {
     return diffDays <= 7 && diffDays >= 0;
   }).length;
   
-  // Today's reminders
   const todayReminders = reminders.filter(reminder => {
     const reminderDate = new Date(reminder.nextDate);
     reminderDate.setHours(0, 0, 0, 0);
@@ -46,10 +44,8 @@ const UserReminderStats = ({ reminders, onFilterChange }) => {
     return reminderDate.getTime() === today.getTime();
   }).length;
   
-  // Received/read reminders
   const receivedReminders = reminders.filter(reminder => reminder.sent).length;
 
-  // Calculate urgent count (today + overdue)
   const urgentCount = reminders.filter(reminder => {
     if (reminder.sent) return false;
     

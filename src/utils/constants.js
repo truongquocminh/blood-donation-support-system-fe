@@ -59,6 +59,7 @@ export const ROUTES = {
   MEMBER_REWARDS: "/member/rewards",
   MEMBER_DONATIONS: "/member/donations",
   MEMBER_REMINDERS: "/member/reminders",
+  MEMBER_RESEARCH: "/member/research",
 
   STAFF_DASHBOARD: "/staff/dashboard",
   STAFF_APPOINTMENTS: "/staff/appointments",

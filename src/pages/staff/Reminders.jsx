@@ -28,7 +28,6 @@ const Reminders = () => {
   const [detailReminder, setDetailReminder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Fetch reminders with filters
   const fetchReminders = async (page = 0, size = 10, resetData = false) => {
     try {
       if (resetData) {
@@ -71,12 +70,10 @@ const Reminders = () => {
     }
   };
 
-  // Initial load
   useEffect(() => {
     fetchReminders(0, 10, true);
   }, []);
 
-  // Filter changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchReminders(0, pagination.size, true);
@@ -85,10 +82,7 @@ const Reminders = () => {
     return () => clearTimeout(timeoutId);
   }, [filterType, filterStatus]);
 
-  // Search changes
   useEffect(() => {
-    // Client-side search for simplicity
-    // You can implement server-side search by modifying the API
   }, [searchTerm]);
 
   const handleCreateNew = () => {
@@ -124,7 +118,6 @@ const Reminders = () => {
         const response = await deleteReminder(reminderId);
 
         if (response.success) {
-          // Refresh current page
           await fetchReminders(pagination.number, pagination.size, true);
         }
       } catch (error) {
@@ -147,7 +140,6 @@ const Reminders = () => {
       }
 
       if (response.success) {
-        // Refresh current page
         await fetchReminders(pagination.number, pagination.size, true);
         setIsFormOpen(false);
         setEditingReminder(null);
@@ -172,7 +164,6 @@ const Reminders = () => {
     fetchReminders(0, newSize, true);
   };
 
-  // Filter reminders for client-side search
   const filteredReminders = reminders.filter(reminder => {
     if (!searchTerm) return true;
 

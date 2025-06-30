@@ -5,8 +5,7 @@ import UserReminderCard from '../../components/user-reminder/UserReminderCard';
 import UserReminderDetailModal from '../../components/user-reminder/UserReminderDetailModal';
 import HandleLoading from '../../components/common/HandleLoading';
 import { Bell } from 'lucide-react';
-import { getUserReminders, getReminderById } from '../../services/reminderService';
-import { REMINDER_TYPE } from '../../utils/constants';
+import { getReminders, getReminderById } from '../../services/reminderService';
 
 const UserReminderCardSkeleton = () => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -32,7 +31,7 @@ const UserReminderCardSkeleton = () => (
   </div>
 );
 
-const Reminders = ({ userId = 101 }) => {
+const Reminders = () => {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cardsLoading, setCardsLoading] = useState(false);
@@ -50,7 +49,6 @@ const Reminders = ({ userId = 101 }) => {
   const [detailReminder, setDetailReminder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Fetch user reminders
   const fetchUserReminders = async (page = 0, size = 20, resetData = false) => {
     try {
       if (resetData) {
@@ -59,7 +57,7 @@ const Reminders = ({ userId = 101 }) => {
         setLoading(true);
       }
 
-      const response = await getUserReminders(userId, page, size);
+      const response = await getReminders(page, size);
 
       if (response.success && response.data) {
         setReminders(response.data.content || []);
@@ -85,14 +83,10 @@ const Reminders = ({ userId = 101 }) => {
     }
   };
 
-  // Initial load
   useEffect(() => {
-    if (userId) {
-      fetchUserReminders(0, 20, true);
-    }
-  }, [userId]);
+    fetchUserReminders(0, 20, true);
+  }, []);
 
-  // Handle view detail
   const handleViewDetail = async (reminderId) => {
     try {
       setLoading(true);
@@ -109,14 +103,12 @@ const Reminders = ({ userId = 101 }) => {
     }
   };
 
-  // Load more reminders
   const loadMoreReminders = async () => {
     if (pagination.number + 1 < pagination.totalPages) {
       await fetchUserReminders(pagination.number + 1, pagination.size, false);
     }
   };
 
-  // Filter reminders client-side
   const filteredReminders = reminders.filter(reminder => {
     const matchesSearch = searchTerm === '' ||
       reminder.message.toLowerCase().includes(searchTerm.toLowerCase());
@@ -142,13 +134,11 @@ const Reminders = ({ userId = 101 }) => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  // Sort reminders
   const sortedReminders = [...filteredReminders].sort((a, b) => {
     const today = new Date();
     const dateA = new Date(a.nextDate);
     const dateB = new Date(b.nextDate);
 
-    // Priority: unsent reminders first, then by date
     if (a.sent !== b.sent) {
       return a.sent ? 1 : -1;
     }
@@ -186,7 +176,6 @@ const Reminders = ({ userId = 101 }) => {
 
         <div className="space-y-4">
           {cardsLoading ? (
-            // Skeleton loading
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {[...Array(6)].map((_, index) => (
                 <UserReminderCardSkeleton key={index} />
@@ -217,7 +206,6 @@ const Reminders = ({ userId = 101 }) => {
                 ))}
               </div>
 
-              {/* Load More Button */}
               {pagination.number + 1 < pagination.totalPages && !cardsLoading && (
                 <div className="flex justify-center pt-6">
                   <button
@@ -229,7 +217,6 @@ const Reminders = ({ userId = 101 }) => {
                 </div>
               )}
 
-              {/* Total count info */}
               <div className="text-center text-sm text-gray-500 pt-4">
                 Hiển thị {sortedReminders.length} trong tổng số {pagination.totalElements} nhắc nhở
               </div>

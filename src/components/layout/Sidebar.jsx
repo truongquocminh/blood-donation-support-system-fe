@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   X, Home, Calendar, User, Award, History, Users,
   BarChart3, Settings, FileText, MapPin, Package,
-  Heart, Shield, Database, ChevronDown, ChevronRight
+  Heart, Shield, Database, ChevronDown, ChevronRight,
+  Search
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { ROUTES } from '../../utils/constants';
@@ -119,7 +120,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.STAFF_REMINDERS,
             badge: null
           },
-          
+
         ];
 
       case 'MEMBER':
@@ -156,17 +157,18 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             badge: null
           },
           {
+            icon: Search,
+            label: 'Tra cứu',
+            path: ROUTES.MEMBER_RESEARCH,
+            badge: null
+          },
+          {
             icon: Award,
             label: 'Phần thưởng',
             path: ROUTES.MEMBER_REWARDS,
             badge: 3
           },
-          {
-            icon: FileText,
-            label: 'Chứng nhận',
-            path: '/member/certificates',
-            badge: null
-          }
+
         ];
       default:
         return baseItems;

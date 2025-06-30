@@ -87,7 +87,6 @@ const ReminderDetailModal = ({ isOpen, onClose, reminder }) => {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -141,7 +140,6 @@ const ReminderDetailModal = ({ isOpen, onClose, reminder }) => {
             </div>
           </div>
 
-          {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <MessageSquare className="w-4 h-4 inline mr-2" />
@@ -152,7 +150,6 @@ const ReminderDetailModal = ({ isOpen, onClose, reminder }) => {
             </div>
           </div>
 
-          {/* Additional Information */}
           <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
             <div>
               <p className="text-xs text-blue-600 font-medium uppercase tracking-wider mb-1">

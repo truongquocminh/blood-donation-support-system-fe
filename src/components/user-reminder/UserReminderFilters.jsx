@@ -115,7 +115,6 @@ const UserReminderFilters = ({
         </div>
       </div>
 
-      {/* Active filters display */}
       {hasActiveFilters && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex flex-wrap items-center gap-2">

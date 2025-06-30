@@ -91,7 +91,6 @@ const ReminderForm = ({
         message: formData.message.trim()
       };
 
-      // Remove reminderId for create operation
       if (!editingReminder) {
         delete submissionData.reminderId;
       }
@@ -110,7 +109,6 @@ const ReminderForm = ({
       [field]: value
     }));
     
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -131,7 +129,6 @@ const ReminderForm = ({
   const handleTypeChange = (newType) => {
     handleChange('reminderType', newType);
     
-    // Auto-fill message if current message is empty or is a default message
     const currentMessage = formData.message.trim();
     const isDefaultMessage = Object.values(REMINDER_TYPE).some(type => 
       currentMessage === getDefaultMessage(type)

@@ -3,14 +3,12 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { ROUTES, ROLES } from '../utils/constants';
-import { useAuth } from '../hooks/useAuth'; // Hoặc đường dẫn đến context/hook authentication của bạn
+import { useAuth } from '../hooks/useAuth'; 
 
-// Import các route components
 import AdminRoutes from './adminRoutes';
 import MemberRoutes from './memberRoutes';
 import StaffRoutes from './staffRoutes';
 
-// Lazy load các pages khác
 const Landing = lazy(() => import('../pages/guest/Landing'));
 const About = lazy(() => import('../pages/guest/About'));
 const Contact = lazy(() => import('../pages/guest/Contact'));

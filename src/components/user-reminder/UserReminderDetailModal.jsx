@@ -173,13 +173,11 @@ const UserReminderDetailModal = ({ isOpen, onClose, reminder }) => {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Header with type and status */}
           <div className="flex items-center justify-between">
             {getReminderTypeBadge(reminder.reminderType)}
             {statusInfo.badge}
           </div>
 
-          {/* Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Calendar className="w-4 h-4 inline mr-2" />
@@ -200,7 +198,6 @@ const UserReminderDetailModal = ({ isOpen, onClose, reminder }) => {
             </div>
           </div>
 
-          {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <MessageSquare className="w-4 h-4 inline mr-2" />
@@ -211,14 +208,12 @@ const UserReminderDetailModal = ({ isOpen, onClose, reminder }) => {
             </div>
           </div>
 
-          {/* Status Info */}
           <div className={`p-4 rounded-lg border ${statusInfo.bgColor} ${statusInfo.borderColor}`}>
             <h4 className="font-medium text-gray-900 mb-2">Trạng thái</h4>
             <p className="text-gray-700 text-sm mb-2">{statusInfo.description}</p>
             <p className="text-gray-600 text-sm italic">{statusInfo.actionText}</p>
           </div>
 
-          {/* Action Suggestions */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-3 flex items-center">
               <Bell className="w-4 h-4 mr-2" />
@@ -234,7 +229,6 @@ const UserReminderDetailModal = ({ isOpen, onClose, reminder }) => {
             </ul>
           </div>
 
-          {/* Contact Info */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 mb-3">Thông tin liên hệ</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">

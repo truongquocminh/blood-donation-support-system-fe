@@ -192,7 +192,6 @@ const DonationFormModal = ({
                 value={formData.bloodComponent}
                 onChange={(e) => {
                   handleInputChange('bloodComponent', e.target.value);
-                  // Auto-fill recommended volume
                   if (e.target.value) {
                     handleInputChange('volumeMl', getRecommendedVolume(e.target.value));
                   }

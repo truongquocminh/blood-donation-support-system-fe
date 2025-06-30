@@ -215,7 +215,6 @@ export const AuthProvider = ({ children }) => {
   const updateUser = useCallback((userData) => {
     const updatedUser = { ...state.user, ...userData };
 
-    // Cập nhật storage
     const storedAuth = getStoredAuth();
     if (storedAuth) {
       setStoredAuth({ ...storedAuth, user: updatedUser });

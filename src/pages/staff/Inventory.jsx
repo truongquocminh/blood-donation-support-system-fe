@@ -31,14 +31,10 @@ const Inventory = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const handleAddInventory = async (inventoryData) => {
-    // Không cần xử lý ở đây nữa, để InventoryFormModal tự xử lý
-    // Chỉ cần refresh data
     await fetchInventories();
   };
 
   const handleEditInventory = async (inventoryData) => {
-    // Không cần xử lý ở đây nữa, để InventoryFormModal tự xử lý
-    // Chỉ cần refresh data
     await fetchInventories();
   };
 

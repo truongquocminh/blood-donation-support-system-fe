@@ -194,7 +194,6 @@ const ReminderTable = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              // Skeleton loading
               [...Array(5)].map((_, index) => <SkeletonRow key={index} />)
             ) : reminders.length === 0 ? (
               <tr>

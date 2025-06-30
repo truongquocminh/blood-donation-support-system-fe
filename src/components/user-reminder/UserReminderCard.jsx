@@ -158,7 +158,6 @@ const UserReminderCard = ({ reminder, onViewDetail }) => {
           </div>
         )}
 
-        {/* Quick action for today's reminders */}
         {statusInfo.text === 'Hôm nay' && !reminder.sent && (
           <div className="mt-4 flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="text-purple-700 text-xs font-medium">

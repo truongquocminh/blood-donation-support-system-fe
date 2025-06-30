@@ -96,7 +96,6 @@ const Login = () => {
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);
-    // Implement social login logic here
   };
 
   return (
