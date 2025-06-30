@@ -5,8 +5,6 @@ const APPOINTMENT_ENDPOINTS = {
   GET_APPOINTMENT_BY_ID: "/v1/appointment",
   DELETE_APPOINTMENT: "/v1/appointment",
   UPDATE_APPOINTMENT_STATUS: "/v1/appointment",
-  GET_APPOINTMENT_HEALTH_CHECK: "/v1/appointment/appointment",
-  CREATE_APPOINTMENT_HEALTH_CHECK: "/v1/appointment/appointment",
   GET_USER_APPOINTMENTS: "/v1/appointment/user",
   FILTER_APPOINTMENTS: "/v1/appointment/filter",
 };
@@ -41,39 +39,6 @@ export const updateAppointmentStatus = async (id, status) => {
   );
 };
 
-export const getAppointmentHealthCheck = async (appointmentId) => {
-  return apiGet(
-    `${APPOINTMENT_ENDPOINTS.GET_APPOINTMENT_HEALTH_CHECK}/${appointmentId}/health-check`
-  );
-};
-
-export const createAppointmentHealthCheck = async (
-  appointmentId,
-  healthCheckData
-) => {
-  const {
-    pulse,
-    bloodPressure,
-    resultSummary,
-    isEligible,
-    ineligibleReason,
-    bloodTypeId,
-  } = healthCheckData;
-
-  const payload = {
-    pulse,
-    bloodPressure,
-    resultSummary,
-    isEligible,
-    ineligibleReason,
-    bloodTypeId,
-  };
-
-  return apiPost(
-    `${APPOINTMENT_ENDPOINTS.CREATE_APPOINTMENT_HEALTH_CHECK}/${appointmentId}/health-check`,
-    payload
-  );
-};
 
 export const getUserAppointments = async (userId, page = 0, size = 10) => {
   const params = new URLSearchParams({

@@ -89,11 +89,10 @@ const InventoryFormModal = ({
       setLoading(true);
 
       const inventoryData = {
-        bloodType: parseInt(formData.bloodType),
-        bloodComponent: parseInt(formData.bloodComponent),
+        bloodTypeId: parseInt(formData.bloodType),
+        bloodComponentId: parseInt(formData.bloodComponent),
         quantity: parseInt(formData.quantity)
       };
-
 
       let response;
       if (inventory) {

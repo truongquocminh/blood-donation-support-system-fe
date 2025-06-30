@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { ROUTES, ROLES } from '../utils/constants';
-import { useAuth } from '../hooks/useAuth'; 
+import { useAuth } from '../hooks/useAuth';
 
 import AdminRoutes from './adminRoutes';
 import MemberRoutes from './memberRoutes';
@@ -46,7 +46,13 @@ const AppRouter = () => {
       </div>
     }>
       <Routes>
-        <Route path={ROUTES.HOME} element={<Landing />} />
+        <Route path={ROUTES.HOME}
+          element={
+            isAuthenticated ?
+              <Navigate to={getDefaultRoute()} replace /> :
+              <Landing />
+          }
+        />
         <Route path={ROUTES.ABOUT} element={<About />} />
         <Route path={ROUTES.CONTACT} element={<Contact />} />
 

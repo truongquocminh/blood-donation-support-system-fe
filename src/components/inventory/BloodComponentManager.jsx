@@ -368,7 +368,7 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete, onRef
                     <h4 className="font-medium text-gray-900 leading-tight">
                       {component.componentName}
                     </h4>
-                    <p className="text-sm text-gray-500">ID: {component.id}</p>
+                    <p className="text-sm text-gray-500">ID: {component.componentId}</p>
                     <p className="text-xs text-blue-600 mt-1">
                       {getComponentDisplayName(component.componentName)}
                     </p>

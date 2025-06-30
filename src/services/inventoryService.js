@@ -8,7 +8,9 @@ const INVENTORY_ENDPOINTS = {
 };
 
 export const getInventories = async (page = 0, size = 10) => {
-  return apiGet(`${INVENTORY_ENDPOINTS.GET_INVENTORIES}?page=${page}&size=${size}`);
+  return apiGet(
+    `${INVENTORY_ENDPOINTS.GET_INVENTORIES}?page=${page}&size=${size}`
+  );
 };
 
 export const getInventoryById = async (id) => {
@@ -16,11 +18,11 @@ export const getInventoryById = async (id) => {
 };
 
 export const updateInventory = async (id, inventoryData) => {
-  const { bloodType, bloodComponent, quantity } = inventoryData;
+  const { bloodTypeId, bloodComponentId, quantity } = inventoryData;
 
   const payload = {
-    bloodType,
-    bloodComponent,
+    bloodTypeId,
+    bloodComponentId,
     quantity,
   };
 
@@ -28,11 +30,10 @@ export const updateInventory = async (id, inventoryData) => {
 };
 
 export const createInventory = async (inventoryData) => {
-  const { bloodType, bloodComponent, quantity } = inventoryData;
-
+  const { bloodTypeId, bloodComponentId, quantity } = inventoryData;
   const payload = {
-    bloodType,
-    bloodComponent,
+    bloodTypeId,
+    bloodComponentId,
     quantity,
   };
 

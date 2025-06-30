@@ -91,7 +91,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             icon: Calendar,
             label: 'Lịch hẹn',
             path: ROUTES.STAFF_APPOINTMENTS,
-            badge: 5
+            badge: null
           },
           // {
           //   icon: Heart,
@@ -148,7 +148,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             icon: Calendar,
             label: 'Lịch hẹn',
             path: ROUTES.MEMBER_APPOINTMENTS,
-            badge: 2
+            badge: null
           },
           {
             icon: History,
