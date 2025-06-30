@@ -1,8 +1,13 @@
 import React from 'react';
 import { Calendar, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
-const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+const StatsCard = ({ title, value, icon: Icon, color, subtitle, onClick }) => (
+  <div 
+    className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all duration-200 ${
+      onClick ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : ''
+    }`}
+    onClick={onClick}
+  >
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
@@ -16,23 +21,61 @@ const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
   </div>
 );
 
-const UserReminderStats = ({ reminders }) => {
+const UserReminderStats = ({ reminders, onFilterChange }) => {
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
   const totalReminders = reminders.length;
   
+  // Upcoming reminders (next 7 days, not sent)
   const upcomingReminders = reminders.filter(reminder => {
+    if (reminder.sent) return false;
+    
     const reminderDate = new Date(reminder.nextDate);
+    reminderDate.setHours(0, 0, 0, 0);
+    
     const diffDays = Math.ceil((reminderDate - today) / (1000 * 60 * 60 * 24));
-    return diffDays <= 7 && diffDays >= 0 && !reminder.sent;
+    return diffDays <= 7 && diffDays >= 0;
   }).length;
   
+  // Today's reminders
   const todayReminders = reminders.filter(reminder => {
     const reminderDate = new Date(reminder.nextDate);
-    return reminderDate.toDateString() === today.toDateString();
+    reminderDate.setHours(0, 0, 0, 0);
+    
+    return reminderDate.getTime() === today.getTime();
   }).length;
   
+  // Received/read reminders
   const receivedReminders = reminders.filter(reminder => reminder.sent).length;
+
+  // Calculate urgent count (today + overdue)
+  const urgentCount = reminders.filter(reminder => {
+    if (reminder.sent) return false;
+    
+    const reminderDate = new Date(reminder.nextDate);
+    reminderDate.setHours(0, 0, 0, 0);
+    
+    return reminderDate <= today;
+  }).length;
+
+  const handleStatsClick = (filterType) => {
+    if (onFilterChange) {
+      switch (filterType) {
+        case 'upcoming':
+          onFilterChange('upcoming');
+          break;
+        case 'today':
+          onFilterChange('today');
+          break;
+        case 'received':
+          onFilterChange('received');
+          break;
+        default:
+          onFilterChange('');
+      }
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -42,6 +85,7 @@ const UserReminderStats = ({ reminders }) => {
         icon={Calendar}
         color="text-blue-600"
         subtitle="Tất cả nhắc nhở"
+        onClick={() => handleStatsClick('')}
       />
       
       <StatsCard
@@ -50,14 +94,16 @@ const UserReminderStats = ({ reminders }) => {
         icon={Clock}
         color="text-orange-600"
         subtitle="Trong 7 ngày tới"
+        onClick={() => handleStatsClick('upcoming')}
       />
       
       <StatsCard
-        title="Hôm nay"
-        value={todayReminders}
+        title={urgentCount > 0 ? "Cần chú ý" : "Hôm nay"}
+        value={urgentCount > 0 ? urgentCount : todayReminders}
         icon={AlertCircle}
-        color="text-purple-600"
-        subtitle="Cần chú ý"
+        color={urgentCount > 0 ? "text-red-600" : "text-purple-600"}
+        subtitle={urgentCount > 0 ? "Hôm nay & quá hạn" : "Nhắc nhở hôm nay"}
+        onClick={() => handleStatsClick('today')}
       />
       
       <StatsCard
@@ -66,6 +112,7 @@ const UserReminderStats = ({ reminders }) => {
         icon={CheckCircle}
         color="text-green-600"
         subtitle="Đã xem qua"
+        onClick={() => handleStatsClick('received')}
       />
     </div>
   );

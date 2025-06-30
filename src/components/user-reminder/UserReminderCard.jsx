@@ -1,8 +1,8 @@
 import React from 'react';
-import { Calendar, Clock, CheckCircle, Bell, Droplets, Heart, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Bell, Droplets, Heart, MessageSquare, Eye } from 'lucide-react';
 import { REMINDER_TYPE, REMINDER_TYPE_LABELS, REMINDER_TYPE_COLORS } from '../../utils/constants';
 
-const UserReminderCard = ({ reminder }) => {
+const UserReminderCard = ({ reminder, onViewDetail }) => {
   const getTypeIcon = (type) => {
     switch (type) {
       case REMINDER_TYPE.BLOOD_DONATION:
@@ -72,11 +72,16 @@ const UserReminderCard = ({ reminder }) => {
     return diffDays <= 3 && diffDays >= 0;
   };
 
+  const truncateMessage = (message, maxLength = 120) => {
+    if (message.length <= maxLength) return message;
+    return message.substring(0, maxLength) + '...';
+  };
+
   const statusInfo = getStatusInfo();
   const typeColor = REMINDER_TYPE_COLORS[reminder.reminderType] || 'bg-gray-100 text-gray-800';
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border-2 transition-all duration-200 hover:shadow-md ${
+    <div className={`bg-white rounded-xl shadow-sm border-2 transition-all duration-200 hover:shadow-md cursor-pointer group ${
       isUpcoming() && !reminder.sent ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200'
     }`}>
       <div className="p-6">
@@ -92,9 +97,24 @@ const UserReminderCard = ({ reminder }) => {
             </div>
           </div>
           
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
-            {statusInfo.icon}
-            <span className="ml-1">{statusInfo.text}</span>
+          <div className="flex items-center space-x-2">
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color} ${statusInfo.bgColor}`}>
+              {statusInfo.icon}
+              <span className="ml-1">{statusInfo.text}</span>
+            </div>
+            
+            {onViewDetail && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetail(reminder.reminderId);
+                }}
+                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                title="Xem chi tiết"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -112,9 +132,22 @@ const UserReminderCard = ({ reminder }) => {
 
         <div className="flex items-start space-x-2">
           <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {reminder.message}
-          </p>
+          <div className="flex-1">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              {truncateMessage(reminder.message)}
+            </p>
+            {reminder.message.length > 120 && onViewDetail && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetail(reminder.reminderId);
+                }}
+                className="text-blue-600 hover:text-blue-700 text-xs font-medium mt-1 transition-colors"
+              >
+                Xem thêm →
+              </button>
+            )}
+          </div>
         </div>
 
         {isUpcoming() && !reminder.sent && (
@@ -122,6 +155,26 @@ const UserReminderCard = ({ reminder }) => {
             <p className="text-blue-700 text-xs font-medium">
               💡 Nhắc nhở quan trọng sắp tới. Vui lòng ghi nhớ!
             </p>
+          </div>
+        )}
+
+        {/* Quick action for today's reminders */}
+        {statusInfo.text === 'Hôm nay' && !reminder.sent && (
+          <div className="mt-4 flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <p className="text-purple-700 text-xs font-medium">
+              ⏰ Nhắc nhở cho hôm nay
+            </p>
+            {onViewDetail && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetail(reminder.reminderId);
+                }}
+                className="text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
+              >
+                Chi tiết
+              </button>
+            )}
           </div>
         )}
       </div>
