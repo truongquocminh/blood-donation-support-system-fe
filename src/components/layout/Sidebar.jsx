@@ -159,7 +159,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           {
             icon: Search,
             label: 'Tra cứu',
-            path: ROUTES.MEMBER_RESEARCH,
+            path: ROUTES.MEMBER_LOOKUP,
             badge: null
           },
           {
