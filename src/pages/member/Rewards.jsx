@@ -277,7 +277,6 @@ const MemberRewards = () => {
   };
 
   const confirmRedeem = () => {
-    console.log('Redeeming reward:', selectedReward.id);
     setShowRedeemModal(false);
     setShowSuccessModal(true);
     setSelectedReward(null);

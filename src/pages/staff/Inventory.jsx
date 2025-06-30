@@ -167,7 +167,6 @@ const Inventory = () => {
     try {
       setLoading(true);
       const res = await getInventories(currentPage, pageSize);
-      console.log("res: ", res);
       
       if (res.status === 200 && res.data.data) {
         const { content, page } = res.data.data;

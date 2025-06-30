@@ -22,11 +22,11 @@ api.interceptors.request.use(
     config.headers['X-Request-Time'] = new Date().toISOString();
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 API Request:', {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        data: config.data,
-      });
+      // console.log('🚀 API Request:', {
+      //   method: config.method?.toUpperCase(),
+      //   url: config.url,
+      //   data: config.data,
+      // });
     }
 
     return config;
@@ -40,11 +40,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ API Response:', {
-        status: response.status,
-        url: response.config.url,
-        data: response.data,
-      });
+      // console.log('✅ API Response:', {
+      //   status: response.status,
+      //   url: response.config.url,
+      //   data: response.data,
+      // });
     }
 
     return response;

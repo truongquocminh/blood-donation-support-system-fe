@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Search, CheckCircle, XCircle, Droplets, Activity } from 'lucide-react';
 
 const CompatibilitySearchWidget = ({ bloodTypes, bloodComponents }) => {
-    console.log("bloodTypes: ", bloodTypes)
-    console.log("bloodComponents: ", bloodComponents)
     const [selectedBloodType, setSelectedBloodType] = useState('');
     const [selectedComponent, setSelectedComponent] = useState('');
     const [searchResult, setSearchResult] = useState(null);
@@ -13,12 +11,9 @@ const CompatibilitySearchWidget = ({ bloodTypes, bloodComponents }) => {
             setSearchResult({ error: 'Vui lòng chọn cả nhóm máu và thành phần máu' });
             return;
         }
-        console.log("selectedBloodType: ", selectedBloodType);
-        console.log("selectedComponent: ", selectedComponent)
 
         const bloodType = bloodTypes.find(bt => bt.id.toString() === selectedBloodType);
         const component = bloodComponents.find(bc => bc.componentId.toString() === selectedComponent);
-        console.log("component: ", component)
         if (!bloodType || !component) {
             setSearchResult({ error: 'Không tìm thấy thông tin' });
             return;

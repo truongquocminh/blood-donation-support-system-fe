@@ -24,7 +24,6 @@ const InventoryFormModal = ({
 
   useEffect(() => {
     if (inventory) {
-      console.log("inventory: ", inventory);
       setFormData({
         bloodType: inventory.bloodType ? inventory.bloodType.toString() : '',
         bloodComponent: inventory.bloodComponent ? inventory.bloodComponent.toString() : '',
