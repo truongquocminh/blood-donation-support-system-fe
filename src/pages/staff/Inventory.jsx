@@ -20,6 +20,7 @@ const Inventory = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [inventoryActionLoading, setInventoryActionLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState('inventory');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,41 +30,59 @@ const Inventory = () => {
   const [filterComponent, setFilterComponent] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleAddInventory = (inventoryData) => {
-    const newInventory = {
-      id: Math.max(...inventories.map(i => i.id), 0) + 1,
-      bloodType: inventoryData.bloodType,
-      bloodComponent: inventoryData.bloodComponent,
-      quantity: inventoryData.quantity,
-      lastUpdated: new Date().toISOString()
-    };
-    setInventories(prev => [...prev, newInventory]);
-    setIsModalOpen(false);
+  const handleAddInventory = async (inventoryData) => {
+    // Không cần xử lý ở đây nữa, để InventoryFormModal tự xử lý
+    // Chỉ cần refresh data
+    await fetchInventories();
   };
 
-  const handleEditInventory = (inventoryData) => {
-    setInventories(prev =>
-      prev.map(inv =>
-        inv.id === editingInventory.id
-          ? { 
-              ...inv, 
-              bloodType: inventoryData.bloodType,
-              bloodComponent: inventoryData.bloodComponent,
-              quantity: inventoryData.quantity,
-              lastUpdated: new Date().toISOString() 
-            }
-          : inv
-      )
-    );
-    setEditingInventory(null);
-    setIsModalOpen(false);
+  const handleEditInventory = async (inventoryData) => {
+    // Không cần xử lý ở đây nữa, để InventoryFormModal tự xử lý
+    // Chỉ cần refresh data
+    await fetchInventories();
   };
 
-  const handleDeleteInventory = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa kho máu này?')) {
-      setInventories(prev => prev.filter(inv => inv.id !== id));
-    }
-  };
+  // const handleDeleteInventory = async (id) => {
+  //   const inventory = inventories.find(inv => inv.id === id);
+  //   if (!inventory) {
+  //     toast.error('Không tìm thấy kho máu');
+  //     return;
+  //   }
+
+  //   const confirmMessage = `Bạn có chắc chắn muốn xóa kho máu #${id}?\n\nHành động này không thể hoàn tác.`;
+    
+  //   if (!window.confirm(confirmMessage)) {
+  //     return;
+  //   }
+
+  //   try {
+  //     setInventoryActionLoading(true);
+      
+  //     console.log('Deleting inventory with ID:', id);
+  //     const response = await deleteInventory(id);
+      
+  //     if (response.status === 200) {
+  //       toast.success('Xóa kho máu thành công!');
+  //       await fetchInventories(); // Refresh data
+  //     } else {
+  //       toast.error('Không thể xóa kho máu');
+  //     }
+  //   } catch (error) {
+  //     console.error('Lỗi khi xóa kho máu:', error);
+      
+  //     if (error.response?.data?.message) {
+  //       toast.error(error.response.data.message);
+  //     } else if (error.response?.status === 400) {
+  //       toast.error('Không thể xóa kho máu - dữ liệu không hợp lệ');
+  //     } else if (error.response?.status === 404) {
+  //       toast.error('Kho máu không tồn tại');
+  //     } else {
+  //       toast.error('Lỗi khi xóa kho máu');
+  //     }
+  //   } finally {
+  //     setInventoryActionLoading(false);
+  //   }
+  // };
 
   const openEditModal = (inventory) => {
     setEditingInventory(inventory);
@@ -75,27 +94,44 @@ const Inventory = () => {
     setIsModalOpen(true);
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingInventory(null);
+  };
+
   const handleAddBloodType = async (bloodTypeData) => {
+    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleEditBloodType = async (id, bloodTypeData) => {
+    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleDeleteBloodType = async (id) => {
+    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleAddBloodComponent = async (componentData) => {
+    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleEditBloodComponent = async (id, componentData) => {
+    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleDeleteBloodComponent = async (id) => {
+    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
+    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
@@ -135,6 +171,7 @@ const Inventory = () => {
     try {
       setLoading(true);
       const res = await getInventories(currentPage, pageSize);
+      console.log("res: ", res);
       
       if (res.status === 200 && res.data.data) {
         const { content, page } = res.data.data;
@@ -277,11 +314,12 @@ const Inventory = () => {
             bloodTypes={bloodTypes}
             bloodComponents={bloodComponents}
             onEdit={openEditModal}
-            onDelete={handleDeleteInventory}
+            // onDelete={handleDeleteInventory}
             searchTerm={searchTerm}
             filterType={filterType}
             filterComponent={filterComponent}
             loading={loading}
+            actionLoading={inventoryActionLoading}
           />
 
           {totalPages > 1 && (
@@ -361,14 +399,12 @@ const Inventory = () => {
 
       <InventoryFormModal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingInventory(null);
-        }}
+        onClose={closeModal}
         onSubmit={editingInventory ? handleEditInventory : handleAddInventory}
         inventory={editingInventory}
         bloodTypes={bloodTypes}
         bloodComponents={bloodComponents}
+        onRefresh={fetchInventories}
       />
     </div>
   );

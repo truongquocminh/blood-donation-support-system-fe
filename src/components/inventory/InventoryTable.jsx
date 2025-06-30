@@ -10,16 +10,19 @@ const InventoryTable = ({
   searchTerm,
   filterType,
   filterComponent,
-  loading = false
+  loading = false,
+  actionLoading = false
 }) => {
   const getBloodTypeName = (typeId) => {
+    if (!typeId || !bloodTypes || bloodTypes.length === 0) return 'N/A';
     const type = bloodTypes.find(t => t.id === typeId);
-    return type ? type.typeName : 'N/A';
+    return type ? type.typeName : `ID: ${typeId}`;
   };
 
   const getComponentName = (componentId) => {
+    if (!componentId || !bloodComponents || bloodComponents.length === 0) return 'N/A';
     const component = bloodComponents.find(c => c.id === componentId);
-    return component ? component.componentName : 'N/A';
+    return component ? component.componentName : `ID: ${componentId}`;
   };
 
   const isExpiringSoon = (lastUpdated) => {
@@ -42,12 +45,15 @@ const InventoryTable = ({
   };
 
   const filteredInventories = inventories.filter(inventory => {
-    const matchesSearch = searchTerm === '' || 
-      getBloodTypeName(inventory.bloodType).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getComponentName(inventory.bloodComponent).toLowerCase().includes(searchTerm.toLowerCase());
+    const bloodTypeName = getBloodTypeName(inventory.bloodType);
+    const componentName = getComponentName(inventory.bloodComponent);
     
-    const matchesType = filterType === '' || inventory.bloodType.toString() === filterType;
-    const matchesComponent = filterComponent === '' || inventory.bloodComponent.toString() === filterComponent;
+    const matchesSearch = searchTerm === '' || 
+      bloodTypeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      componentName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = filterType === '' || inventory.bloodType?.toString() === filterType;
+    const matchesComponent = filterComponent === '' || inventory.bloodComponent?.toString() === filterComponent;
     
     return matchesSearch && matchesType && matchesComponent;
   });
@@ -206,18 +212,24 @@ const InventoryTable = ({
                     <div className="flex items-center justify-end space-x-2">
                       <button
                         onClick={() => onEdit(inventory)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        disabled={actionLoading}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Chỉnh sửa"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => onDelete(inventory.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        disabled={actionLoading}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Xóa"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        {actionLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button> */}
                     </div>
                   </td>
                 </tr>
