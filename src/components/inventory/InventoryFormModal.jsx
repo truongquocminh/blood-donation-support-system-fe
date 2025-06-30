@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { isCompatible } from '../../utils/helpers';
 
 const InventoryFormModal = ({ 
   isOpen, 
@@ -13,45 +12,28 @@ const InventoryFormModal = ({
   const [formData, setFormData] = useState({
     bloodType: '',
     bloodComponent: '',
-    quantity: '',
-    expiryDate: '',
-    donorId: ''
+    quantity: ''
   });
   const [errors, setErrors] = useState({});
-  const [compatibilityCheck, setCompatibilityCheck] = useState(null);
 
   useEffect(() => {
     if (inventory) {
+      console.log("inventory: ",inventory)
       setFormData({
-        bloodType: inventory.bloodType.toString(),
-        bloodComponent: inventory.bloodComponent.toString(),
-        quantity: inventory.quantity.toString(),
-        expiryDate: inventory.expiryDate,
-        donorId: inventory.donorId
+        bloodType: inventory.bloodType ? inventory.bloodType.toString() : '',
+        bloodComponent: inventory.bloodComponent ? inventory.bloodComponent.toString() : '',
+        quantity: inventory.quantity ? inventory.quantity.toString() : ''
       });
     } else {
       setFormData({
         bloodType: '',
         bloodComponent: '',
-        quantity: '',
-        expiryDate: '',
-        donorId: ''
+        quantity: ''
       });
     }
     setErrors({});
-    setCompatibilityCheck(null);
   }, [inventory, isOpen]);
 
-  useEffect(() => {
-    if (formData.bloodType !== '' && formData.bloodComponent !== '') {
-      const bloodTypeId = parseInt(formData.bloodType);
-      const componentId = parseInt(formData.bloodComponent);
-      const compatible = isCompatible(bloodTypeId, bloodTypeId, componentId);
-      setCompatibilityCheck(compatible);
-    } else {
-      setCompatibilityCheck(null);
-    }
-  }, [formData.bloodType, formData.bloodComponent]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -76,24 +58,6 @@ const InventoryFormModal = ({
       newErrors.quantity = 'Số lượng phải lớn hơn 0';
     }
 
-    if (!formData.expiryDate) {
-      newErrors.expiryDate = 'Vui lòng chọn ngày hết hạn';
-    } else {
-      const today = new Date();
-      const expiry = new Date(formData.expiryDate);
-      if (expiry <= today) {
-        newErrors.expiryDate = 'Ngày hết hạn phải sau ngày hôm nay';
-      }
-    }
-
-    if (!formData.donorId.trim()) {
-      newErrors.donorId = 'Vui lòng nhập mã người hiến';
-    }
-
-    if (compatibilityCheck === false) {
-      newErrors.compatibility = 'Nhóm máu và thành phần máu không tương thích';
-    }
-
     return newErrors;
   };
 
@@ -110,8 +74,7 @@ const InventoryFormModal = ({
       ...formData,
       bloodType: parseInt(formData.bloodType),
       bloodComponent: parseInt(formData.bloodComponent),
-      quantity: parseInt(formData.quantity),
-      donorId: formData.donorId.trim()
+      quantity: parseInt(formData.quantity)
     });
   };
 
@@ -153,7 +116,7 @@ const InventoryFormModal = ({
             >
               <option value="">Chọn nhóm máu</option>
               {bloodTypes.map(type => (
-                <option key={type.bloodTypeId} value={type.bloodTypeId}>
+                <option key={type.id} value={type.id}>
                   {type.typeName}
                 </option>
               ))}
@@ -174,7 +137,7 @@ const InventoryFormModal = ({
             >
               <option value="">Chọn thành phần máu</option>
               {bloodComponents.map(component => (
-                <option key={component.componentId} value={component.componentId}>
+                <option key={component.id} value={component.id}>
                   {component.componentName}
                 </option>
               ))}
@@ -182,20 +145,7 @@ const InventoryFormModal = ({
             {errors.bloodComponent && <p className="text-sm text-red-500 mt-1">{errors.bloodComponent}</p>}
           </div>
 
-          {compatibilityCheck !== null && (
-            <div className={`p-3 rounded-lg flex items-center space-x-2 ${
-              compatibilityCheck ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-            }`}>
-              {compatibilityCheck ? (
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              )}
-              <span className={`text-sm ${compatibilityCheck ? 'text-green-600' : 'text-red-600'}`}>
-                {compatibilityCheck ? 'Tương thích' : 'Không tương thích'}
-              </span>
-            </div>
-          )}
+         
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -214,36 +164,10 @@ const InventoryFormModal = ({
             {errors.quantity && <p className="text-sm text-red-500 mt-1">{errors.quantity}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ngày hết hạn <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={formData.expiryDate}
-              onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                errors.expiryDate ? 'border-red-500' : 'border-gray-300'
-              }`}
-              min={new Date().toISOString().split('T')[0]}
-            />
-            {errors.expiryDate && <p className="text-sm text-red-500 mt-1">{errors.expiryDate}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mã người hiến <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.donorId}
-              onChange={(e) => handleInputChange('donorId', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
-                errors.donorId ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Nhập mã người hiến (VD: D001)"
-            />
-            {errors.donorId && <p className="text-sm text-red-500 mt-1">{errors.donorId}</p>}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-700">
+              <strong>Lưu ý:</strong> Thời gian cập nhật và hạn sử dụng sẽ được tự động tính toán dựa trên thời điểm hiện tại.
+            </p>
           </div>
 
           <div className="flex space-x-3 pt-4">
@@ -256,7 +180,6 @@ const InventoryFormModal = ({
             </button>
             <button
               type="submit"
-              disabled={compatibilityCheck === false}
               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {inventory ? 'Cập nhật' : 'Thêm mới'}

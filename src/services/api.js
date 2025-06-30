@@ -124,6 +124,7 @@ api.interceptors.response.use(
         case 503:
         case 504:
           toast.error(ERROR_MESSAGES.SERVER_ERROR);
+          toast.error(error?.response?.data)
           break;
 
         default:

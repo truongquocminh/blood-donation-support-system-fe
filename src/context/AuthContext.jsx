@@ -93,19 +93,17 @@ export const AuthProvider = ({ children }) => {
   const initializeAuth = useCallback(async () => {
     try {
       const storedAuth = getStoredAuth();
-      
+
       if (storedAuth?.token && storedAuth?.user) {
         try {
-          const refreshResponse = await authService.refreshToken();
-          const newToken = refreshResponse.data.data.token;
-          
+
           const userData = {
             user: storedAuth.user,
-            token: newToken,
+            token: storedAuth?.token,
           };
-          
+
           setStoredAuth(userData);
-          
+
           dispatch({
             type: AUTH_ACTIONS.AUTH_INITIALIZE,
             payload: userData,
@@ -155,10 +153,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
 
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Đăng nhập thất bại';
-      
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Đăng nhập thất bại';
+
       dispatch({
         type: AUTH_ACTIONS.AUTH_FAILURE,
         payload: errorMessage,
@@ -174,7 +172,7 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: AUTH_ACTIONS.AUTH_START });
 
       const response = await authService.register(userData);
-      
+
       const { user, token } = response.data.data || response;
 
       setStoredAuth({ token, user });
@@ -188,10 +186,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
 
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Đăng ký thất bại';
-      
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Đăng ký thất bại';
+
       dispatch({
         type: AUTH_ACTIONS.AUTH_FAILURE,
         payload: errorMessage,
@@ -216,13 +214,13 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = useCallback((userData) => {
     const updatedUser = { ...state.user, ...userData };
-    
+
     // Cập nhật storage
     const storedAuth = getStoredAuth();
     if (storedAuth) {
       setStoredAuth({ ...storedAuth, user: updatedUser });
     }
-    
+
     dispatch({
       type: AUTH_ACTIONS.UPDATE_USER,
       payload: userData,
@@ -243,9 +241,9 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = useCallback((permission) => {
     if (!state.user) return false;
-    
+
     if (state.user.role === ROLES.ADMIN) return true;
-    
+
     return state.user.permissions?.includes(permission) || false;
   }, [state.user]);
 
@@ -255,14 +253,14 @@ export const AuthProvider = ({ children }) => {
     loading: state.loading,
     error: state.error,
     isAuthenticated: state.isAuthenticated,
-    
+
     login,
     register,
     logout,
     updateUser,
     clearError,
     initializeAuth,
-    
+
     hasRole,
     hasAnyRole,
     hasPermission,
@@ -277,11 +275,11 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 };
 

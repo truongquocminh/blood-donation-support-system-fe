@@ -5,6 +5,7 @@ import InventoryTable from '../../components/inventory/InventoryTable';
 import InventoryFormModal from '../../components/inventory/InventoryFormModal';
 import BloodTypeManager from '../../components/inventory/BloodTypeManager';
 import BloodComponentManager from '../../components/inventory/BloodComponentManager';
+import BloodCompatibilityManager from '../../components/inventory/BloodCompatibilityManager';
 import { getInventories } from '../../services/inventoryService';
 import toast from 'react-hot-toast';
 import { getBloodTypes } from '../../services/bloodTypeService';
@@ -18,6 +19,7 @@ const Inventory = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState('inventory');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,8 +31,11 @@ const Inventory = () => {
 
   const handleAddInventory = (inventoryData) => {
     const newInventory = {
-      id: Math.max(...inventories.map(i => i.id)) + 1,
-      ...inventoryData
+      id: Math.max(...inventories.map(i => i.id), 0) + 1,
+      bloodType: inventoryData.bloodType,
+      bloodComponent: inventoryData.bloodComponent,
+      quantity: inventoryData.quantity,
+      lastUpdated: new Date().toISOString()
     };
     setInventories(prev => [...prev, newInventory]);
     setIsModalOpen(false);
@@ -40,7 +45,13 @@ const Inventory = () => {
     setInventories(prev =>
       prev.map(inv =>
         inv.id === editingInventory.id
-          ? { ...inv, ...inventoryData }
+          ? { 
+              ...inv, 
+              bloodType: inventoryData.bloodType,
+              bloodComponent: inventoryData.bloodComponent,
+              quantity: inventoryData.quantity,
+              lastUpdated: new Date().toISOString() 
+            }
           : inv
       )
     );
@@ -64,52 +75,28 @@ const Inventory = () => {
     setIsModalOpen(true);
   };
 
-  const handleAddBloodType = (bloodTypeData) => {
-    const newBloodType = {
-      bloodTypeId: Math.max(...bloodTypes.map(bt => bt.bloodTypeId)) + 1,
-      ...bloodTypeData
-    };
-    setBloodTypes(prev => [...prev, newBloodType]);
+  const handleAddBloodType = async (bloodTypeData) => {
+    await fetchBloodData();
   };
 
-  const handleEditBloodType = (id, bloodTypeData) => {
-    setBloodTypes(prev =>
-      prev.map(bt =>
-        bt.bloodTypeId === id
-          ? { ...bt, ...bloodTypeData }
-          : bt
-      )
-    );
+  const handleEditBloodType = async (id, bloodTypeData) => {
+    await fetchBloodData();
   };
 
-  const handleDeleteBloodType = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa nhóm máu này?')) {
-      setBloodTypes(prev => prev.filter(bt => bt.bloodTypeId !== id));
-    }
+  const handleDeleteBloodType = async (id) => {
+    await fetchBloodData();
   };
 
-  const handleAddBloodComponent = (componentData) => {
-    const newComponent = {
-      componentId: Math.max(...bloodComponents.map(bc => bc.componentId)) + 1,
-      ...componentData
-    };
-    setBloodComponents(prev => [...prev, newComponent]);
+  const handleAddBloodComponent = async (componentData) => {
+    await fetchBloodData();
   };
 
-  const handleEditBloodComponent = (id, componentData) => {
-    setBloodComponents(prev =>
-      prev.map(bc =>
-        bc.componentId === id
-          ? { ...bc, ...componentData }
-          : bc
-      )
-    );
+  const handleEditBloodComponent = async (id, componentData) => {
+    await fetchBloodData();
   };
 
-  const handleDeleteBloodComponent = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa thành phần máu này?')) {
-      setBloodComponents(prev => prev.filter(bc => bc.componentId !== id));
-    }
+  const handleDeleteBloodComponent = async (id) => {
+    await fetchBloodData();
   };
 
   useEffect(() => {
@@ -146,7 +133,9 @@ const Inventory = () => {
 
   const fetchInventories = async () => {
     try {
+      setLoading(true);
       const res = await getInventories(currentPage, pageSize);
+      
       if (res.status === 200 && res.data.data) {
         const { content, page } = res.data.data;
         setInventories(content);
@@ -163,6 +152,8 @@ const Inventory = () => {
       setInventories([]);
       setTotalPages(0);
       setTotalElements(0);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -200,7 +191,8 @@ const Inventory = () => {
           {[
             { id: 'inventory', label: 'Kho máu' },
             { id: 'blood-types', label: 'Nhóm máu' },
-            { id: 'blood-components', label: 'Thành phần máu' }
+            { id: 'blood-components', label: 'Thành phần máu' },
+            { id: 'compatibility', label: 'Bảng tương thích truyền máu' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -224,7 +216,7 @@ const Inventory = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Tìm kiếm theo nhóm máu, thành phần hoặc mã người hiến..."
+                  placeholder="Tìm kiếm theo nhóm máu, thành phần..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
@@ -247,7 +239,7 @@ const Inventory = () => {
                   >
                     <option value="">Tất cả nhóm máu</option>
                     {bloodTypes.map(type => (
-                      <option key={type.bloodTypeId} value={type.bloodTypeId}>
+                      <option key={type.id} value={type.id}>
                         {type.typeName}
                       </option>
                     ))}
@@ -265,7 +257,7 @@ const Inventory = () => {
                   >
                     <option value="">Tất cả thành phần</option>
                     {bloodComponents.map(component => (
-                      <option key={component.componentId} value={component.componentId}>
+                      <option key={component.id} value={component.id}>
                         {component.componentName}
                       </option>
                     ))}
@@ -289,6 +281,7 @@ const Inventory = () => {
             searchTerm={searchTerm}
             filterType={filterType}
             filterComponent={filterComponent}
+            loading={loading}
           />
 
           {totalPages > 1 && (
@@ -335,7 +328,6 @@ const Inventory = () => {
               </select>
             </div>
           )}
-
         </>
       )}
 
@@ -345,6 +337,7 @@ const Inventory = () => {
           onAdd={handleAddBloodType}
           onEdit={handleEditBloodType}
           onDelete={handleDeleteBloodType}
+          onRefresh={fetchBloodData}
         />
       )}
 
@@ -354,6 +347,15 @@ const Inventory = () => {
           onAdd={handleAddBloodComponent}
           onEdit={handleEditBloodComponent}
           onDelete={handleDeleteBloodComponent}
+          onRefresh={fetchBloodData}
+        />
+      )}
+
+      {activeTab === 'compatibility' && (
+        <BloodCompatibilityManager
+          bloodTypes={bloodTypes}
+          bloodComponents={bloodComponents}
+          onUpdate={fetchBloodData}
         />
       )}
 
