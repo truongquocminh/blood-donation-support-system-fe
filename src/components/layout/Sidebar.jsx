@@ -119,12 +119,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.STAFF_REMINDERS,
             badge: null
           },
-          {
-            icon: FileText,
-            label: 'Báo cáo',
-            path: '/staff/reports',
-            badge: null
-          }
+          
         ];
 
       case 'MEMBER':
