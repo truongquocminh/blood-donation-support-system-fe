@@ -7,6 +7,7 @@ import ReminderDetailModal from '../../components/reminder/ReminderDetailModal';
 import HandleLoading from '../../components/common/HandleLoading';
 import { getReminders, createReminder, updateReminder, deleteReminder, getReminderById } from '../../services/reminderService';
 import { REMINDER_TYPE } from '../../utils/constants';
+import toast from 'react-hot-toast';
 
 const Reminders = () => {
   const [reminders, setReminders] = useState([]);
@@ -45,9 +46,11 @@ const Reminders = () => {
       };
 
       const response = await getReminders(filters);
-
       if (response.status === 200 && response.data) {
-        setReminders(response.data.data.content || []);
+        const originalData = response.data.data.content || [];
+        const reversedData = [...originalData].reverse();
+
+        setReminders(reversedData);
         setPagination(response.data.data.page || {
           totalElements: 0,
           number: 0,
@@ -100,8 +103,8 @@ const Reminders = () => {
       setLoading(true);
       const response = await getReminderById(reminderId);
 
-      if (response.success && response.data) {
-        setDetailReminder(response.data);
+      if (response.status === 200 && response.data) {
+        setDetailReminder(response.data.data);
         setIsDetailModalOpen(true);
       }
     } catch (error) {
@@ -117,7 +120,7 @@ const Reminders = () => {
         setLoading(true);
         const response = await deleteReminder(reminderId);
 
-        if (response.success) {
+        if (response.status === 200) {
           await fetchReminders(pagination.number, pagination.size, true);
         }
       } catch (error) {
@@ -139,10 +142,11 @@ const Reminders = () => {
         response = await createReminder(formData);
       }
 
-      if (response.success) {
+      if (response.status === 200 || response.status === 201) {
         await fetchReminders(pagination.number, pagination.size, true);
         setIsFormOpen(false);
         setEditingReminder(null);
+        toast.success(`${editingReminder ? 'Cập nhập thành công' : 'Tạo nhắc nhở thành công'}`)
       }
     } catch (error) {
       console.error('Error saving reminder:', error);

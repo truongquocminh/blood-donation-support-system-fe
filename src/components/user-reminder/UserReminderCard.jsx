@@ -3,6 +3,7 @@ import { Calendar, Clock, CheckCircle, Bell, Droplets, Heart, MessageSquare, Eye
 import { REMINDER_TYPE, REMINDER_TYPE_LABELS, REMINDER_TYPE_COLORS } from '../../utils/constants';
 
 const UserReminderCard = ({ reminder, onViewDetail }) => {
+  console.log("reminder: ", reminder)
   const getTypeIcon = (type) => {
     switch (type) {
       case REMINDER_TYPE.BLOOD_DONATION:
