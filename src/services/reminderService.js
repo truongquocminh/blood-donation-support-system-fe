@@ -32,6 +32,7 @@ export const getReminders = async (filters = {}) => {
 
   return apiGet(`${REMINDER_ENDPOINTS.GET_REMINDERS}?${params.toString()}`);
 };
+
 export const getReminderById = async (reminderId) => {
   return apiGet(`${REMINDER_ENDPOINTS.GET_REMINDER_BY_ID}/${reminderId}`);
 };

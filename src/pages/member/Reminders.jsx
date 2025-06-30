@@ -6,6 +6,7 @@ import UserReminderDetailModal from '../../components/user-reminder/UserReminder
 import HandleLoading from '../../components/common/HandleLoading';
 import { Bell } from 'lucide-react';
 import { getReminders, getReminderById } from '../../services/reminderService';
+import useAuth from '../../hooks/useAuth';
 
 const UserReminderCardSkeleton = () => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -17,12 +18,10 @@ const UserReminderCardSkeleton = () => (
         </div>
         <div className="w-20 h-6 bg-gray-200 rounded-full"></div>
       </div>
-
       <div className="flex items-center mb-3">
         <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
         <div className="w-32 h-4 bg-gray-200 rounded"></div>
       </div>
-
       <div className="space-y-2">
         <div className="w-full h-4 bg-gray-200 rounded"></div>
         <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
@@ -32,6 +31,8 @@ const UserReminderCardSkeleton = () => (
 );
 
 const Reminders = () => {
+  const { user } = useAuth();
+
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cardsLoading, setCardsLoading] = useState(false);
@@ -44,7 +45,8 @@ const Reminders = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   const [detailReminder, setDetailReminder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -57,11 +59,21 @@ const Reminders = () => {
         setLoading(true);
       }
 
-      const response = await getReminders(page, size);
+      const filters = {
+        userId: user?.id,
+        page,
+        size
+      };
 
-      if (response.success && response.data) {
-        setReminders(response.data.content || []);
-        setPagination(response.data.page || {
+      if (filterType) filters.reminderType = filterType;
+      if (fromDate) filters.fromDate = fromDate;
+      if (toDate) filters.toDate = toDate;
+
+      const response = await getReminders(filters);
+      if (response.status === 200 && response.data) {
+        const newReminders = response.data.data.content || [];
+        setReminders(prev => (page === 0 ? newReminders : [...prev, ...newReminders]));
+        setPagination(response.data.data.page || {
           totalElements: 0,
           number: 0,
           size: 20,
@@ -85,15 +97,14 @@ const Reminders = () => {
 
   useEffect(() => {
     fetchUserReminders(0, 20, true);
-  }, []);
+  }, [filterType, fromDate, toDate]);
 
   const handleViewDetail = async (reminderId) => {
     try {
       setLoading(true);
       const response = await getReminderById(reminderId);
-
-      if (response.success && response.data) {
-        setDetailReminder(response.data);
+      if (response.status === 200 && response.data) {
+        setDetailReminder(response.data.data);
         setIsDetailModalOpen(true);
       }
     } catch (error) {
@@ -110,40 +121,12 @@ const Reminders = () => {
   };
 
   const filteredReminders = reminders.filter(reminder => {
-    const matchesSearch = searchTerm === '' ||
-      reminder.message.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesType = filterType === '' || reminder.reminderType === filterType;
-
-    let matchesStatus = true;
-    if (filterStatus === 'upcoming') {
-      const today = new Date();
-      const reminderDate = new Date(reminder.nextDate);
-      const diffDays = Math.ceil((reminderDate - today) / (1000 * 60 * 60 * 24));
-      matchesStatus = diffDays <= 7 && diffDays >= 0 && !reminder.sent;
-    } else if (filterStatus === 'today') {
-      const today = new Date();
-      const reminderDate = new Date(reminder.nextDate);
-      matchesStatus = reminderDate.toDateString() === today.toDateString();
-    } else if (filterStatus === 'received') {
-      matchesStatus = reminder.sent;
-    } else if (filterStatus === 'pending') {
-      matchesStatus = !reminder.sent;
-    }
-
-    return matchesSearch && matchesType && matchesStatus;
+    return searchTerm === '' || reminder.message.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const sortedReminders = [...filteredReminders].sort((a, b) => {
-    const today = new Date();
-    const dateA = new Date(a.nextDate);
-    const dateB = new Date(b.nextDate);
-
-    if (a.sent !== b.sent) {
-      return a.sent ? 1 : -1;
-    }
-
-    return dateA - dateB;
+    if (a.sent !== b.sent) return a.sent ? 1 : -1;
+    return new Date(a.nextDate) - new Date(b.nextDate);
   });
 
   return (
@@ -153,12 +136,8 @@ const Reminders = () => {
       <div className="space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Nhắc nhở của tôi
-            </h1>
-            <p className="text-gray-600">
-              Theo dõi các thông báo và lời nhắc quan trọng từ trung tâm y tế
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Nhắc nhở của tôi</h1>
+            <p className="text-gray-600">Theo dõi các thông báo và lời nhắc quan trọng từ trung tâm y tế</p>
           </div>
         </div>
 
@@ -169,8 +148,10 @@ const Reminders = () => {
           setSearchTerm={setSearchTerm}
           filterType={filterType}
           setFilterType={setFilterType}
-          filterStatus={filterStatus}
-          setFilterStatus={setFilterStatus}
+          fromDate={fromDate}
+          setFromDate={setFromDate}
+          toDate={toDate}
+          setToDate={setToDate}
           totalCount={filteredReminders.length}
         />
 
@@ -184,14 +165,11 @@ const Reminders = () => {
           ) : sortedReminders.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
               <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Không có nhắc nhở nào
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Không có nhắc nhở nào</h3>
               <p className="text-gray-500">
-                {searchTerm || filterType || filterStatus
+                {searchTerm || filterType || fromDate || toDate
                   ? 'Thử thay đổi bộ lọc để xem thêm nhắc nhở'
-                  : 'Hiện tại bạn chưa có nhắc nhở nào từ trung tâm y tế'
-                }
+                  : 'Hiện tại bạn chưa có nhắc nhở nào từ trung tâm y tế'}
               </p>
             </div>
           ) : (

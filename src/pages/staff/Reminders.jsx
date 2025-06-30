@@ -46,9 +46,9 @@ const Reminders = () => {
 
       const response = await getReminders(filters);
 
-      if (response.success && response.data) {
-        setReminders(response.data.content || []);
-        setPagination(response.data.page || {
+      if (response.status === 200 && response.data) {
+        setReminders(response.data.data.content || []);
+        setPagination(response.data.data.page || {
           totalElements: 0,
           number: 0,
           size: 10,

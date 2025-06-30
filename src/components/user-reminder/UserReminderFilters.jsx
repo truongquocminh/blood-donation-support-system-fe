@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, Calendar, Bell, X } from 'lucide-react';
+import { Search, Filter, Bell, X, Calendar } from 'lucide-react';
 import { REMINDER_TYPE, REMINDER_TYPE_LABELS } from '../../utils/constants';
 
 const UserReminderFilters = ({
@@ -7,32 +7,20 @@ const UserReminderFilters = ({
   setSearchTerm,
   filterType,
   setFilterType,
-  filterStatus,
-  setFilterStatus,
+  fromDate,
+  setFromDate,
+  toDate,
+  setToDate,
   totalCount
 }) => {
   const clearAllFilters = () => {
     setSearchTerm('');
     setFilterType('');
-    setFilterStatus('');
+    setFromDate('');
+    setToDate('');
   };
 
-  const hasActiveFilters = searchTerm || filterType || filterStatus;
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'upcoming':
-        return 'Sắp tới (7 ngày)';
-      case 'today':
-        return 'Hôm nay';
-      case 'received':
-        return 'Đã nhận';
-      case 'pending':
-        return 'Chưa nhận';
-      default:
-        return 'Tất cả';
-    }
-  };
+  const hasActiveFilters = searchTerm || filterType || fromDate || toDate;
 
   const getTypeLabel = (type) => {
     return REMINDER_TYPE_LABELS[type] || 'Tất cả loại';
@@ -40,7 +28,7 @@ const UserReminderFilters = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center space-x-2">
           <Bell className="w-5 h-5 text-blue-600" />
           <h2 className="text-lg font-semibold text-gray-900">
@@ -51,8 +39,8 @@ const UserReminderFilters = ({
           </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-2xl">
-          <div className="relative flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
+          <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
@@ -76,7 +64,7 @@ const UserReminderFilters = ({
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white min-w-[180px]"
+              className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             >
               <option value="">Tất cả loại</option>
               {Object.entries(REMINDER_TYPE).map(([key, value]) => (
@@ -89,28 +77,35 @@ const UserReminderFilters = ({
 
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white min-w-[150px]"
-            >
-              <option value="">Tất cả</option>
-              <option value="upcoming">Sắp tới</option>
-              <option value="today">Hôm nay</option>
-              <option value="received">Đã nhận</option>
-              <option value="pending">Chưa nhận</option>
-            </select>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
 
           {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              title="Xóa tất cả bộ lọc"
-            >
-              <X className="w-4 h-4 mr-1" />
-              Xóa bộ lọc
-            </button>
+            <div className="flex items-center">
+              <button
+                onClick={clearAllFilters}
+                className="w-full inline-flex items-center justify-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+                title="Xóa tất cả bộ lọc"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Xóa bộ lọc
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -119,7 +114,7 @@ const UserReminderFilters = ({
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-            
+
             {searchTerm && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Tìm kiếm: "{searchTerm}"
@@ -131,7 +126,7 @@ const UserReminderFilters = ({
                 </button>
               </span>
             )}
-            
+
             {filterType && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Loại: {getTypeLabel(filterType)}
@@ -143,13 +138,25 @@ const UserReminderFilters = ({
                 </button>
               </span>
             )}
-            
-            {filterStatus && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                Trạng thái: {getStatusLabel(filterStatus)}
+
+            {fromDate && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Từ ngày: {fromDate}
                 <button
-                  onClick={() => setFilterStatus('')}
-                  className="ml-1 text-orange-600 hover:text-orange-800"
+                  onClick={() => setFromDate('')}
+                  className="ml-1 text-yellow-600 hover:text-yellow-800"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {toDate && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Đến ngày: {toDate}
+                <button
+                  onClick={() => setToDate('')}
+                  className="ml-1 text-yellow-600 hover:text-yellow-800"
                 >
                   <X className="w-3 h-3" />
                 </button>
