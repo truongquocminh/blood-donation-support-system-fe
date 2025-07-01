@@ -57,7 +57,6 @@ const MemberProfile = () => {
     try {
       setLoading(true);
       const response = await getCurrentUser();
-
       if (response.status === 200 && response.data.data) {
         const userData = response.data.data;
         setMember(prev => ({

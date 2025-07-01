@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Heart, User, Mail, Lock, Phone, Calendar, MapPin,
@@ -9,6 +9,9 @@ import Button from '../../components/ui/Button';
 import Input, { PasswordInput } from '../../components/ui/Input';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../utils/constants';
+import { login, register } from '../../services/authService';
+import { getBloodTypes } from '../../services/bloodTypeService';
+import { updateUser } from '../../services/userService';
 import {
   validateEmail,
   validatePhone,
@@ -20,37 +23,31 @@ import {
   validateIdNumber,
   validateAddress
 } from '../../utils/validators';
+import { getStoredAuth, setStoredAuth } from '../../utils/storage';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register, loading } = useAuth();
+  const auth = getStoredAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [bloodTypes, setBloodTypes] = useState([]);
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    phoneNumber: '',
 
-    phone: '',
     dateOfBirth: '',
     gender: '',
-    idNumber: '',
     address: '',
+    latitude: 0.1,
+    longitude: 0.1,
 
-    bloodType: '',
-    weight: '',
-    height: '',
-    medicalHistory: '',
-
-    emergencyContact: {
-      name: '',
-      phone: '',
-      relationship: ''
-    },
+    bloodTypeId: '',
 
     agreeToTerms: false,
     agreeToPrivacy: false,
@@ -65,26 +62,29 @@ const Register = () => {
     { id: 1, title: 'Thông tin cơ bản', icon: User },
     { id: 2, title: 'Thông tin cá nhân', icon: UserPlus },
     { id: 3, title: 'Thông tin y tế', icon: Heart },
-    { id: 4, title: 'Liên hệ khẩn cấp', icon: Phone },
-    { id: 5, title: 'Xác nhận', icon: Shield }
+    { id: 4, title: 'Xác nhận', icon: Shield }
   ];
 
-  const handleInputChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+  useEffect(() => {
+    if (isRegistered && currentStep >= 2) {
+      loadBloodTypes();
     }
+  }, [isRegistered, currentStep]);
+
+  const loadBloodTypes = async () => {
+    try {
+      const response = await getBloodTypes();
+      setBloodTypes(response.data.data.content || []);
+    } catch (error) {
+      console.error('Error loading blood types:', error);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
 
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -96,11 +96,8 @@ const Register = () => {
 
     switch (step) {
       case 1:
-        const firstNameValidation = validateName(formData.firstName);
-        if (firstNameValidation !== true) newErrors.firstName = firstNameValidation;
-
-        const lastNameValidation = validateName(formData.lastName);
-        if (lastNameValidation !== true) newErrors.lastName = lastNameValidation;
+        const fullNameValidation = validateName(formData.fullName);
+        if (fullNameValidation !== true) newErrors.fullName = fullNameValidation;
 
         const emailValidation = validateEmail(formData.email);
         if (emailValidation !== true) newErrors.email = emailValidation;
@@ -110,43 +107,25 @@ const Register = () => {
 
         const confirmPasswordValidation = validatePasswordConfirmation(formData.password, formData.confirmPassword);
         if (confirmPasswordValidation !== true) newErrors.confirmPassword = confirmPasswordValidation;
+
+        const phoneValidation = validatePhone(formData.phoneNumber);
+        if (phoneValidation !== true) newErrors.phoneNumber = phoneValidation;
         break;
 
       case 2:
-        const phoneValidation = validatePhone(formData.phone);
-        if (phoneValidation !== true) newErrors.phone = phoneValidation;
-
         const ageValidation = validateAge(formData.dateOfBirth);
         if (ageValidation !== true) newErrors.dateOfBirth = ageValidation;
 
         if (!formData.gender) newErrors.gender = 'Giới tính là bắt buộc';
-
-        const idValidation = validateIdNumber(formData.idNumber);
-        if (idValidation !== true) newErrors.idNumber = idValidation;
 
         const addressValidation = validateAddress(formData.address);
         if (addressValidation !== true) newErrors.address = addressValidation;
         break;
 
       case 3:
-        if (!formData.bloodType) newErrors.bloodType = 'Nhóm máu là bắt buộc';
-
-        const weightValidation = validateWeight(formData.weight);
-        if (weightValidation !== true) newErrors.weight = weightValidation;
-
-        if (!formData.height) newErrors.height = 'Chiều cao là bắt buộc';
         break;
 
       case 4:
-        if (!formData.emergencyContact.name) newErrors['emergencyContact.name'] = 'Tên người liên hệ là bắt buộc';
-
-        const emergencyPhoneValidation = validatePhone(formData.emergencyContact.phone);
-        if (emergencyPhoneValidation !== true) newErrors['emergencyContact.phone'] = emergencyPhoneValidation;
-
-        if (!formData.emergencyContact.relationship) newErrors['emergencyContact.relationship'] = 'Mối quan hệ là bắt buộc';
-        break;
-
-      case 5:
         if (!formData.agreeToTerms) newErrors.agreeToTerms = 'Bạn phải đồng ý với điều khoản sử dụng';
         if (!formData.agreeToPrivacy) newErrors.agreeToPrivacy = 'Bạn phải đồng ý với chính sách bảo mật';
         break;
@@ -156,10 +135,106 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 5));
+  const handleNext = async () => {
+    if (!validateStep(currentStep)) return;
+
+    if (currentStep === 1 && !isRegistered) {
+      setIsSubmitting(true);
+      try {
+        const registerData = {
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber
+        };
+
+
+        const registerResult = await register(registerData);
+
+        if (registerResult.status === 200 || registerResult.status === 201) {
+
+          const loginResult = await login({
+            email: formData.email,
+            password: formData.password,
+          });
+          const { user, token } = loginResult.data.data;
+          setStoredAuth({ token, user });
+
+          if (loginResult.status === 200) {
+            setIsRegistered(true);
+            setCurrentStep(2);
+          }
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setErrors({ general: 'Đăng ký thất bại. Vui lòng thử lại.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
     }
+
+    if (currentStep === 2 && isRegistered && auth?.user?.id) {
+      setIsSubmitting(true);
+      try {
+        const updateData = {
+          fullName: formData.fullName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+          gender: formData.gender.toUpperCase(), 
+          dateOfBirth: formData.dateOfBirth,
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        };
+
+        const updateResult = await updateUser(auth.user.id, updateData);
+
+        if (updateResult.status === 200) {
+          setCurrentStep(3);
+        }
+      } catch (error) {
+        console.error('Update user error:', error);
+        setErrors({ general: 'Cập nhật thông tin thất bại. Vui lòng thử lại.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    if (currentStep === 3 && isRegistered && auth?.user?.id) {
+      setIsSubmitting(true);
+      try {
+        const updateData = {
+          fullName: formData.fullName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+          gender: formData.gender.toUpperCase(),
+          dateOfBirth: formData.dateOfBirth,
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        };
+
+        if (formData.bloodTypeId) {
+          updateData.bloodTypeId = parseInt(formData.bloodTypeId);
+        }
+
+        const updateResult = await updateUser(auth.user.id, updateData);
+
+        if (updateResult.status === 200) {
+          setCurrentStep(4);
+        }
+      } catch (error) {
+        console.error('Update blood type error:', error);
+        setErrors({ general: 'Cập nhật thông tin thất bại. Vui lòng thử lại.' });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    setCurrentStep(prev => Math.min(prev + 1, 4));
   };
 
   const handlePrevious = () => {
@@ -167,21 +242,9 @@ const Register = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(5)) return;
+    if (!validateStep(4)) return;
 
-    setIsSubmitting(true);
-
-    try {
-      const result = await register(formData);
-
-      if (result.success) {
-        navigate(ROUTES.HOME);
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate(ROUTES.HOME);
   };
 
   const renderStep = () => {
@@ -189,24 +252,14 @@ const Register = () => {
       case 1:
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Họ"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                placeholder="Nhập họ"
-                error={errors.firstName}
-                required
-              />
-              <Input
-                label="Tên"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                placeholder="Nhập tên"
-                error={errors.lastName}
-                required
-              />
-            </div>
+            <Input
+              label="Họ và tên"
+              value={formData.fullName}
+              onChange={(e) => handleInputChange('fullName', e.target.value)}
+              placeholder="Nhập họ và tên đầy đủ"
+              error={errors.fullName}
+              required
+            />
 
             <Input
               label="Email"
@@ -216,6 +269,16 @@ const Register = () => {
               placeholder="Nhập email"
               error={errors.email}
               icon={<Mail />}
+              required
+            />
+
+            <Input
+              label="Số điện thoại"
+              value={formData.phoneNumber}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              placeholder="Nhập số điện thoại"
+              error={errors.phoneNumber}
+              icon={<Phone />}
               required
             />
 
@@ -259,22 +322,18 @@ const Register = () => {
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
+            {errors.general && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{errors.general}</p>
+              </div>
+            )}
           </div>
         );
 
       case 2:
         return (
           <div className="space-y-4">
-            <Input
-              label="Số điện thoại"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              placeholder="Nhập số điện thoại"
-              error={errors.phone}
-              icon={<Phone />}
-              required
-            />
-
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Ngày sinh"
@@ -298,22 +357,12 @@ const Register = () => {
                   <option value="">Chọn giới tính</option>
                   <option value="male">Nam</option>
                   <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
                 </select>
                 {errors.gender && (
                   <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
                 )}
               </div>
             </div>
-
-            <Input
-              label="Số CMND/CCCD"
-              value={formData.idNumber}
-              onChange={(e) => handleInputChange('idNumber', e.target.value)}
-              placeholder="Nhập số CMND/CCCD"
-              error={errors.idNumber}
-              required
-            />
 
             <Input
               label="Địa chỉ"
@@ -324,124 +373,57 @@ const Register = () => {
               icon={<MapPin />}
               required
             />
+
+            {errors.general && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{errors.general}</p>
+              </div>
+            )}
           </div>
         );
 
       case 3:
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nhóm máu *
-                </label>
-                <select
-                  value={formData.bloodType}
-                  onChange={(e) => handleInputChange('bloodType', e.target.value)}
-                  className={`input-field ${errors.bloodType ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Chọn nhóm máu</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-                {errors.bloodType && (
-                  <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>
-                )}
-              </div>
-
-              <Input
-                label="Cân nặng (kg)"
-                type="number"
-                value={formData.weight}
-                onChange={(e) => handleInputChange('weight', e.target.value)}
-                placeholder="Nhập cân nặng"
-                error={errors.weight}
-                required
-                min="45"
-                max="200"
-              />
-            </div>
-
-            <Input
-              label="Chiều cao (cm)"
-              type="number"
-              value={formData.height}
-              onChange={(e) => handleInputChange('height', e.target.value)}
-              placeholder="Nhập chiều cao"
-              error={errors.height}
-              required
-              min="140"
-              max="220"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tiền sử bệnh lý (không bắt buộc)
-              </label>
-              <textarea
-                value={formData.medicalHistory}
-                onChange={(e) => handleInputChange('medicalHistory', e.target.value)}
-                placeholder="Mô tả các bệnh lý đã từng mắc (nếu có)..."
-                rows={4}
-                className="input-field"
-              />
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-4">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <div className="flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-800">Thông tin liên hệ khẩn cấp</p>
-                  <p className="text-sm text-yellow-700">
-                    Thông tin này sẽ được sử dụng trong trường hợp cấp cứu khi bạn hiến máu.
+                  <p className="text-sm font-medium text-blue-800">Thông tin nhóm máu (không bắt buộc)</p>
+                  <p className="text-sm text-blue-700">
+                    Nếu bạn không biết nhóm máu của mình, bạn có thể bỏ qua phần này và cập nhật sau.
                   </p>
                 </div>
               </div>
             </div>
 
-            <Input
-              label="Họ tên người liên hệ"
-              value={formData.emergencyContact.name}
-              onChange={(e) => handleInputChange('emergencyContact.name', e.target.value)}
-              placeholder="Nhập họ tên"
-              error={errors['emergencyContact.name']}
-              icon={<User />}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nhóm máu (tùy chọn)
+              </label>
+              <select
+                value={formData.bloodTypeId}
+                onChange={(e) => handleInputChange('bloodTypeId', e.target.value)}
+                className="input-field"
+              >
+                <option value="">Chọn nhóm máu (có thể bỏ qua)</option>
+                {bloodTypes.map((bloodType) => (
+                  <option key={bloodType.id} value={bloodType.id}>
+                    {bloodType.typeName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <Input
-              label="Số điện thoại"
-              value={formData.emergencyContact.phone}
-              onChange={(e) => handleInputChange('emergencyContact.phone', e.target.value)}
-              placeholder="Nhập số điện thoại"
-              error={errors['emergencyContact.phone']}
-              icon={<Phone />}
-              required
-            />
-
-            <Input
-              label="Mối quan hệ"
-              value={formData.emergencyContact.relationship}
-              onChange={(e) => handleInputChange('emergencyContact.relationship', e.target.value)}
-              placeholder="Ví dụ: Vợ/chồng, Con, Bố/mẹ..."
-              error={errors['emergencyContact.relationship']}
-              required
-            />
+            {errors.general && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 text-sm">{errors.general}</p>
+              </div>
+            )}
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
@@ -452,7 +434,7 @@ const Register = () => {
 
             <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="font-medium">{formData.firstName} {formData.lastName}</span>
+                <span className="font-medium">{formData.fullName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Email:</span>
@@ -460,15 +442,16 @@ const Register = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Số điện thoại:</span>
-                <span className="font-medium">{formData.phone}</span>
+                <span className="font-medium">{formData.phoneNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Nhóm máu:</span>
-                <span className="font-medium text-red-600">{formData.bloodType}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Người liên hệ khẩn cấp:</span>
-                <span className="font-medium">{formData.emergencyContact.name}</span>
+                <span className="font-medium text-red-600">
+                  {formData.bloodTypeId
+                    ? bloodTypes.find(bt => bt.id == formData.bloodTypeId)?.typeName?.replace('_', '') || ''
+                    : 'Chưa cập nhật'
+                  }
+                </span>
               </div>
             </div>
 
@@ -554,7 +537,7 @@ const Register = () => {
           <p className="text-gray-600">Tham gia cộng đồng hiến máu để cứu sống nhiều người</p>
         </div>
 
-        <div className="mb-8 ">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
@@ -564,8 +547,8 @@ const Register = () => {
               return (
                 <div key={step.id} className="flex flex-col items-center flex-1 overflow-hidden">
                   <div className={`relative top-1 flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 mb-2 ${isCompleted ? 'bg-green-500 border-green-500 text-white shadow-lg' :
-                      isActive ? 'bg-red-500 border-red-500 text-white shadow-lg scale-110' :
-                        'bg-white border-gray-300 text-gray-400'
+                    isActive ? 'bg-red-500 border-red-500 text-white shadow-lg scale-110' :
+                      'bg-white border-gray-300 text-gray-400'
                     }`}>
                     {isCompleted ? (
                       <Check className="w-6 h-6" />
@@ -576,8 +559,8 @@ const Register = () => {
 
                   <div className="text-center">
                     <p className={`text-sm font-medium transition-colors ${isActive ? 'text-red-600' :
-                        isCompleted ? 'text-green-600' :
-                          'text-gray-500'
+                      isCompleted ? 'text-green-600' :
+                        'text-gray-500'
                       }`}>
                       {step.title}
                     </p>
@@ -585,8 +568,6 @@ const Register = () => {
                       Bước {step.id}
                     </p>
                   </div>
-
-                
                 </div>
               );
             })}
@@ -615,6 +596,7 @@ const Register = () => {
                   onClick={handlePrevious}
                   icon={<ArrowLeft />}
                   iconPosition="left"
+                  disabled={isSubmitting}
                 >
                   Quay lại
                 </Button>
@@ -628,14 +610,16 @@ const Register = () => {
             </div>
 
             <div>
-              {currentStep < 5 ? (
+              {currentStep < 4 ? (
                 <Button
                   variant="primary"
                   onClick={handleNext}
                   icon={<ArrowRight />}
                   iconPosition="right"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
                 >
-                  Tiếp tục
+                  {isSubmitting ? 'Đang xử lý...' : 'Tiếp tục'}
                 </Button>
               ) : (
                 <Button
@@ -646,7 +630,7 @@ const Register = () => {
                   icon={<CheckCircle />}
                   iconPosition="right"
                 >
-                  {isSubmitting ? 'Đang tạo tài khoản...' : 'Hoàn tất đăng ký'}
+                  {isSubmitting ? 'Đang hoàn tất...' : 'Hoàn tất đăng ký'}
                 </Button>
               )}
             </div>

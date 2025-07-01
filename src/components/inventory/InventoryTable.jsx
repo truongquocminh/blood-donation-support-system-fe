@@ -1,11 +1,11 @@
 import React from 'react';
 import { Edit, Trash2, Droplets, AlertTriangle, CheckCircle, Package, Loader2 } from 'lucide-react';
 
-const InventoryTable = ({ 
-  inventories, 
-  bloodTypes, 
-  bloodComponents, 
-  onEdit, 
+const InventoryTable = ({
+  inventories,
+  bloodTypes,
+  bloodComponents,
+  onEdit,
   onDelete,
   searchTerm,
   filterType,
@@ -21,14 +21,14 @@ const InventoryTable = ({
 
   const getComponentName = (componentId) => {
     if (!componentId || !bloodComponents || bloodComponents.length === 0) return 'N/A';
-    const component = bloodComponents.find(c => c.id === componentId);
+    const component = bloodComponents.find(c => c.componentId === componentId);
     return component ? component.componentName : `ID: ${componentId}`;
   };
 
   const isExpiringSoon = (lastUpdated) => {
     const expiryDate = new Date(lastUpdated);
     expiryDate.setDate(expiryDate.getDate() + 35);
-    
+
     const today = new Date();
     const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
     return diffDays <= 7 && diffDays >= 0;
@@ -45,16 +45,16 @@ const InventoryTable = ({
   };
 
   const filteredInventories = inventories.filter(inventory => {
-    const bloodTypeName = getBloodTypeName(inventory.bloodType);
-    const componentName = getComponentName(inventory.bloodComponent);
-    
-    const matchesSearch = searchTerm === '' || 
+    const bloodTypeName = getBloodTypeName(inventory.bloodTypeId);
+    const componentName = getComponentName(inventory.bloodComponentId);
+
+    const matchesSearch = searchTerm === '' ||
       bloodTypeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       componentName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = filterType === '' || inventory.bloodType?.toString() === filterType;
-    const matchesComponent = filterComponent === '' || inventory.bloodComponent?.toString() === filterComponent;
-    
+
+    const matchesType = filterType === '' || inventory.bloodTypeId?.toString() === filterType;
+    const matchesComponent = filterComponent === '' || inventory.bloodComponentId?.toString() === filterComponent;
+
     return matchesSearch && matchesType && matchesComponent;
   });
 
@@ -67,7 +67,7 @@ const InventoryTable = ({
         </span>
       );
     }
-    
+
     if (isLowStock(inventory.quantity)) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -76,7 +76,7 @@ const InventoryTable = ({
         </span>
       );
     }
-    
+
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
         <CheckCircle className="w-3 h-3 mr-1" />
@@ -130,7 +130,7 @@ const InventoryTable = ({
           </div>
         )}
       </div>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -183,11 +183,11 @@ const InventoryTable = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                       <Droplets className="w-3 h-3 mr-1" />
-                      {getBloodTypeName(inventory.bloodType)}
+                      {getBloodTypeName(inventory.bloodTypeId)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getComponentName(inventory.bloodComponent)}
+                    {getComponentName(inventory.bloodComponentId)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span className={`font-medium ${isLowStock(inventory.quantity) ? 'text-red-600' : ''}`}>

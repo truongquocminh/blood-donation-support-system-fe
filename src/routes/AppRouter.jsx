@@ -67,8 +67,8 @@ const AppRouter = () => {
         <Route
           path={ROUTES.REGISTER}
           element={
-            isAuthenticated ?
-              <Navigate to={getDefaultRoute()} replace /> :
+            // isAuthenticated ?
+            //   <Navigate to={getDefaultRoute()} replace /> :
               <Register />
           }
         />

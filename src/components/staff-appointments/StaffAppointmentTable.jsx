@@ -1,17 +1,72 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Eye, UserCheck, Calendar, Clock,
-  CheckCircle, XCircle, AlertTriangle
+  CheckCircle, XCircle, AlertTriangle, User
 } from 'lucide-react';
 import { APPOINTMENT_STATUS } from '../../utils/constants';
+import { getUserById } from '../../services/userService';
 
 const StaffAppointmentTable = ({
   appointments,
   loading,
   onStatusUpdate,
   onViewDetails,
-  onHealthCheck
+  onHealthCheck,
 }) => {
+  const [userCache, setUserCache] = useState({}); 
+  const [loadingUsers, setLoadingUsers] = useState(new Set());  
+
+  const fetchUserInfo = async (userId) => {
+    if (userCache[userId]) {
+      return userCache[userId];
+    }
+
+    if (loadingUsers.has(userId)) {
+      return null;
+    }
+
+    try {
+      setLoadingUsers(prev => new Set([...prev, userId]));
+      
+      const userData = await getUserById(userId);
+      
+      setUserCache(prev => ({
+        ...prev,
+        [userId]: userData.data.data
+      }));
+      
+      return userData.data.data;
+    } catch (error) {
+      console.error(`Error fetching user ${userId}:`, error);
+      setUserCache(prev => ({
+        ...prev,
+        [userId]: { error: true, fullName: 'Không tìm thấy', email: '' }
+      }));
+      return null;
+    } finally {
+      setLoadingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    }
+  };
+
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      const userIds = [...new Set(appointments.map(apt => apt.userId))];
+      
+      const promises = userIds
+        .filter(userId => !userCache[userId])
+        .map(userId => fetchUserInfo(userId));
+      
+      await Promise.all(promises);
+    };
+
+    if (appointments.length > 0) {
+      fetchAllUsers();
+    }
+  }, [appointments]);
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -112,22 +167,92 @@ const StaffAppointmentTable = ({
 
   const sortedAppointments = [...appointments].sort((a, b) => {
     const now = new Date();
-
     const aDate = new Date(a.appointmentDate);
     const bDate = new Date(b.appointmentDate);
 
-    const aCancelled = a.status === APPOINTMENT_STATUS.CANCELLED;
-    const bCancelled = b.status === APPOINTMENT_STATUS.CANCELLED;
+    const isOverdue = (date, status) =>
+      date < now && [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(status);
 
-    if (aCancelled && !bCancelled) return 1;
-    if (!aCancelled && bCancelled) return -1;
+    const getPriority = (status) => {
+      switch (status) {
+        case APPOINTMENT_STATUS.PENDING:
+          return 1;
+        case APPOINTMENT_STATUS.SCHEDULED:
+          return 2;
+        case APPOINTMENT_STATUS.COMPLETED:
+          return 3;
+        case APPOINTMENT_STATUS.CANCELLED:
+          return 4;
+        default:
+          return 5;
+      }
+    };
+
+    const aOverdue = isOverdue(aDate, a.status);
+    const bOverdue = isOverdue(bDate, b.status);
+
+    if (aOverdue !== bOverdue) {
+      return aOverdue ? 1 : -1;
+    }
+
+    const aPriority = getPriority(a.status);
+    const bPriority = getPriority(b.status);
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
 
     const aDiff = Math.abs(aDate - now);
     const bDiff = Math.abs(bDate - now);
-
     return aDiff - bDiff;
   });
 
+  const UserInfo = ({ userId }) => {
+    const user = userCache[userId];
+    const isLoading = loadingUsers.has(userId);
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          <span className="text-sm text-gray-500">Đang tải...</span>
+        </div>
+      );
+    }
+
+    if (!user) {
+      return (
+        <div className="flex items-center space-x-2">
+          <User className="w-4 h-4 text-gray-400" />
+          <div>
+            <div className="text-sm text-gray-500">ID: {userId}</div>
+            <div className="text-xs text-gray-400">Chưa tải được thông tin</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (user.error) {
+      return (
+        <div className="flex items-center space-x-2">
+          <User className="w-4 h-4 text-red-400" />
+          <div>
+            <div className="text-sm text-red-500">ID: {userId}</div>
+            <div className="text-xs text-red-400">Không tìm thấy thông tin</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center space-x-2">
+        <User className="w-4 h-4 text-gray-400" />
+        <div>
+          <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
+          <div className="text-xs text-gray-500">{user.email}</div>
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -163,7 +288,7 @@ const StaffAppointmentTable = ({
                   ID Lịch hẹn
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Người dùng
+                  Thông tin người dùng
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Thời gian hẹn
@@ -186,9 +311,7 @@ const StaffAppointmentTable = ({
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {appointment.userId}
-                    </div>
+                    <UserInfo userId={appointment.userId} />
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">

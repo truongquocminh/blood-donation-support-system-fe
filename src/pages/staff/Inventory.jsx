@@ -155,7 +155,6 @@ const Inventory = () => {
     try {
       setLoading(true);
       const res = await getInventories(currentPage, pageSize);
-      
       if (res.status === 200 && res.data.data) {
         const { content, page } = res.data.data;
         setInventories(content);
@@ -277,7 +276,7 @@ const Inventory = () => {
                   >
                     <option value="">Tất cả thành phần</option>
                     {bloodComponents.map(component => (
-                      <option key={component.id} value={component.id}>
+                      <option key={component.bloodComponentId} value={component.bloodComponentId}>
                         {component.componentName}
                       </option>
                     ))}
