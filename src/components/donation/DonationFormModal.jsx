@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Heart, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 
 const DonationFormModal = ({
@@ -6,7 +6,8 @@ const DonationFormModal = ({
   onClose,
   onSubmit,
   bloodTypes,
-  bloodComponents
+  bloodComponents,
+  healthCheck = null
 }) => {
   const [formData, setFormData] = useState({
     donationDate: '',
@@ -16,6 +17,18 @@ const DonationFormModal = ({
     notes: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill form when healthCheck is provided
+  useEffect(() => {
+    if (healthCheck && isOpen) {
+      setFormData(prev => ({
+        ...prev,
+        bloodType: healthCheck.bloodTypeId ? healthCheck.bloodTypeId.toString() : '',
+        notes: `Đăng ký hiến máu dựa trên kết quả kiểm tra sức khỏe #${healthCheck.healthCheckId}`
+      }));
+    }
+  }, [healthCheck, isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -23,8 +36,6 @@ const DonationFormModal = ({
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
-
-
   };
 
   const validateForm = () => {
@@ -57,12 +68,10 @@ const DonationFormModal = ({
       }
     }
 
-
-
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const validationErrors = validateForm();
@@ -71,22 +80,45 @@ const DonationFormModal = ({
       return;
     }
 
-    onSubmit({
-      ...formData,
-      bloodType: parseInt(formData.bloodType),
-      bloodComponent: parseInt(formData.bloodComponent),
-      volumeMl: parseInt(formData.volumeMl),
-      notes: formData.notes.trim() || 'Đăng ký hiến máu mới'
-    });
+    setIsSubmitting(true);
 
-    setFormData({
-      donationDate: '',
-      bloodType: '',
-      bloodComponent: '',
-      volumeMl: '',
-      notes: ''
-    });
-    setErrors({});
+    try {
+      await onSubmit({
+        ...formData,
+        bloodType: parseInt(formData.bloodType),
+        bloodComponent: parseInt(formData.bloodComponent),
+        volumeMl: parseInt(formData.volumeMl),
+        notes: formData.notes.trim() || 'Đăng ký hiến máu mới'
+      });
+
+      // Reset form
+      setFormData({
+        donationDate: '',
+        bloodType: '',
+        bloodComponent: '',
+        volumeMl: '',
+        notes: ''
+      });
+      setErrors({});
+    } catch (error) {
+      console.error('Error submitting donation:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      setFormData({
+        donationDate: '',
+        bloodType: '',
+        bloodComponent: '',
+        volumeMl: '',
+        notes: ''
+      });
+      setErrors({});
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -102,8 +134,10 @@ const DonationFormModal = ({
     }
   };
 
+  const selectedBloodType = bloodTypes.find(bt => bt.id === parseInt(formData.bloodType));
+
   return (
-    <div className="mt-0-important fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -115,12 +149,34 @@ const DonationFormModal = ({
             </h3>
           </div>
           <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Health Check Info Banner */}
+        {healthCheck && (
+          <div className="p-4 bg-green-50 border-b border-green-200">
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-green-700">
+                <p className="font-medium mb-1">Dựa trên kết quả kiểm tra sức khỏe</p>
+                <div className="space-y-1 text-xs">
+                  <div>• Kiểm tra lúc: {new Date(healthCheck.checkedAt).toLocaleString('vi-VN')}</div>
+                  <div>• Kết quả: Đủ điều kiện hiến máu</div>
+                  {healthCheck.bloodTypeName && (
+                    <div>• Nhóm máu xác nhận: {healthCheck.bloodTypeName}</div>
+                  )}
+                  <div>• Nhịp tim: {healthCheck.pulse} bpm</div>
+                  <div>• Huyết áp: {healthCheck.bloodPressure !== 'string' ? healthCheck.bloodPressure : 'Chưa đo'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="p-6 bg-blue-50 border-b border-blue-200">
           <div className="flex items-start space-x-3">
@@ -131,7 +187,7 @@ const DonationFormModal = ({
                 <li>• Bạn phải đủ 18 tuổi và cân nặng tối thiểu 45kg</li>
                 <li>• Khoảng cách giữa 2 lần hiến máu tối thiểu 12 tuần</li>
                 <li>• Sức khỏe tốt, không bị bệnh truyền nhiễm</li>
-                <li>• Sẽ có kiểm tra sức khỏe trước khi hiến máu</li>
+                <li>• Ngày hiến máu phải sau ngày hôm nay</li>
               </ul>
             </div>
           </div>
@@ -154,8 +210,10 @@ const DonationFormModal = ({
                 type="date"
                 value={formData.donationDate}
                 onChange={(e) => handleInputChange('donationDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.donationDate ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
+                  errors.donationDate ? 'border-red-500' : 'border-gray-300'
+                } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
               />
               {errors.donationDate && <p className="text-sm text-red-500 mt-1">{errors.donationDate}</p>}
@@ -168,18 +226,26 @@ const DonationFormModal = ({
               <select
                 value={formData.bloodType}
                 onChange={(e) => handleInputChange('bloodType', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.bloodType ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                disabled={isSubmitting || (healthCheck && healthCheck.bloodTypeId)}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
+                  errors.bloodType ? 'border-red-500' : 'border-gray-300'
+                } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''} ${
+                  (healthCheck && healthCheck.bloodTypeId) ? 'bg-gray-100' : ''
+                }`}
               >
                 <option value="">Chọn nhóm máu</option>
                 {bloodTypes.map(type => (
                   <option key={type.id} value={type.id}>
                     {type.typeName}
                   </option>
-
                 ))}
               </select>
               {errors.bloodType && <p className="text-sm text-red-500 mt-1">{errors.bloodType}</p>}
+              {(healthCheck && healthCheck.bloodTypeId) && (
+                <p className="text-xs text-green-600 mt-1">
+                  Nhóm máu đã được xác nhận từ kết quả kiểm tra sức khỏe
+                </p>
+              )}
             </div>
           </div>
 
@@ -196,16 +262,17 @@ const DonationFormModal = ({
                     handleInputChange('volumeMl', getRecommendedVolume(e.target.value));
                   }
                 }}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.bloodComponent ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
+                  errors.bloodComponent ? 'border-red-500' : 'border-gray-300'
+                } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <option value="">Chọn thành phần máu</option>
-                {bloodTypes.find(bt => bt.id === parseInt(formData.bloodType))?.components.map(comp => (
+                {selectedBloodType?.components?.map(comp => (
                   <option key={comp.componentId} value={comp.componentId}>
                     {comp.componentName}
                   </option>
                 )) || []}
-
               </select>
               {errors.bloodComponent && <p className="text-sm text-red-500 mt-1">{errors.bloodComponent}</p>}
             </div>
@@ -220,8 +287,10 @@ const DonationFormModal = ({
                 max="500"
                 value={formData.volumeMl}
                 onChange={(e) => handleInputChange('volumeMl', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${errors.volumeMl ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-red-500 focus:border-red-500 ${
+                  errors.volumeMl ? 'border-red-500' : 'border-gray-300'
+                } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 placeholder="Nhập thể tích máu"
               />
               {errors.volumeMl && <p className="text-sm text-red-500 mt-1">{errors.volumeMl}</p>}
@@ -237,7 +306,10 @@ const DonationFormModal = ({
               value={formData.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               placeholder="Thêm ghi chú (không bắt buộc)..."
             />
           </div>
@@ -256,16 +328,25 @@ const DonationFormModal = ({
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
-              Đăng ký hiến máu
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Đang đăng ký...
+                </>
+              ) : (
+                'Đăng ký hiến máu'
+              )}
             </button>
           </div>
         </form>

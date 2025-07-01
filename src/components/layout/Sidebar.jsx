@@ -4,7 +4,8 @@ import {
   X, Home, Calendar, User, Award, History, Users,
   BarChart3, Settings, FileText, MapPin, Package,
   Heart, Shield, Database, ChevronDown, ChevronRight,
-  Search
+  Search,
+  HeartPulse
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { ROUTES } from '../../utils/constants';
@@ -136,6 +137,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             icon: User,
             label: 'Hồ sơ cá nhân',
             path: ROUTES.MEMBER_PROFILE,
+            badge: null
+          },
+          {
+            icon: HeartPulse,
+            label: 'Kiểm tra sức khỏe',
+            path: ROUTES.MEMBER_HEALTH_CHECK,
             badge: null
           },
           {

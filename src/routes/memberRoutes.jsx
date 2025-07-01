@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import BloodLookupPage from '../pages/member/BloodLookupPage';
 
 const MemberDashboard = lazy(() => import('../pages/member/Dashboard'));
 const MemberProfile = lazy(() => import('../pages/member/Profile'));
@@ -10,6 +9,8 @@ const MemberDonations = lazy(() => import('../pages/member/Donations'));
 const Appointments = lazy(() => import('../pages/member/Appointments'));
 const MemberRewards = lazy(() => import('../pages/member/Rewards'));
 const Reminders = lazy(() => import('../pages/member/Reminders'));
+const BloodLookupPage = lazy(() => import('../pages/member/BloodLookupPage'));
+const HealthCheck = lazy(() => import('../pages/member/HealthCheck'));
 
 const MemberRoutes = () => {
   return (
@@ -26,6 +27,7 @@ const MemberRoutes = () => {
           <Route path="appointments" element={<Appointments />} />
           <Route path="reminders" element={<Reminders />} />
           <Route path="lookup" element={<BloodLookupPage />} />
+          <Route path="health-check" element={<HealthCheck />} />
           <Route path="rewards" element={<MemberRewards />} />
         </Routes>
       </Suspense>

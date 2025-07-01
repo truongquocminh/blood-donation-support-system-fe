@@ -60,6 +60,7 @@ export const ROUTES = {
   MEMBER_DONATIONS: "/member/donations",
   MEMBER_REMINDERS: "/member/reminders",
   MEMBER_LOOKUP: "/member/lookup",
+  MEMBER_HEALTH_CHECK: "/member/health-check",
 
   STAFF_DASHBOARD: "/staff/dashboard",
   STAFF_APPOINTMENTS: "/staff/appointments",

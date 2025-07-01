@@ -14,7 +14,7 @@ export const createBloodDonation = async (donationData) => {
     bloodComponent,
     volumeMl,
     status = "PENDING",
-    healthCheck = 0,
+    healthCheck,
   } = donationData;
 
   const payload = {
