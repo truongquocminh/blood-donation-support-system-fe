@@ -96,38 +96,26 @@ const Inventory = () => {
   };
 
   const handleAddBloodType = async (bloodTypeData) => {
-    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleEditBloodType = async (id, bloodTypeData) => {
-    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleDeleteBloodType = async (id) => {
-    // Không cần xử lý ở đây nữa, để BloodTypeManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleAddBloodComponent = async (componentData) => {
-    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleEditBloodComponent = async (id, componentData) => {
-    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 
   const handleDeleteBloodComponent = async (id) => {
-    // Không cần xử lý ở đây nữa, để BloodComponentManager tự xử lý
-    // Chỉ cần refresh data
     await fetchBloodData();
   };
 

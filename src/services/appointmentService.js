@@ -74,8 +74,6 @@ export default {
   getAppointmentById,
   deleteAppointment,
   updateAppointmentStatus,
-  getAppointmentHealthCheck,
-  createAppointmentHealthCheck,
   getUserAppointments,
   filterAppointments,
 };

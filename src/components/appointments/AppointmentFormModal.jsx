@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, Info, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AppointmentFormModal = ({ 
   isOpen, 
@@ -9,9 +10,9 @@ const AppointmentFormModal = ({
   const [formData, setFormData] = useState({
     appointmentDate: '',
     appointmentTime: '',
-    notes: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -54,7 +55,7 @@ const AppointmentFormModal = ({
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const validationErrors = validateForm();
@@ -63,19 +64,37 @@ const AppointmentFormModal = ({
       return;
     }
 
-    const appointmentDateTime = new Date(`${formData.appointmentDate}T${formData.appointmentTime}:00`);
+    setIsSubmitting(true);
+    
+    try {
+      const appointmentDateTime = new Date(`${formData.appointmentDate}T${formData.appointmentTime}:00`);
 
-    onSubmit({
-      appointmentDate: appointmentDateTime.toISOString(),
-      notes: formData.notes.trim() || 'Đặt lịch hẹn hiến máu'
-    });
+      await onSubmit({
+        appointmentDate: appointmentDateTime.toISOString(),
+      });
 
-    setFormData({
-      appointmentDate: '',
-      appointmentTime: '',
-      notes: ''
-    });
-    setErrors({});
+      setFormData({
+        appointmentDate: '',
+        appointmentTime: '',
+      });
+      setErrors({});
+    } catch (error) {
+      console.error('Error submitting appointment:', error);
+      toast.error('Có lỗi xảy ra khi đặt lịch hẹn');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      setFormData({
+        appointmentDate: '',
+        appointmentTime: '',
+      });
+      setErrors({});
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -97,8 +116,9 @@ const AppointmentFormModal = ({
             <h3 className="text-lg font-semibold text-gray-900">Đặt lịch hẹn</h3>
           </div>
           <button
-            onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -129,9 +149,10 @@ const AppointmentFormModal = ({
                   type="date"
                   value={formData.appointmentDate}
                   onChange={(e) => handleInputChange('appointmentDate', e.target.value)}
+                  disabled={isSubmitting}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm ${
                     errors.appointmentDate ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                   min={new Date().toISOString().split('T')[0]}
                   max={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 />
@@ -145,9 +166,10 @@ const AppointmentFormModal = ({
                 <select
                   value={formData.appointmentTime}
                   onChange={(e) => handleInputChange('appointmentTime', e.target.value)}
+                  disabled={isSubmitting}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm ${
                     errors.appointmentTime ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <option value="">Chọn giờ</option>
                   {timeSlots.map(time => (
@@ -158,19 +180,6 @@ const AppointmentFormModal = ({
                 </select>
                 {errors.appointmentTime && <p className="text-xs text-red-500 mt-1">{errors.appointmentTime}</p>}
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ghi chú (tùy chọn)
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                placeholder="Ví dụ: Có tiền sử dị ứng thuốc ABC..."
-              />
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -192,16 +201,25 @@ const AppointmentFormModal = ({
             <div className="flex space-x-3 pt-2">
               <button
                 type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Đặt lịch hẹn
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Đang đặt lịch...
+                  </>
+                ) : (
+                  'Đặt lịch hẹn'
+                )}
               </button>
             </div>
           </form>

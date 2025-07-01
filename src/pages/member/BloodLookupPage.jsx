@@ -56,7 +56,6 @@ const BloodLookupPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
       <div className="bg-gradient-to-r from-red-600 to-red-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
@@ -72,7 +71,6 @@ const BloodLookupPage = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
@@ -106,11 +104,9 @@ const BloodLookupPage = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeView === 'search' ? (
           <div className="space-y-8">
-            {/* Quick Search Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <CompatibilitySearchWidget 
@@ -120,7 +116,6 @@ const BloodLookupPage = () => {
               </div>
               
               <div className="space-y-6">
-                {/* Quick Stats */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Thống kê hệ thống</h3>
                   <div className="space-y-4">
@@ -141,7 +136,6 @@ const BloodLookupPage = () => {
                   </div>
                 </div>
 
-                {/* Quick Access */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Truy cập nhanh</h3>
                   <div className="space-y-3">
@@ -171,7 +165,6 @@ const BloodLookupPage = () => {
               </div>
             </div>
 
-            {/* Educational Content */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-4">

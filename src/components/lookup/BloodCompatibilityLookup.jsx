@@ -11,7 +11,7 @@ const BloodCompatibilityLookup = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBloodType, setFilterBloodType] = useState('');
   const [filterComponent, setFilterComponent] = useState('');
-  const [viewMode, setViewMode] = useState('matrix'); // 'matrix' or 'list'
+  const [viewMode, setViewMode] = useState('matrix');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -123,7 +123,6 @@ const BloodCompatibilityLookup = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -172,7 +171,6 @@ const BloodCompatibilityLookup = () => {
           </div>
         </div>
 
-        {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 mb-4">
             <div className="flex-1">
@@ -248,7 +246,6 @@ const BloodCompatibilityLookup = () => {
           )}
         </div>
 
-        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="flex items-center">
@@ -299,7 +296,6 @@ const BloodCompatibilityLookup = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         {viewMode === 'matrix' ? (
           <MatrixView 
             filteredTypes={filteredTypes} 
@@ -316,7 +312,6 @@ const BloodCompatibilityLookup = () => {
           />
         )}
 
-        {/* Information Panel */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-6">
           <div className="flex items-start space-x-3">
             <Info className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -338,7 +333,6 @@ const BloodCompatibilityLookup = () => {
   );
 };
 
-// Matrix View Component
 const MatrixView = ({ filteredTypes, filteredComponents, isCompatible, getComponentDisplayName }) => {
   if (filteredTypes.length === 0 || filteredComponents.length === 0) {
     return (
@@ -419,7 +413,6 @@ const MatrixView = ({ filteredTypes, filteredComponents, isCompatible, getCompon
   );
 };
 
-// List View Component
 const ListView = ({ filteredTypes, filteredComponents, isCompatible, getComponentDisplayName }) => {
   if (filteredTypes.length === 0) {
     return (

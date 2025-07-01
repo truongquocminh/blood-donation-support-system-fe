@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import { APPOINTMENT_STATUS } from '../../utils/constants'; 
 
 const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
