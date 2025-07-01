@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, Clock, CheckCircle, XCircle, Calendar, Heart } from 'lucide-react';
+import { BLOOD_DONATION_STATUS } from '../../utils/constants';
 
 const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -19,13 +20,13 @@ const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
 const DonorStats = ({ donations }) => {
   const totalDonations = donations.length;
   
-  const pendingDonations = donations.filter(d => d.status === 'PENDING').length;
+  const pendingDonations = donations.filter(d => d.status === BLOOD_DONATION_STATUS.PENDING).length;
   
-  const confirmedDonations = donations.filter(d => d.status === 'CONFIRMED').length;
+  const approvedDonations = donations.filter(d => d.status === BLOOD_DONATION_STATUS.APPROVED).length;
   
-  const completedDonations = donations.filter(d => d.status === 'COMPLETED').length;
+  const completedDonations = donations.filter(d => d.status === BLOOD_DONATION_STATUS.COMPLETED).length;
   
-  const rejectedDonations = donations.filter(d => d.status === 'REJECTED').length;
+  const rejectedDonations = donations.filter(d => d.status === BLOOD_DONATION_STATUS.REJECTED).length;
 
   const todayDonations = donations.filter(d => {
     const today = new Date();
@@ -34,7 +35,7 @@ const DonorStats = ({ donations }) => {
   }).length;
 
   const totalVolume = donations
-    .filter(d => d.status === 'COMPLETED')
+    .filter(d => d.status === BLOOD_DONATION_STATUS.COMPLETED)
     .reduce((sum, d) => sum + d.volumeMl, 0);
 
   return (
@@ -56,10 +57,10 @@ const DonorStats = ({ donations }) => {
       />
       
       <StatsCard
-        title="Đã xác nhận"
-        value={confirmedDonations}
+        title="Đã phê duyệt"
+        value={approvedDonations}
         icon={Calendar}
-        color="text-green-600"
+        color="text-blue-600"
         subtitle="Sẵn sàng hiến"
       />
       

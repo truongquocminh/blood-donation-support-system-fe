@@ -4,6 +4,7 @@ import ReminderFilters from '../../components/reminder/ReminderFilters';
 import ReminderTable from '../../components/reminder/ReminderTable';
 import ReminderForm from '../../components/reminder/ReminderForm';
 import ReminderDetailModal from '../../components/reminder/ReminderDetailModal';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import HandleLoading from '../../components/common/HandleLoading';
 import { getReminders, createReminder, updateReminder, deleteReminder, getReminderById } from '../../services/reminderService';
 import { REMINDER_TYPE } from '../../utils/constants';
@@ -28,6 +29,10 @@ const Reminders = () => {
   const [editingReminder, setEditingReminder] = useState(null);
   const [detailReminder, setDetailReminder] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedReminderId, setSelectedReminderId] = useState(null);
+  const [isDeletingReminder, setIsDeletingReminder] = useState(false);
 
   const fetchReminders = async (page = 0, size = 10, resetData = false) => {
     try {
@@ -109,26 +114,43 @@ const Reminders = () => {
       }
     } catch (error) {
       console.error('Error fetching reminder detail:', error);
+      toast.error('Không thể tải chi tiết nhắc nhở');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (reminderId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa nhắc nhở này?')) {
-      try {
-        setLoading(true);
-        const response = await deleteReminder(reminderId);
+  const handleDelete = (reminder) => {
+    setSelectedReminderId(reminder);
+    setShowConfirmModal(true);
+  };
 
-        if (response.status === 200) {
-          await fetchReminders(pagination.number, pagination.size, true);
-        }
-      } catch (error) {
-        console.error('Error deleting reminder:', error);
-      } finally {
-        setLoading(false);
+  const confirmDeleteReminder = async () => {
+    if (!selectedReminderId) return;
+
+    try {
+      setIsDeletingReminder(true);
+      const response = await deleteReminder(selectedReminderId);
+
+      if (response.status === 200) {
+        await fetchReminders(pagination.number, pagination.size, true);
+        toast.success('Xóa nhắc nhở thành công');
+      } else {
+        toast.error('Không thể xóa nhắc nhở. Vui lòng thử lại.');
       }
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
+      toast.error('Có lỗi xảy ra khi xóa nhắc nhở');
+    } finally {
+      setIsDeletingReminder(false);
+      setShowConfirmModal(false);
+      setSelectedReminderId(null);
     }
+  };
+
+  const cancelDeleteModal = () => {
+    setShowConfirmModal(false);
+    setSelectedReminderId(null);
   };
 
   const handleFormSubmit = async (formData) => {
@@ -146,10 +168,13 @@ const Reminders = () => {
         await fetchReminders(pagination.number, pagination.size, true);
         setIsFormOpen(false);
         setEditingReminder(null);
-        toast.success(`${editingReminder ? 'Cập nhập thành công' : 'Tạo nhắc nhở thành công'}`)
+        toast.success(`${editingReminder ? 'Cập nhật thành công' : 'Tạo nhắc nhở thành công'}`)
+      } else {
+        toast.error(`${editingReminder ? 'Cập nhật thất bại' : 'Tạo nhắc nhở thất bại'}`);
       }
     } catch (error) {
       console.error('Error saving reminder:', error);
+      toast.error('Có lỗi xảy ra khi lưu nhắc nhở');
     } finally {
       setLoading(false);
     }
@@ -230,6 +255,18 @@ const Reminders = () => {
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
           reminder={detailReminder}
+        />
+
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          title="Xác nhận xóa nhắc nhở"
+          message={`Bạn có chắc chắn muốn xóa nhắc nhở này? Hành động này không thể hoàn tác.`}
+          onConfirm={confirmDeleteReminder}
+          onCancel={cancelDeleteModal}
+          confirmText={isDeletingReminder ? "Đang xóa..." : "Xóa nhắc nhở"}
+          cancelText="Hủy"
+          confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+          type="danger"
         />
       </div>
     </>

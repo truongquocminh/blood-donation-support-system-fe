@@ -19,7 +19,6 @@ const DonationFormModal = ({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Pre-fill form when healthCheck is provided
   useEffect(() => {
     if (healthCheck && isOpen) {
       setFormData(prev => ({
@@ -91,7 +90,6 @@ const DonationFormModal = ({
         notes: formData.notes.trim() || 'Đăng ký hiến máu mới'
       });
 
-      // Reset form
       setFormData({
         donationDate: '',
         bloodType: '',

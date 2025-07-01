@@ -17,12 +17,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
 
   const getNavigationItems = () => {
     const baseItems = [
-      {
-        icon: Home,
-        label: 'Trang chủ',
-        path: ROUTES.HOME,
-        badge: null
-      }
+      // {
+      //   icon: Home,
+      //   label: 'Trang chủ',
+      //   path: ROUTES.HOME,
+      //   badge: null
+      // }
     ];
 
     switch (userType) {

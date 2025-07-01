@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calendar, Filter, Heart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { createBloodDonation, getBloodDonations } from '../../services/bloodDonationService';
+import { createBloodDonation, getBloodDonations, updateBloodDonationStatus } from '../../services/bloodDonationService';
 import DonationStats from '../../components/donation/DonationStats';
 import DonationHistory from '../../components/donation/DonationHistory';
 import DonationFormModal from '../../components/donation/DonationFormModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { BLOOD_DONATION_STATUS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 import { getBloodTypes } from '../../services/bloodTypeService';
 
 const DONATION_STATUSES = {
   PENDING: 'Chờ xác nhận',
-  CONFIRMED: 'Đã xác nhận',
+  APPROVED: 'Đã phê duyệt',
   COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã hủy',
   REJECTED: 'Bị từ chối'
@@ -29,6 +30,10 @@ const Donations = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedDonationId, setSelectedDonationId] = useState(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     loadDonations();
@@ -186,18 +191,43 @@ const Donations = () => {
     }
   };
 
+  const handleCancelDonation = (donationId) => {
+    setSelectedDonationId(donationId);
+    setShowConfirmModal(true);
+  };
 
-  const handleCancelDonation = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn hủy đăng ký hiến máu này?')) {
-      setDonations(prev =>
-        prev.map(donation =>
-          donation.id === id
-            ? { ...donation, status: 'CANCELLED', notes: 'Đã hủy bởi người dùng' }
-            : donation
-        )
-      );
-      toast.success('Đã hủy đăng ký hiến máu');
+  const confirmCancelDonation = async () => {
+    if (!selectedDonationId) return;
+
+    try {
+      setIsUpdatingStatus(true);
+      const response = await updateBloodDonationStatus(selectedDonationId, BLOOD_DONATION_STATUS.CANCELLED);
+      
+      if (response.success) {
+        setDonations(prev =>
+          prev.map(donation =>
+            donation.donationId === selectedDonationId
+              ? { ...donation, status: BLOOD_DONATION_STATUS.CANCELLED }
+              : donation
+          )
+        );
+        toast.success('Đã hủy đăng ký hiến máu thành công');
+      } else {
+        toast.error('Không thể hủy đăng ký hiến máu. Vui lòng thử lại.');
+      }
+    } catch (error) {
+      console.error('Error cancelling donation:', error);
+      toast.error('Có lỗi xảy ra khi hủy đăng ký');
+    } finally {
+      setIsUpdatingStatus(false);
+      setShowConfirmModal(false);
+      setSelectedDonationId(null);
     }
+  };
+
+  const cancelConfirmModal = () => {
+    setShowConfirmModal(false);
+    setSelectedDonationId(null);
   };
 
   const filteredDonations = donations.filter(donation => {
@@ -288,7 +318,6 @@ const Donations = () => {
         onCancel={handleCancelDonation}
       />
 
-
       <Pagination />
 
       <DonationFormModal
@@ -299,6 +328,17 @@ const Donations = () => {
         bloodComponents={[]}
       />
 
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        title="Xác nhận hủy đăng ký"
+        message="Bạn có chắc chắn muốn hủy đăng ký hiến máu này? Hành động này không thể hoàn tác."
+        onConfirm={confirmCancelDonation}
+        onCancel={cancelConfirmModal}
+        confirmText={isUpdatingStatus ? "Đang hủy..." : "Hủy đăng ký"}
+        cancelText="Không, giữ lại"
+        confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+        type="warning"
+      />
     </div>
   );
 };

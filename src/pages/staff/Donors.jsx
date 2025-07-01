@@ -1,222 +1,145 @@
-import React, { useState } from 'react';
-import { Search, Filter, Users, Calendar, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, Users, Calendar, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 import DonorStats from '../../components/donors/DonorStats';
 import DonorTable from '../../components/donors/DonorTable';
 import DonationDetailsModal from '../../components/donors/DonationDetailsModal';
-import HealthCheckModal from '../../components/donors/HealthCheckModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
-
-const MOCK_DONATIONS = [
-  {
-    id: 1,
-    user: {
-      id: 1,
-      name: 'Nguyễn Văn An',
-      email: 'nguyenvanan@email.com',
-      phone: '0901234567',
-      bloodType: BLOOD_TYPES.O_POSITIVE,
-      age: 28,
-      weight: 65
-    },
-    donationDate: '2025-07-15',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
-    volumeMl: 450,
-    status: 'PENDING',
-    healthCheck: null,
-    location: 'Bệnh viện Chợ Rẫy',
-    notes: 'Đăng ký hiến máu định kỳ',
-    registeredAt: '2025-06-20T10:30:00Z'
-  },
-  {
-    id: 2,
-    user: {
-      id: 2,
-      name: 'Trần Thị Bình',
-      email: 'tranthibibh@email.com',
-      phone: '0912345678',
-      bloodType: BLOOD_TYPES.A_POSITIVE,
-      age: 32,
-      weight: 55
-    },
-    donationDate: '2025-07-20',
-    bloodType: BLOOD_TYPES.A_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.RED_BLOOD_CELLS,
-    volumeMl: 300,
-    status: 'CONFIRMED',
-    healthCheck: {
-      id: 1,
-      bloodPressure: '120/80',
-      heartRate: 72,
-      hemoglobin: 13.5,
-      weight: 55,
-      temperature: 36.5,
-      approved: true,
-      notes: 'Sức khỏe tốt, đủ điều kiện hiến máu'
-    },
-    location: 'Trung tâm Huyết học TP.HCM',
-    notes: 'Lần hiến máu thứ 3',
-    registeredAt: '2025-06-15T14:20:00Z'
-  },
-  {
-    id: 3,
-    user: {
-      id: 3,
-      name: 'Lê Văn Cường',
-      email: 'levancuong@email.com',
-      phone: '0923456789',
-      bloodType: BLOOD_TYPES.B_NEGATIVE,
-      age: 25,
-      weight: 70
-    },
-    donationDate: '2025-07-10',
-    bloodType: BLOOD_TYPES.B_NEGATIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLASMA,
-    volumeMl: 200,
-    status: 'COMPLETED',
-    healthCheck: {
-      id: 2,
-      bloodPressure: '115/75',
-      heartRate: 68,
-      hemoglobin: 14.2,
-      weight: 70,
-      temperature: 36.3,
-      approved: true,
-      notes: 'Hiến máu thành công, không có biến chứng'
-    },
-    location: 'Bệnh viện Đại học Y Dược',
-    notes: 'Hiến plasma lần đầu',
-    registeredAt: '2025-06-10T09:15:00Z',
-    completedAt: '2025-07-10T15:30:00Z'
-  },
-  {
-    id: 4,
-    user: {
-      id: 4,
-      name: 'Phạm Thị Dung',
-      email: 'phamthidung@email.com',
-      phone: '0934567890',
-      bloodType: BLOOD_TYPES.AB_POSITIVE,
-      age: 29,
-      weight: 48
-    },
-    donationDate: '2025-07-25',
-    bloodType: BLOOD_TYPES.AB_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLATELETS,
-    volumeMl: 250,
-    status: 'REJECTED',
-    healthCheck: {
-      id: 3,
-      bloodPressure: '110/70',
-      heartRate: 75,
-      hemoglobin: 11.8,
-      weight: 48,
-      temperature: 36.7,
-      approved: false,
-      notes: 'Hemoglobin thấp, cân nặng không đủ tiêu chuẩn'
-    },
-    location: 'Bệnh viện Nhân dân 115',
-    notes: 'Muốn hiến tiểu cầu',
-    registeredAt: '2025-06-25T16:45:00Z'
-  },
-  {
-    id: 5,
-    user: {
-      id: 5,
-      name: 'Hoàng Văn Em',
-      email: 'hoangvanem@email.com',
-      phone: '0945678901',
-      bloodType: BLOOD_TYPES.O_NEGATIVE,
-      age: 35,
-      weight: 80
-    },
-    donationDate: '2025-08-01',
-    bloodType: BLOOD_TYPES.O_NEGATIVE,
-    bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
-    volumeMl: 450,
-    status: 'CONFIRMED',
-    healthCheck: {
-      id: 4,
-      bloodPressure: '125/85',
-      heartRate: 70,
-      hemoglobin: 15.1,
-      weight: 80,
-      temperature: 36.4,
-      approved: true,
-      notes: 'Người hiến máu thường xuyên, sức khỏe tốt'
-    },
-    location: 'Trung tâm Huyết học TP.HCM',
-    notes: 'Donor O- quý hiếm',
-    registeredAt: '2025-06-18T11:00:00Z'
-  }
-];
-
-const MOCK_BLOOD_TYPES = [
-  { bloodTypeId: BLOOD_TYPES.O_NEGATIVE, typeName: 'O-' },
-  { bloodTypeId: BLOOD_TYPES.O_POSITIVE, typeName: 'O+' },
-  { bloodTypeId: BLOOD_TYPES.A_NEGATIVE, typeName: 'A-' },
-  { bloodTypeId: BLOOD_TYPES.A_POSITIVE, typeName: 'A+' },
-  { bloodTypeId: BLOOD_TYPES.B_NEGATIVE, typeName: 'B-' },
-  { bloodTypeId: BLOOD_TYPES.B_POSITIVE, typeName: 'B+' },
-  { bloodTypeId: BLOOD_TYPES.AB_NEGATIVE, typeName: 'AB-' },
-  { bloodTypeId: BLOOD_TYPES.AB_POSITIVE, typeName: 'AB+' },
-];
-
-const MOCK_BLOOD_COMPONENTS = [
-  { componentId: BLOOD_COMPONENTS.WHOLE_BLOOD, componentName: 'Máu toàn phần' },
-  { componentId: BLOOD_COMPONENTS.RED_BLOOD_CELLS, componentName: 'Hồng cầu' },
-  { componentId: BLOOD_COMPONENTS.PLATELETS, componentName: 'Tiểu cầu' },
-  { componentId: BLOOD_COMPONENTS.PLASMA, componentName: 'Huyết tương' },
-  { componentId: BLOOD_COMPONENTS.WHITE_BLOOD_CELLS, componentName: 'Bạch cầu' },
-];
+import { getBloodDonations, updateBloodDonationStatus } from '../../services/bloodDonationService';
+import { getBloodTypes } from '../../services/bloodTypeService';
+import { getUserHealthChecks } from '../../services/healthCheckService';
+import { getUserById } from '../../services/userService';
+import { BLOOD_DONATION_STATUS } from '../../utils/constants';
 
 const DONATION_STATUSES = {
   PENDING: 'Chờ xác nhận',
-  CONFIRMED: 'Đã xác nhận',
+  APPROVED: 'Đã phê duyệt',
   COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã hủy',
   REJECTED: 'Bị từ chối'
 };
 
 const Donors = () => {
-  const [donations, setDonations] = useState(MOCK_DONATIONS);
+  const [donations, setDonations] = useState([]);
+  const [bloodTypes, setBloodTypes] = useState([]);
+  const [users, setUsers] = useState({});
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterBloodType, setFilterBloodType] = useState('');
-  const [filterLocation, setFilterLocation] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showHealthCheckModal, setShowHealthCheckModal] = useState(false);
+  const [healthChecks, setHealthChecks] = useState({});
 
-  const handleStatusUpdate = (donationId, newStatus) => {
-    setDonations(prev => 
-      prev.map(donation => 
-        donation.id === donationId 
-          ? { 
-              ...donation, 
-              status: newStatus,
-              ...(newStatus === 'COMPLETED' && { completedAt: new Date().toISOString() })
-            }
-          : donation
-      )
-    );
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  useEffect(() => {
+    loadDonations();
+    loadBloodTypes();
+  }, [currentPage]);
+
+  const loadDonations = async () => {
+    try {
+      setLoading(true);
+      const response = await getBloodDonations(currentPage, pageSize);
+
+      if (response.status === 200) {
+        const donationsData = response.data.data.content;
+        setDonations(donationsData);
+        setTotalElements(response.data.data.page.totalElements);
+        setTotalPages(response.data.data.page.totalPages);
+
+        const userIds = [...new Set(donationsData.map(d => d.user))];
+        await Promise.all([
+          loadUsersData(userIds),
+          loadHealthChecksForUsers(userIds)
+        ]);
+      } else {
+        toast.error('Không thể tải danh sách hiến máu');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi tải dữ liệu');
+      console.error('Error loading donations:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleHealthCheck = (donationId, healthCheckData) => {
-    setDonations(prev => 
-      prev.map(donation => 
-        donation.id === donationId 
-          ? { 
-              ...donation, 
-              healthCheck: healthCheckData,
-              status: healthCheckData.approved ? 'CONFIRMED' : 'REJECTED'
-            }
-          : donation
-      )
-    );
-    setShowHealthCheckModal(false);
-    setSelectedDonation(null);
+  const loadUsersData = async (userIds) => {
+    try {
+      const userPromises = userIds.map(userId => getUserById(userId));
+      const responses = await Promise.all(userPromises);
+
+      const usersMap = {};
+      responses.forEach((response, index) => {
+        if (response.status === 200) {
+          usersMap[userIds[index]] = response.data.data;
+        }
+      });
+
+      setUsers(usersMap);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const loadBloodTypes = async () => {
+    try {
+      const response = await getBloodTypes(0, 100);
+      if (response.status === 200) {
+        setBloodTypes(response.data.data.content);
+      }
+    } catch (error) {
+      console.error('Error loading blood types:', error);
+    }
+  };
+
+  const loadHealthChecksForUsers = async (userIds) => {
+    try {
+      const healthCheckPromises = userIds.map(userId =>
+        getUserHealthChecks(userId, 0, 100)
+      );
+
+      const responses = await Promise.all(healthCheckPromises);
+      const healthCheckMap = {};
+
+      responses.forEach((response, index) => {
+        console.log("response: ", response)
+        if (response.status === 200) {
+          healthCheckMap[userIds[index]] = response.data.data.content;
+          console.log("healthCheckMap[userIds[index]]: ", healthCheckMap[userIds[index]])
+        }
+      });
+
+      setHealthChecks(healthCheckMap);
+    } catch (error) {
+      console.error('Error loading health checks:', error);
+    }
+  };
+
+  const handleStatusUpdate = async (donationId, newStatus) => {
+    try {
+      const response = await updateBloodDonationStatus(donationId, newStatus);
+
+      if (response.status === 200) {
+        setDonations(prev =>
+          prev.map(donation =>
+            donation.donationId === donationId
+              ? { ...donation, status: newStatus }
+              : donation
+          )
+        );
+        toast.success('Cập nhật trạng thái thành công');
+      } else {
+        toast.error('Không thể cập nhật trạng thái');
+      }
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi cập nhật trạng thái');
+      console.error('Error updating status:', error);
+    }
   };
 
   const openDetailsModal = (donation) => {
@@ -224,25 +147,66 @@ const Donors = () => {
     setShowDetailsModal(true);
   };
 
-  const openHealthCheckModal = (donation) => {
-    setSelectedDonation(donation);
-    setShowHealthCheckModal(true);
+  const getBloodTypeName = (typeId) => {
+    const type = bloodTypes.find(t => t.id === typeId);
+    return type ? type.typeName : 'N/A';
+  };
+
+  const getDonationWithDetails = (donation) => {
+    const userHealthChecks = healthChecks[donation.user] || [];
+    const healthCheck = userHealthChecks.find(hc => hc.id === donation.healthCheckId);
+    console.log("userHealthChecks: ",userHealthChecks)
+    console.log("healthCheck: ", healthCheck)
+    const userData = users[donation.user];
+    return {
+      ...donation,
+      healthCheckDetails: healthCheck,
+      user: userData ? {
+        id: userData.id,
+        name: userData.fullName,
+        email: userData.email,
+      } : {
+        id: donation.user,
+        name: `Người hiến ${donation.user}`,
+        email: `user${donation.user}@email.com`,
+      }
+    };
   };
 
   const filteredDonations = donations.filter(donation => {
-    const matchesSearch = searchTerm === '' || 
-      donation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      donation.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      donation.user.phone.includes(searchTerm);
-    
+    const enhancedDonation = getDonationWithDetails(donation);
+
+    const matchesSearch = searchTerm === '' ||
+      enhancedDonation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      enhancedDonation.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      enhancedDonation.user.phone.includes(searchTerm);
+
     const matchesStatus = filterStatus === '' || donation.status === filterStatus;
     const matchesBloodType = filterBloodType === '' || donation.bloodType.toString() === filterBloodType;
-    const matchesLocation = filterLocation === '' || donation.location.includes(filterLocation);
-    
-    return matchesSearch && matchesStatus && matchesBloodType && matchesLocation;
+
+    return matchesSearch && matchesStatus && matchesBloodType;
   });
 
-  const locations = [...new Set(donations.map(d => d.location))];
+  const enhancedDonations = filteredDonations.map(getDonationWithDetails);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleRefresh = () => {
+    setCurrentPage(0);
+    loadDonations();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -251,8 +215,14 @@ const Donors = () => {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý người hiến máu</h1>
           <p className="text-gray-600">Theo dõi và xử lý các đăng ký hiến máu</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
+          <button
+            onClick={handleRefresh}
+            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            <span>Làm mới</span>
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -280,7 +250,7 @@ const Donors = () => {
 
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Trạng thái
@@ -309,27 +279,9 @@ const Donors = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Tất cả nhóm máu</option>
-                {MOCK_BLOOD_TYPES.map(type => (
-                  <option key={type.bloodTypeId} value={type.bloodTypeId}>
+                {bloodTypes.map(type => (
+                  <option key={type.id} value={type.id}>
                     {type.typeName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Địa điểm
-              </label>
-              <select
-                value={filterLocation}
-                onChange={(e) => setFilterLocation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="">Tất cả địa điểm</option>
-                {locations.map(location => (
-                  <option key={location} value={location}>
-                    {location}
                   </option>
                 ))}
               </select>
@@ -340,7 +292,6 @@ const Donors = () => {
                 onClick={() => {
                   setFilterStatus('');
                   setFilterBloodType('');
-                  setFilterLocation('');
                   setSearchTerm('');
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
@@ -352,41 +303,92 @@ const Donors = () => {
         </div>
       )}
 
-      <DonorStats donations={filteredDonations} />
+      <DonorStats donations={enhancedDonations} />
 
       <DonorTable
-        donations={filteredDonations}
-        bloodTypes={MOCK_BLOOD_TYPES}
-        bloodComponents={MOCK_BLOOD_COMPONENTS}
+        donations={enhancedDonations}
+        bloodTypes={bloodTypes}
         onStatusUpdate={handleStatusUpdate}
         onViewDetails={openDetailsModal}
-        onHealthCheck={openHealthCheckModal}
+        getBloodTypeName={getBloodTypeName}
       />
 
-      {selectedDonation && (
-        <>
-          <DonationDetailsModal
-            isOpen={showDetailsModal}
-            onClose={() => {
-              setShowDetailsModal(false);
-              setSelectedDonation(null);
-            }}
-            donation={selectedDonation}
-            bloodTypes={MOCK_BLOOD_TYPES}
-            bloodComponents={MOCK_BLOOD_COMPONENTS}
-            onStatusUpdate={handleStatusUpdate}
-          />
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white px-6 py-3 border border-gray-200 rounded-lg">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages - 1}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Tiếp
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Hiển thị <span className="font-medium">{currentPage * pageSize + 1}</span> đến{' '}
+                <span className="font-medium">
+                  {Math.min((currentPage + 1) * pageSize, totalElements)}
+                </span> trong{' '}
+                <span className="font-medium">{totalElements}</span> kết quả
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
 
-          <HealthCheckModal
-            isOpen={showHealthCheckModal}
-            onClose={() => {
-              setShowHealthCheckModal(false);
-              setSelectedDonation(null);
-            }}
-            donation={selectedDonation}
-            onSubmit={(healthCheckData) => handleHealthCheck(selectedDonation.id, healthCheckData)}
-          />
-        </>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${i === currentPage
+                      ? 'z-10 bg-red-50 border-red-500 text-red-600'
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedDonation && (
+        <DonationDetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedDonation(null);
+          }}
+          donation={selectedDonation}
+          bloodTypes={bloodTypes}
+          onStatusUpdate={handleStatusUpdate}
+          getBloodTypeName={getBloodTypeName}
+        />
       )}
     </div>
   );
