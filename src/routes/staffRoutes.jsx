@@ -8,6 +8,7 @@ const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
 const Donors = lazy(() => import('../pages/staff/Donors'));
 const Inventory = lazy(() => import('../pages/staff/Inventory'));
 const Reminders = lazy(() => import('../pages/staff/Reminders'));
+const BloodRequests = lazy(() => import('../pages/staff/BloodRequests'));
 
 const StaffRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const StaffRoutes = () => {
           <Route path="dashboard" element={<StaffDashboard />} />
           <Route path="appointments" element={<StaffAppointments />} />               
           <Route path="donors" element={<Donors />} />               
+          <Route path="blood-requests" element={<BloodRequests />} />               
           <Route path="inventories" element={<Inventory />} />               
           <Route path="reminders" element={<Reminders />} />               
         </Routes>

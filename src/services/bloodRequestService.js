@@ -19,21 +19,14 @@ export const getBloodRequests = async (page = 0, size = 10) => {
 };
 
 export const createBloodRequest = async (bloodRequestData) => {
-  const {
-    bloodTypeId,
-    bloodComponentId,
-    allocations = {
-      1: 10,
-      2: 5,
-    },
-    urgencyLevel,
-  } = bloodRequestData;
+  const { bloodTypeId, bloodComponentId, urgencyLevel, quantity } =
+    bloodRequestData;
 
   const payload = {
     bloodTypeId,
     bloodComponentId,
-    allocations,
     urgencyLevel,
+    quantity,
   };
 
   return apiPost(BLOOD_REQUEST_ENDPOINTS.CREATE_BLOOD_REQUEST, payload);

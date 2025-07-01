@@ -5,7 +5,8 @@ import {
   BarChart3, Settings, FileText, MapPin, Package,
   Heart, Shield, Database, ChevronDown, ChevronRight,
   Search,
-  HeartPulse
+  HeartPulse,
+  Syringe
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { ROUTES } from '../../utils/constants';
@@ -110,6 +111,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             badge: null
           },
           {
+            icon: Syringe,
+            label: 'Yêu cầu máu',
+            path: ROUTES.STAFF_BLOOD_REQUEST,
+            badge: null
+          },
+          {
             icon: Package,
             label: 'Kho máu',
             path: ROUTES.STAFF_INVENTORIES,
@@ -155,6 +162,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             icon: Calendar,
             label: 'Lịch hẹn',
             path: ROUTES.MEMBER_APPOINTMENTS,
+            badge: null
+          },
+          {
+            icon: Syringe,
+            label: 'Yêu cầu máu',
+            path: ROUTES.MEMBER_BLOOD_REQUEST,
             badge: null
           },
           {

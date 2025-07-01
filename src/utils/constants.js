@@ -61,6 +61,7 @@ export const ROUTES = {
   MEMBER_REMINDERS: "/member/reminders",
   MEMBER_LOOKUP: "/member/lookup",
   MEMBER_HEALTH_CHECK: "/member/health-check",
+  MEMBER_BLOOD_REQUEST: "/member/blood-requests",
 
   STAFF_DASHBOARD: "/staff/dashboard",
   STAFF_APPOINTMENTS: "/staff/appointments",
@@ -68,6 +69,7 @@ export const ROUTES = {
   STAFF_DONORS: "/staff/donors",
   STAFF_INVENTORIES: "/staff/inventories",
   STAFF_REMINDERS: "/staff/reminders",
+  STAFF_BLOOD_REQUEST: "/staff/blood-requests",
 
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_USERS: "/admin/users",
@@ -143,7 +145,11 @@ export const URGENCY_LEVELS = {
   MEDIUM: "MEDIUM",
   HIGH: "HIGH",
   CRITICAL: "CRITICAL",
-  EMERGENCY: "EMERGENCY",
+};
+
+export const BLOOD_REQUEST_STATUS = {
+  PENDING: "PENDING",
+  ALLOCATED: "ALLOCATED",
 };
 
 export const APPOINTMENT_STATUS = {
