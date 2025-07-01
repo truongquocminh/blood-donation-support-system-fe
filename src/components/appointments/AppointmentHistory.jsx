@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, X, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { APPOINTMENT_STATUS } from '../../utils/constants'; 
+import { APPOINTMENT_STATUS } from '../../utils/constants';
 
 const AppointmentHistory = ({ appointments, onCancel }) => {
   const getStatusBadge = (status) => {
@@ -39,13 +39,13 @@ const AppointmentHistory = ({ appointments, onCancel }) => {
   };
 
   const canCancel = (appointment) => {
-    return [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(appointment.status) && 
-           new Date(appointment.appointmentDate) > new Date();
+    return [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(appointment.status) &&
+      new Date(appointment.appointmentDate) > new Date();
   };
 
   const isPastDue = (appointmentDate, status) => {
-    return new Date(appointmentDate) < new Date() && 
-           [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(status);
+    return new Date(appointmentDate) < new Date() &&
+      [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(status);
   };
 
   const isToday = (appointmentDate) => {
@@ -53,6 +53,25 @@ const AppointmentHistory = ({ appointments, onCancel }) => {
     const appointment = new Date(appointmentDate);
     return appointment.toDateString() === today.toDateString();
   };
+
+  const sortedAppointments = [...appointments].sort((a, b) => {
+    const now = new Date();
+
+    const aDate = new Date(a.appointmentDate);
+    const bDate = new Date(b.appointmentDate);
+
+    const aIsCancelled = a.status === APPOINTMENT_STATUS.CANCELLED;
+    const bIsCancelled = b.status === APPOINTMENT_STATUS.CANCELLED;
+
+    if (aIsCancelled && !bIsCancelled) return 1;
+    if (!aIsCancelled && bIsCancelled) return -1;
+
+    const aDiff = Math.abs(aDate - now);
+    const bDiff = Math.abs(bDate - now);
+
+    return aDiff - bDiff;
+  });
+
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -70,7 +89,7 @@ const AppointmentHistory = ({ appointments, onCancel }) => {
         </div>
       ) : (
         <div className="divide-y divide-gray-200">
-          {appointments.map((appointment) => (
+          {sortedAppointments.map((appointment) => (
             <div key={appointment.appointmentId} className="p-6 hover:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex-1">

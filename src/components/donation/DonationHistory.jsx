@@ -73,6 +73,29 @@ const DonationHistory = ({
       ['PENDING', 'CONFIRMED'].includes(status);
   };
 
+  const sortedDonations = [...donations].sort((a, b) => {
+    const now = new Date();
+
+    const aDate = new Date(a.donationDate);
+    const bDate = new Date(b.donationDate);
+
+    const isCancelledOrRejected = (status) => ['CANCELLED', 'REJECTED'].includes(status);
+    const isPastDue = (date, status) =>
+      new Date(date) < now && ['PENDING', 'CONFIRMED'].includes(status);
+
+    if (isCancelledOrRejected(a.status) && !isCancelledOrRejected(b.status)) return 1;
+    if (!isCancelledOrRejected(a.status) && isCancelledOrRejected(b.status)) return -1;
+
+    const aIsPast = isPastDue(aDate, a.status);
+    const bIsPast = isPastDue(bDate, b.status);
+
+    if (aIsPast && !bIsPast) return 1;
+    if (!aIsPast && bIsPast) return -1;
+
+    return Math.abs(aDate - now) - Math.abs(bDate - now);
+  });
+
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -89,7 +112,7 @@ const DonationHistory = ({
         </div>
       ) : (
         <div className="divide-y divide-gray-200">
-          {donations.map((donation) => (
+          {sortedDonations.map((donation) => (
             <div key={donation.id} className="p-6 hover:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex-1">

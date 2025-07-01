@@ -1,6 +1,6 @@
 import React from 'react';
-import { Calendar, Clock, CheckCircle, Users, UserCheck, AlertTriangle } from 'lucide-react';
-import { APPOINTMENT_STATUS } from '../../utils/constants'; 
+import { Calendar, Clock, CheckCircle, Users, XCircle, AlertTriangle } from 'lucide-react';
+import { APPOINTMENT_STATUS } from '../../utils/constants';
 
 const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -19,12 +19,14 @@ const StatsCard = ({ title, value, icon: Icon, color, subtitle }) => (
 
 const StaffAppointmentStats = ({ appointments }) => {
   const totalAppointments = appointments.length;
-  
+
   const pendingAppointments = appointments.filter(a => a.status === APPOINTMENT_STATUS.PENDING).length;
-  
+
   const scheduledAppointments = appointments.filter(a => a.status === APPOINTMENT_STATUS.SCHEDULED).length;
-  
+
   const completedAppointments = appointments.filter(a => a.status === APPOINTMENT_STATUS.COMPLETED).length;
+
+  const cancelledAppointments = appointments.filter(a => a.status === APPOINTMENT_STATUS.CANCELLED).length;
 
   const todayAppointments = appointments.filter(a => {
     const today = new Date();
@@ -32,10 +34,12 @@ const StaffAppointmentStats = ({ appointments }) => {
     return appointmentDate.toDateString() === today.toDateString();
   }).length;
 
-  const needHealthCheck = appointments.filter(a => 
-    [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(a.status) && 
-    !a.healthCheck
-  ).length;
+  const pastDueAppointments = appointments.filter(a => {
+    const now = new Date();
+    const appointmentDate = new Date(a.appointmentDate);
+    return appointmentDate < now &&
+      [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(a.status);
+  }).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
@@ -46,7 +50,7 @@ const StaffAppointmentStats = ({ appointments }) => {
         color="text-blue-600"
         subtitle="Tất cả"
       />
-      
+
       <StatsCard
         title="Chờ xác nhận"
         value={pendingAppointments}
@@ -54,15 +58,15 @@ const StaffAppointmentStats = ({ appointments }) => {
         color="text-yellow-600"
         subtitle="Cần duyệt"
       />
-      
+
       <StatsCard
         title="Đã lên lịch"
         value={scheduledAppointments}
         icon={CheckCircle}
-        color="text-green-600"
+        color="text-blue-600"
         subtitle="Sẵn sàng"
       />
-      
+
       <StatsCard
         title="Hoàn thành"
         value={completedAppointments}
@@ -70,22 +74,32 @@ const StaffAppointmentStats = ({ appointments }) => {
         color="text-green-600"
         subtitle="Đã hiến máu"
       />
-      
+
       <StatsCard
+        title="Đã hủy"
+        value={cancelledAppointments}
+        icon={XCircle}
+        color="text-gray-600"
+        subtitle="Bị hủy"
+      />
+
+      {/* <StatsCard
         title="Hôm nay"
         value={todayAppointments}
         icon={Users}
         color="text-purple-600"
         subtitle="Lịch hẹn"
-      />
-      
-      <StatsCard
-        title="Cần kiểm tra"
-        value={needHealthCheck}
-        icon={UserCheck}
-        color="text-orange-600"
-        subtitle="Sức khỏe"
-      />
+      /> */}
+
+      {pastDueAppointments > 0 && (
+        <StatsCard
+          title="Quá hạn"
+          value={pastDueAppointments}
+          icon={AlertTriangle}
+          color="text-red-600"
+          subtitle="Cần xử lý"
+        />
+      )}
     </div>
   );
 };

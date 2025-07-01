@@ -5,8 +5,9 @@ const HEALTH_CHECK_ENDPOINTS = {
   GET_USER_HEALTH_CHECKS: "/v1/health-check/users",
 };
 
-export const createHealthCheck = async (userId, healthCheckData) => {
+export const createHealthCheck = async (healthCheckData) => {
   const {
+    appointmentId,
     pulse,
     bloodPressure,
     resultSummary,
@@ -16,6 +17,7 @@ export const createHealthCheck = async (userId, healthCheckData) => {
   } = healthCheckData;
 
   const payload = {
+    appointmentId,
     pulse,
     bloodPressure,
     resultSummary,
@@ -25,7 +27,7 @@ export const createHealthCheck = async (userId, healthCheckData) => {
   };
 
   return apiPost(
-    `${HEALTH_CHECK_ENDPOINTS.CREATE_HEALTH_CHECK}/${userId}`,
+    `${HEALTH_CHECK_ENDPOINTS.CREATE_HEALTH_CHECK}`,
     payload
   );
 };

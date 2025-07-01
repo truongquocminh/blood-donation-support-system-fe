@@ -1,9 +1,16 @@
-import { apiPost, apiGet } from "./api";
+import { apiPost, apiGet, apiPut } from "./api";
 
 const BLOOD_DONATION_ENDPOINTS = {
+  UPDATE_BLOOD_DONATION_STATUS: "/v1/blood-donation/donations",
   CREATE_BLOOD_DONATION: "/v1/blood-donation",
   GET_BLOOD_DONATIONS: "/v1/blood-donation",
   GET_BLOOD_DONATION_BY_ID: "/v1/blood-donation",
+};
+
+export const updateBloodDonationStatus = async (id, status) => {
+  return apiPut(
+    `${BLOOD_DONATION_ENDPOINTS.UPDATE_BLOOD_DONATION_STATUS}/${id}/status?status=${status}`
+  );
 };
 
 export const createBloodDonation = async (donationData) => {
@@ -41,6 +48,7 @@ export const getBloodDonationById = async (id) => {
 };
 
 export default {
+  updateBloodDonationStatus,
   createBloodDonation,
   getBloodDonations,
   getBloodDonationById,

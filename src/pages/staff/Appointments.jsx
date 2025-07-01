@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Calendar, UserCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 import StaffAppointmentStats from '../../components/staff-appointments/StaffAppointmentStats';
 import StaffAppointmentTable from '../../components/staff-appointments/StaffAppointmentTable';
 import AppointmentDetailsModal from '../../components/staff-appointments/AppointmentDetailsModal';
 import HealthCheckFormModal from '../../components/staff-appointments/HealthCheckFormModal';
-import { BLOOD_TYPES, BLOOD_COMPONENTS } from '../../utils/constants';
-
-export const APPOINTMENT_STATUS = {
-  PENDING: "PENDING",
-  SCHEDULED: "SCHEDULED", 
-  COMPLETED: "COMPLETED",
-  CANCELLED: "CANCELLED",
-};
+import { filterAppointments, updateAppointmentStatus } from '../../services/appointmentService';
+import { getBloodTypes } from '../../services/bloodTypeService';
+import { createHealthCheck } from '../../services/healthCheckService';
+import { APPOINTMENT_STATUS } from '../../utils/constants';
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -20,229 +17,103 @@ const STATUS_LABELS = {
   CANCELLED: 'Đã hủy'
 };
 
-const MOCK_APPOINTMENTS = [
-  {
-    id: 1,
-    user: {
-      id: 1,
-      name: 'Nguyễn Văn An',
-      email: 'nguyenvanan@email.com',
-      phone: '0901234567',
-      bloodType: BLOOD_TYPES.O_POSITIVE,
-      age: 28,
-      weight: 65
-    },
-    appointmentDate: '2025-07-15T09:00:00Z',
-    status: APPOINTMENT_STATUS.SCHEDULED,
-    notes: 'Lịch hẹn hiến máu định kỳ',
-    createdAt: '2025-06-20T10:30:00Z',
-    bloodType: BLOOD_TYPES.O_POSITIVE,
-    bloodComponent: BLOOD_COMPONENTS.WHOLE_BLOOD,
-    volumeMl: 450,
-    location: 'Bệnh viện Chợ Rẫy',
-    healthCheck: {
-      id: 1,
-      pulse: 72,
-      bloodPressure: '120/80',
-      resultSummary: 'Sức khỏe tốt, đủ điều kiện hiến máu',
-      isEligible: true,
-      ineligibleReason: null,
-      bloodTypeId: BLOOD_TYPES.O_POSITIVE,
-      checkedAt: '2025-07-14T14:30:00Z',
-      staffId: 1,
-      staffName: 'Bs. Nguyễn Văn A'
-    }
-  },
-  {
-    id: 2,
-    user: {
-      id: 2,
-      name: 'Trần Thị Bình',
-      email: 'tranthibibh@email.com',
-      phone: '0912345678',
-      bloodType: BLOOD_TYPES.A_POSITIVE,
-      age: 32,
-      weight: 55
-    },
-    appointmentDate: '2025-07-20T14:00:00Z',
-    status: APPOINTMENT_STATUS.PENDING,
-    notes: 'Lần hiến máu thứ 3',
-    createdAt: '2025-06-15T14:20:00Z',
-    bloodType: null,
-    bloodComponent: null,
-    volumeMl: null,
-    location: null,
-    healthCheck: null
-  },
-  {
-    id: 3,
-    user: {
-      id: 3,
-      name: 'Lê Văn Cường',
-      email: 'levancuong@email.com',
-      phone: '0923456789',
-      bloodType: BLOOD_TYPES.B_NEGATIVE,
-      age: 25,
-      weight: 70
-    },
-    appointmentDate: '2025-06-20T10:00:00Z',
-    status: APPOINTMENT_STATUS.COMPLETED,
-    notes: 'Hiến plasma thành công',
-    createdAt: '2025-06-10T09:15:00Z',
-    completedAt: '2025-06-20T11:30:00Z',
-    bloodType: BLOOD_TYPES.B_NEGATIVE,
-    bloodComponent: BLOOD_COMPONENTS.PLASMA,
-    volumeMl: 200,
-    location: 'Bệnh viện Đại học Y Dược',
-    healthCheck: {
-      id: 2,
-      pulse: 68,
-      bloodPressure: '115/75',
-      resultSummary: 'Hiến máu thành công, không có biến chứng',
-      isEligible: true,
-      ineligibleReason: null,
-      bloodTypeId: BLOOD_TYPES.B_NEGATIVE,
-      checkedAt: '2025-06-20T09:45:00Z',
-      staffId: 2,
-      staffName: 'Bs. Trần Thị B'
-    }
-  },
-  {
-    id: 4,
-    user: {
-      id: 4,
-      name: 'Phạm Thị Dung',
-      email: 'phamthidung@email.com',
-      phone: '0934567890',
-      bloodType: BLOOD_TYPES.AB_POSITIVE,
-      age: 29,
-      weight: 48
-    },
-    appointmentDate: '2025-07-25T11:00:00Z',
-    status: APPOINTMENT_STATUS.CANCELLED,
-    notes: 'Hủy do sức khỏe không đảm bảo',
-    createdAt: '2025-06-25T16:45:00Z',
-    cancelledAt: '2025-07-24T16:00:00Z',
-    bloodType: null,
-    bloodComponent: null,
-    volumeMl: null,
-    location: null,
-    healthCheck: {
-      id: 3,
-      pulse: 95,
-      bloodPressure: '140/90',
-      resultSummary: 'Huyết áp cao, không đủ điều kiện hiến máu',
-      isEligible: false,
-      ineligibleReason: 'Huyết áp vượt quá giới hạn cho phép (140/90)',
-      bloodTypeId: BLOOD_TYPES.AB_POSITIVE,
-      checkedAt: '2025-07-24T15:30:00Z',
-      staffId: 3,
-      staffName: 'Bs. Lê Văn C'
-    }
-  },
-  {
-    id: 5,
-    user: {
-      id: 5,
-      name: 'Hoàng Văn Em',
-      email: 'hoangvanem@email.com',
-      phone: '0945678901',
-      bloodType: BLOOD_TYPES.O_NEGATIVE,
-      age: 35,
-      weight: 80
-    },
-    appointmentDate: '2025-08-01T08:30:00Z',
-    status: APPOINTMENT_STATUS.PENDING,
-    notes: 'Donor O- quý hiếm',
-    createdAt: '2025-06-18T11:00:00Z',
-    bloodType: null,
-    bloodComponent: null,
-    volumeMl: null,
-    location: null,
-    healthCheck: null
-  }
-];
-
-const MOCK_BLOOD_TYPES = [
-  { bloodTypeId: BLOOD_TYPES.O_NEGATIVE, typeName: 'O-' },
-  { bloodTypeId: BLOOD_TYPES.O_POSITIVE, typeName: 'O+' },
-  { bloodTypeId: BLOOD_TYPES.A_NEGATIVE, typeName: 'A-' },
-  { bloodTypeId: BLOOD_TYPES.A_POSITIVE, typeName: 'A+' },
-  { bloodTypeId: BLOOD_TYPES.B_NEGATIVE, typeName: 'B-' },
-  { bloodTypeId: BLOOD_TYPES.B_POSITIVE, typeName: 'B+' },
-  { bloodTypeId: BLOOD_TYPES.AB_NEGATIVE, typeName: 'AB-' },
-  { bloodTypeId: BLOOD_TYPES.AB_POSITIVE, typeName: 'AB+' },
-];
-
-const MOCK_BLOOD_COMPONENTS = [
-  { componentId: BLOOD_COMPONENTS.WHOLE_BLOOD, componentName: 'Máu toàn phần' },
-  { componentId: BLOOD_COMPONENTS.RED_BLOOD_CELLS, componentName: 'Hồng cầu' },
-  { componentId: BLOOD_COMPONENTS.PLATELETS, componentName: 'Tiểu cầu' },
-  { componentId: BLOOD_COMPONENTS.PLASMA, componentName: 'Huyết tương' },
-  { componentId: BLOOD_COMPONENTS.WHITE_BLOOD_CELLS, componentName: 'Bạch cầu' },
-];
-
 const StaffAppointments = () => {
-  const [appointments, setAppointments] = useState(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState([]);
+  const [bloodTypes, setBloodTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterLocation, setFilterLocation] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showHealthCheckModal, setShowHealthCheckModal] = useState(false);
 
-  const handleStatusUpdate = (appointmentId, newStatus) => {
-    setAppointments(prev => 
-      prev.map(appointment => 
-        appointment.id === appointmentId 
-          ? { 
-              ...appointment, 
-              status: newStatus,
-              ...(newStatus === APPOINTMENT_STATUS.COMPLETED && { completedAt: new Date().toISOString() }),
-              ...(newStatus === APPOINTMENT_STATUS.CANCELLED && { cancelledAt: new Date().toISOString() })
-            }
-          : appointment
-      )
-    );
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
+  useEffect(() => {
+    loadAppointments();
+    loadBloodTypes();
+  }, [currentPage, filterStatus, filterDate]);
+
+  const loadAppointments = async () => {
+    try {
+      setLoading(true);
+      const filters = {
+        page: currentPage,
+        size: pageSize,
+        status: filterStatus || undefined,
+        from: filterDate || undefined,
+        to: filterDate || undefined,
+      };
+
+      const response = await filterAppointments(filters);
+      const { content, page } = response.data.data;
+
+      setAppointments(content);
+      setTotalPages(page.totalPages);
+      setTotalElements(page.totalElements);
+    } catch (error) {
+      console.error('Error loading appointments:', error);
+      toast.error('Không thể tải danh sách lịch hẹn');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleHealthCheck = (appointmentId, healthCheckData) => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    const newHealthCheck = {
-      id: Date.now(),
-      ...healthCheckData,
-      checkedAt: new Date().toISOString(),
-      staffId: currentUser.id || 1,
-      staffName: currentUser.name || 'Nhân viên Y tế'
-    };
-
-    setAppointments(prev => 
-      prev.map(appointment => 
-        appointment.id === appointmentId 
-          ? { 
-              ...appointment, 
-              healthCheck: newHealthCheck,
-              status: healthCheckData.isEligible ? APPOINTMENT_STATUS.SCHEDULED : APPOINTMENT_STATUS.CANCELLED
-            }
-          : appointment
-      )
-    );
-    
-    setShowHealthCheckModal(false);
-    setSelectedAppointment(null);
+  const loadBloodTypes = async () => {
+    try {
+      const response = await getBloodTypes();
+      setBloodTypes(response.data.data.content);
+    } catch (error) {
+      console.error('Error loading blood types:', error);
+      toast.error('Không thể tải danh sách nhóm máu');
+    }
   };
 
-  const handleAppointmentUpdate = (appointmentId, updateData) => {
-    setAppointments(prev => 
-      prev.map(appointment => 
-        appointment.id === appointmentId 
-          ? { ...appointment, ...updateData }
-          : appointment
-      )
-    );
+  const handleStatusUpdate = async (appointmentId, newStatus) => {
+    try {
+      await updateAppointmentStatus(appointmentId, newStatus);
+
+      setAppointments(prev =>
+        prev.map(appointment =>
+          appointment.appointmentId === appointmentId
+            ? { ...appointment, status: newStatus }
+            : appointment
+        )
+      );
+
+      toast.success('Cập nhật trạng thái thành công');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Không thể cập nhật trạng thái');
+    }
+  };
+
+  const handleHealthCheck = async (appointmentId, healthCheckData) => {
+    try {
+      const payload = {
+        appointmentId,
+        ...healthCheckData
+      };
+
+      await createHealthCheck(payload);
+
+      await updateAppointmentStatus(appointmentId, APPOINTMENT_STATUS.COMPLETED);
+
+      await loadAppointments();
+
+      setShowHealthCheckModal(false);
+      setSelectedAppointment(null);
+
+      toast.success('Kiểm tra sức khỏe đã được lưu thành công');
+    } catch (error) {
+      console.error('Error creating health check:', error);
+      toast.error('Không thể lưu thông tin kiểm tra sức khỏe');
+    }
   };
 
   const openDetailsModal = (appointment) => {
@@ -255,26 +126,24 @@ const StaffAppointments = () => {
     setShowHealthCheckModal(true);
   };
 
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = searchTerm === '' || 
-      appointment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.user.phone.includes(searchTerm);
-    
-    const matchesStatus = filterStatus === '' || appointment.status === filterStatus;
-    const matchesLocation = filterLocation === '' || 
-      (appointment.location && appointment.location.includes(filterLocation));
-    
-    let matchesDate = true;
-    if (filterDate) {
-      const appointmentDate = new Date(appointment.appointmentDate).toISOString().split('T')[0];
-      matchesDate = appointmentDate === filterDate;
-    }
-    
-    return matchesSearch && matchesStatus && matchesLocation && matchesDate;
-  });
+  const handleSearch = () => {
+    setCurrentPage(0);
+    loadAppointments();
+  };
 
-  const locations = [...new Set(appointments.filter(a => a.location).map(a => a.location))];
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const filteredAppointments = appointments.filter(appointment => {
+    if (!searchTerm) return true;
+
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      appointment.appointmentId.toString().includes(searchLower) ||
+      appointment.userId.toString().includes(searchLower)
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -283,7 +152,7 @@ const StaffAppointments = () => {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý lịch hẹn</h1>
           <p className="text-gray-600">Xem và xử lý các lịch hẹn hiến máu từ thành viên</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -302,9 +171,9 @@ const StaffAppointments = () => {
             <p className="font-medium mb-1">Quy trình xử lý lịch hẹn:</p>
             <ol className="list-decimal list-inside space-y-1 text-xs">
               <li>Thành viên đặt lịch hẹn với ngày/giờ → Trạng thái <strong>PENDING</strong></li>
-              <li>Staff tư vấn và thực hiện kiểm tra sức khỏe</li>
-              <li>Nếu đạt → <strong>SCHEDULED</strong>, nếu không đạt → <strong>CANCELLED</strong></li>
-              <li>Sau khi hiến máu thành công → <strong>COMPLETED</strong></li>
+              <li>Staff xác nhận → <strong>SCHEDULED</strong> hoặc từ chối → <strong>CANCELLED</strong></li>
+              <li>Staff thực hiện kiểm tra sức khỏe và cập nhật thông tin</li>
+              <li>Sau khi kiểm tra, trạng thái tự động chuyển thành <strong>COMPLETED</strong></li>
             </ol>
           </div>
         </div>
@@ -316,18 +185,25 @@ const StaffAppointments = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
+              placeholder="Tìm kiếm theo ID lịch hẹn hoặc ID người dùng..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Tìm kiếm
+        </button>
       </div>
 
       {showFilters && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Trạng thái
@@ -341,24 +217,6 @@ const StaffAppointments = () => {
                 {Object.entries(STATUS_LABELS).map(([key, value]) => (
                   <option key={key} value={key}>
                     {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Địa điểm
-              </label>
-              <select
-                value={filterLocation}
-                onChange={(e) => setFilterLocation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Tất cả địa điểm</option>
-                {locations.map(location => (
-                  <option key={location} value={location}>
-                    {location}
                   </option>
                 ))}
               </select>
@@ -380,9 +238,9 @@ const StaffAppointments = () => {
               <button
                 onClick={() => {
                   setFilterStatus('');
-                  setFilterLocation('');
                   setFilterDate('');
                   setSearchTerm('');
+                  setCurrentPage(0);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
@@ -397,12 +255,56 @@ const StaffAppointments = () => {
 
       <StaffAppointmentTable
         appointments={filteredAppointments}
-        bloodTypes={MOCK_BLOOD_TYPES}
-        bloodComponents={MOCK_BLOOD_COMPONENTS}
+        loading={loading}
         onStatusUpdate={handleStatusUpdate}
         onViewDetails={openDetailsModal}
         onHealthCheck={openHealthCheckModal}
       />
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-200 rounded-lg">
+          <div className="flex items-center text-sm text-gray-700">
+            <span>
+              Hiển thị {currentPage * pageSize + 1} đến {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} kết quả
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+
+            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+              const pageNumber = currentPage < 3 ? index : currentPage - 2 + index;
+              if (pageNumber >= totalPages) return null;
+
+              return (
+                <button
+                  key={pageNumber}
+                  onClick={() => handlePageChange(pageNumber)}
+                  className={`px-3 py-1 text-sm border rounded ${currentPage === pageNumber
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                >
+                  {pageNumber + 1}
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      )}
 
       {selectedAppointment && (
         <>
@@ -413,10 +315,6 @@ const StaffAppointments = () => {
               setSelectedAppointment(null);
             }}
             appointment={selectedAppointment}
-            bloodTypes={MOCK_BLOOD_TYPES}
-            bloodComponents={MOCK_BLOOD_COMPONENTS}
-            onStatusUpdate={handleStatusUpdate}
-            onAppointmentUpdate={handleAppointmentUpdate}
           />
 
           <HealthCheckFormModal
@@ -426,8 +324,8 @@ const StaffAppointments = () => {
               setSelectedAppointment(null);
             }}
             appointment={selectedAppointment}
-            bloodTypes={MOCK_BLOOD_TYPES}
-            onSubmit={(healthCheckData) => handleHealthCheck(selectedAppointment.id, healthCheckData)}
+            bloodTypes={bloodTypes}
+            onSubmit={(healthCheckData) => handleHealthCheck(selectedAppointment.appointmentId, healthCheckData)}
           />
         </>
       )}

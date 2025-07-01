@@ -8,7 +8,7 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
     resultSummary: '',
     isEligible: null,
     ineligibleReason: '',
-    bloodTypeId: appointment?.bloodType?.toString() || ''
+    bloodTypeId: ''
   });
   const [errors, setErrors] = useState({});
   const [autoEligibility, setAutoEligibility] = useState(null);
@@ -115,7 +115,7 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
   };
 
   const getBloodTypeName = (typeId) => {
-    const type = bloodTypes.find(t => t.bloodTypeId === parseInt(typeId));
+    const type = bloodTypes.find(t => t.id === parseInt(typeId));
     return type ? type.typeName : 'N/A';
   };
 
@@ -134,7 +134,7 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
                 Kiểm tra sức khỏe
               </h3>
               <p className="text-sm text-gray-600">
-                Lịch hẹn #{appointment.id} - {appointment.user.name}
+                Lịch hẹn #{appointment.appointmentId} - User ID: {appointment.userId}
               </p>
             </div>
           </div>
@@ -147,23 +147,23 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
         </div>
 
         <div className="p-6 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin bệnh nhân</h4>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin lịch hẹn</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Họ tên:</span>
-              <p className="font-medium">{appointment.user.name}</p>
+              <span className="text-gray-600">ID Lịch hẹn:</span>
+              <p className="font-medium">#{appointment.appointmentId}</p>
             </div>
             <div>
-              <span className="text-gray-600">Tuổi:</span>
-              <p className="font-medium">{appointment.user.age} tuổi</p>
+              <span className="text-gray-600">ID Người dùng:</span>
+              <p className="font-medium">{appointment.userId}</p>
             </div>
             <div>
-              <span className="text-gray-600">Cân nặng:</span>
-              <p className="font-medium">{appointment.user.weight} kg</p>
+              <span className="text-gray-600">Ngày hẹn:</span>
+              <p className="font-medium">{new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}</p>
             </div>
             <div>
-              <span className="text-gray-600">Nhóm máu (hồ sơ):</span>
-              <p className="font-medium">{getBloodTypeName(appointment.user.bloodType)}</p>
+              <span className="text-gray-600">Giờ hẹn:</span>
+              <p className="font-medium">{new Date(appointment.appointmentDate).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}</p>
             </div>
           </div>
         </div>
@@ -233,7 +233,7 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
             >
               <option value="">Chọn nhóm máu đã xác minh</option>
               {bloodTypes.map(type => (
-                <option key={type.bloodTypeId} value={type.bloodTypeId}>
+                <option key={type.id} value={type.id}>
                   {type.typeName}
                 </option>
               ))}
@@ -354,8 +354,8 @@ const HealthCheckFormModal = ({ isOpen, onClose, appointment, bloodTypes, onSubm
                   : 'bg-blue-600 hover:bg-blue-700'
               }`}
             >
-              {formData.isEligible === true ? 'Phê duyệt hiến máu' : 
-               formData.isEligible === false ? 'Từ chối hiến máu' : 
+              {formData.isEligible === true ? 'Lưu và hoàn thành' : 
+               formData.isEligible === false ? 'Lưu và từ chối' : 
                'Lưu kết quả'}
             </button>
           </div>
