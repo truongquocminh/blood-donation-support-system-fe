@@ -6,6 +6,7 @@ const AUTH_ENDPOINTS = {
   LOGOUT: "/v1/auth/logout",
   REFRESH: "/v1/auth/refreshToken",
   RESET_PASSWORD: "/v1/auth/reset-password",
+  CREATE_STAFF: "/v1/auth/staff",
 };
 
 export const login = async (credentials) => {
@@ -46,10 +47,22 @@ export const resetPassword = async (resetData) => {
   });
 };
 
+export const createStaff = async (staffData) => {
+  const requestBody = {
+    email: staffData.email,
+    password: staffData.password,
+    fullName: staffData.fullName,
+    phoneNumber: staffData.phoneNumber,
+  };
+
+  return apiPost(AUTH_ENDPOINTS.CREATE_STAFF, requestBody);
+};
+
 export default {
   login,
   register,
   logout,
   refreshToken,
   resetPassword,
+  createStaff,
 };

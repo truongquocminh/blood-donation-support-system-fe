@@ -4,8 +4,11 @@ import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'));
-const AdminUsers = lazy(() => import('../pages/admin/UserManagement'));
-const AdminReports = lazy(() => import('../pages/admin/Reports'));
+const MembersPage = lazy(() => import('../pages/admin/MembersPage'));
+const StaffsPage = lazy(() => import('../pages/admin/StaffsPage'));
+const BloodDonationsPage = lazy(() => import('../pages/admin/BloodDonationsPage'));
+const AppointmentsPage = lazy(() => import('../pages/admin/AppointmentsPage'));
+const InventoriesPage = lazy(() => import('../pages/admin/InventoriesPage'));
 
 const AdminRoutes = () => {
   return (
@@ -17,8 +20,11 @@ const AdminRoutes = () => {
       }>
         <Routes>
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />                
-          <Route path="reports" element={<AdminReports />} />
+          <Route path="users/members" element={<MembersPage />} />
+          <Route path="users/staffs" element={<StaffsPage />} />
+          <Route path="donations/donation-history" element={<BloodDonationsPage />} />
+          <Route path="donations/appointments" element={<AppointmentsPage />} />
+          <Route path="donations/inventories" element={<InventoriesPage />} />
         </Routes>
       </Suspense>
     </Layout>

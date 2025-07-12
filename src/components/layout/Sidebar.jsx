@@ -42,8 +42,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.ADMIN_USERS,
             children: [
               { label: 'Thành viên', path: ROUTES.ADMIN_USERS + '/members' },
-              { label: 'Nhân viên', path: ROUTES.ADMIN_STAFF },
-              { label: 'Quản trị viên', path: ROUTES.ADMIN_USERS + '/admins' }
+              { label: 'Nhân viên', path: ROUTES.ADMIN_USERS + '/staffs'},
             ]
           },
           {
@@ -51,33 +50,33 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             label: 'Quản lý hiến máu',
             path: ROUTES.ADMIN_DONATIONS,
             children: [
-              { label: 'Lịch sử hiến máu', path: ROUTES.ADMIN_DONATIONS + '/history' },
+              { label: 'Lịch sử hiến máu', path: ROUTES.ADMIN_DONATIONS + '/donation-history' },
               { label: 'Lịch hẹn', path: ROUTES.ADMIN_DONATIONS + '/appointments' },
               { label: 'Kho máu', path: ROUTES.ADMIN_DONATIONS + '/inventories' }
             ]
           },
-          {
-            icon: MapPin,
-            label: 'Điểm hiến máu',
-            path: ROUTES.ADMIN_LOCATIONS,
-            badge: null
-          },
-          {
-            icon: FileText,
-            label: 'Báo cáo',
-            path: ROUTES.ADMIN_REPORTS,
-            children: [
-              { label: 'Báo cáo tổng quan', path: ROUTES.ADMIN_REPORTS + '/overview' },
-              { label: 'Báo cáo hiến máu', path: ROUTES.ADMIN_REPORTS + '/donations' },
-              { label: 'Báo cáo người dùng', path: ROUTES.ADMIN_REPORTS + '/users' }
-            ]
-          },
-          {
-            icon: Settings,
-            label: 'Cài đặt hệ thống',
-            path: ROUTES.ADMIN_SETTINGS,
-            badge: null
-          }
+          // {
+          //   icon: MapPin,
+          //   label: 'Điểm hiến máu',
+          //   path: ROUTES.ADMIN_LOCATIONS,
+          //   badge: null
+          // },
+          // {
+          //   icon: FileText,
+          //   label: 'Báo cáo',
+          //   path: ROUTES.ADMIN_REPORTS,
+          //   children: [
+          //     { label: 'Báo cáo tổng quan', path: ROUTES.ADMIN_REPORTS + '/overview' },
+          //     { label: 'Báo cáo hiến máu', path: ROUTES.ADMIN_REPORTS + '/donations' },
+          //     { label: 'Báo cáo người dùng', path: ROUTES.ADMIN_REPORTS + '/users' }
+          //   ]
+          // },
+          // {
+          //   icon: Settings,
+          //   label: 'Cài đặt hệ thống',
+          //   path: ROUTES.ADMIN_SETTINGS,
+          //   badge: null
+          // }
         ];
 
       case 'STAFF':
