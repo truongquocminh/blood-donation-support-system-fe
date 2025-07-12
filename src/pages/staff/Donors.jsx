@@ -107,10 +107,8 @@ const Donors = () => {
       const healthCheckMap = {};
 
       responses.forEach((response, index) => {
-        console.log("response: ", response)
         if (response.status === 200) {
           healthCheckMap[userIds[index]] = response.data.data.content;
-          console.log("healthCheckMap[userIds[index]]: ", healthCheckMap[userIds[index]])
         }
       });
 
@@ -155,8 +153,7 @@ const Donors = () => {
   const getDonationWithDetails = (donation) => {
     const userHealthChecks = healthChecks[donation.user] || [];
     const healthCheck = userHealthChecks.find(hc => hc.id === donation.healthCheckId);
-    console.log("userHealthChecks: ",userHealthChecks)
-    console.log("healthCheck: ", healthCheck)
+
     const userData = users[donation.user];
     return {
       ...donation,

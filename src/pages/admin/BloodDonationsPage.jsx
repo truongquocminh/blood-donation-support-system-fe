@@ -82,13 +82,11 @@ const BloodDonationsPage = () => {
           const name = await fetchUserData(userId);
           return { userId, name };
         });
-        console.log("userPromises: ", userPromises)
         const userResults = await Promise.all(userPromises);
         const userMap = {};
         userResults.forEach(({ userId, name }) => {
           userMap[userId] = name;
         });
-        console.log(userMap)
         setUserNames(userMap);
 
         const healthCheckPromises = donationData.map(async (donation) => {
