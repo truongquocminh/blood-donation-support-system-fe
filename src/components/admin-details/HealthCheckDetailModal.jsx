@@ -3,7 +3,7 @@ import { Modal, Descriptions, Tag, Spin, Button, Space, Progress } from 'antd';
 import { Activity, User, Calendar, Heart, TrendingUp, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
-import { getUserById } from '../../services/userService'; 
+import { getUserById } from '../../services/userService';
 
 const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
   const [user, setUser] = useState(null);
@@ -11,7 +11,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
 
   const fetchUserDetail = async () => {
     if (!userId) return;
-    
+
     setLoading(true);
     try {
       const response = await getUserById(userId);
@@ -39,9 +39,9 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
 
   const getBloodPressureStatus = (bp) => {
     if (!bp) return { status: 'unknown', text: 'Không xác định', color: 'default' };
-    
+
     const [systolic, diastolic] = bp.split('/').map(num => parseInt(num.trim()));
-    
+
     if (systolic < 90 || diastolic < 60) {
       return { status: 'low', text: 'Thấp', color: 'orange' };
     }
@@ -86,6 +86,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
           Chi tiết kiểm tra sức khỏe
         </div>
       }
+      style={{ top: 10 }}
       open={visible}
       onCancel={onCancel}
       width={700}
@@ -93,17 +94,17 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
         <Button key="close" onClick={onCancel}>
           Đóng
         </Button>,
-        <Button key="edit" onClick={handleEdit}>
-          Chỉnh sửa
-        </Button>,
+        // <Button key="edit" onClick={handleEdit}>
+        //   Chỉnh sửa
+        // </Button>,
         ...(healthCheck?.isEligible ? [
-          <Button key="approve" type="primary" onClick={handleApprove}>
-            Duyệt kết quả
-          </Button>
+          // <Button key="approve" type="primary" onClick={handleApprove}>
+          //   Duyệt kết quả
+          // </Button>
         ] : [
-          <Button key="reject" danger onClick={handleReject}>
-            Từ chối
-          </Button>
+          // <Button key="reject" danger onClick={handleReject}>
+          //   Từ chối
+          // </Button>
         ])
       ]}
     >
@@ -114,7 +115,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
       ) : healthCheck ? (
         <div>
           <Descriptions title="Thông tin kiểm tra" column={2} bordered>
-            <Descriptions.Item 
+            <Descriptions.Item
               label={
                 <Space>
                   <Activity size={16} />
@@ -125,8 +126,8 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
             >
               <Tag color="blue">#{healthCheck.healthCheckId}</Tag>
             </Descriptions.Item>
-            
-            <Descriptions.Item 
+
+            <Descriptions.Item
               label={
                 <Space>
                   <Calendar size={16} />
@@ -137,8 +138,8 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
             >
               {dayjs(healthCheck.checkedAt).format('DD/MM/YYYY HH:mm:ss')}
             </Descriptions.Item>
-            
-            <Descriptions.Item 
+
+            <Descriptions.Item
               label={
                 <Space>
                   <User size={16} />
@@ -164,7 +165,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
                 </div>
                 <Tag color={pulseStatus?.color}>{pulseStatus?.text}</Tag>
                 <div style={{ marginTop: 8 }}>
-                  <Progress 
+                  <Progress
                     percent={Math.min((healthCheck.pulse / 120) * 100, 100)}
                     strokeColor={pulseStatus?.color === 'green' ? '#52c41a' : pulseStatus?.color === 'red' ? '#ff4d4f' : '#faad14'}
                     showInfo={false}
@@ -192,7 +193,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
           </div>
 
           <Descriptions title="Kết quả đánh giá" column={1} bordered>
-            <Descriptions.Item 
+            <Descriptions.Item
               label={
                 <Space>
                   {getEligibilityIcon(healthCheck.isEligible)}
@@ -204,13 +205,13 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
                 {getEligibilityText(healthCheck.isEligible)}
               </Tag>
             </Descriptions.Item>
-            
+
             <Descriptions.Item label="Tóm tắt kết quả">
               {healthCheck.resultSummary || 'Không có ghi chú đặc biệt'}
             </Descriptions.Item>
-            
+
             {!healthCheck.isEligible && (
-              <Descriptions.Item 
+              <Descriptions.Item
                 label={
                   <Space>
                     <AlertCircle size={16} />
@@ -221,7 +222,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
                 <Tag color="red">{healthCheck.ineligibleReason || 'Không có lý do cụ thể'}</Tag>
               </Descriptions.Item>
             )}
-            
+
             {healthCheck.bloodTypeId && (
               <Descriptions.Item label="Nhóm máu được xác định">
                 <Tag color="red">{healthCheck.bloodTypeName || `ID: ${healthCheck.bloodTypeId}`}</Tag>
@@ -233,7 +234,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
             <div style={{ marginTop: 16, padding: 16, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 8 }}>
               <h4 style={{ color: '#389e0d' }}>✅ Đủ điều kiện hiến máu</h4>
               <p style={{ margin: 0, color: '#666' }}>
-                Kết quả kiểm tra sức khỏe cho thấy người này đủ điều kiện để hiến máu. 
+                Kết quả kiểm tra sức khỏe cho thấy người này đủ điều kiện để hiến máu.
                 Các chỉ số sức khỏe đều trong mức bình thường.
               </p>
             </div>
@@ -241,7 +242,7 @@ const HealthCheckDetailModal = ({ visible, onCancel, healthCheck, userId }) => {
             <div style={{ marginTop: 16, padding: 16, backgroundColor: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 8 }}>
               <h4 style={{ color: '#cf1322' }}>❌ Không đủ điều kiện hiến máu</h4>
               <p style={{ margin: 0, color: '#666' }}>
-                Dựa trên kết quả kiểm tra, người này hiện tại không đủ điều kiện hiến máu. 
+                Dựa trên kết quả kiểm tra, người này hiện tại không đủ điều kiện hiến máu.
                 Lý do: {healthCheck.ineligibleReason || 'Các chỉ số sức khỏe chưa đạt yêu cầu'}
               </p>
             </div>

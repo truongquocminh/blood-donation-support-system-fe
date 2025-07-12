@@ -47,7 +47,7 @@ const BloodDonationsPage = () => {
   const fetchUserData = async (userId) => {
     try {
       const userResponse = await getUserById(userId);
-      return userResponse.data.fullName;
+      return userResponse.data.data.fullName;
     } catch (error) {
       return 'Unknown User';
     }
@@ -77,18 +77,18 @@ const BloodDonationsPage = () => {
           ...prev,
           total: response.data.data.page.totalElements
         }));
-
         const userIds = [...new Set(donationData.map(donation => donation.user))];
         const userPromises = userIds.map(async (userId) => {
           const name = await fetchUserData(userId);
           return { userId, name };
         });
-
+        console.log("userPromises: ", userPromises)
         const userResults = await Promise.all(userPromises);
         const userMap = {};
         userResults.forEach(({ userId, name }) => {
           userMap[userId] = name;
         });
+        console.log(userMap)
         setUserNames(userMap);
 
         const healthCheckPromises = donationData.map(async (donation) => {
@@ -279,6 +279,7 @@ const BloodDonationsPage = () => {
 
   const handleViewHealthCheck = (donationId) => {
     const donation = donations.find(don => don.donationId === donationId);
+    setSelectedDonation(donation);
     const healthCheck = healthChecks[donationId];
     if (healthCheck && donation) {
       setSelectedHealthCheckUserId(donation.user);
@@ -369,7 +370,7 @@ const BloodDonationsPage = () => {
       <HealthCheckDetailModal
         visible={healthCheckModalVisible}
         onCancel={handleCloseHealthCheckModal}
-        healthCheck={selectedDonation ? healthChecks[selectedDonation.donationId] : null}
+        healthCheck={selectedDonation ? healthChecks[selectedDonation.healthCheck] : null}
         userId={selectedHealthCheckUserId}
       />
     </Card>

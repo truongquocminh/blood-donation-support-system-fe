@@ -87,25 +87,26 @@ const AppointmentDetailModal = ({ visible, onCancel, appointment }) => {
       open={visible}
       onCancel={onCancel}
       width={700}
+      style={{ top: 10 }}
       footer={[
         <Button key="close" onClick={onCancel}>
           Đóng
         </Button>,
-        ...(canApprove ? [
-          <Button key="approve" type="primary" onClick={handleApprove}>
-            Duyệt cuộc hẹn
-          </Button>
-        ] : []),
-        ...(canComplete ? [
-          <Button key="complete" type="primary" onClick={handleComplete}>
-            Hoàn thành
-          </Button>
-        ] : []),
-        ...(canCancelAppt ? [
-          <Button key="cancel-appt" danger onClick={handleCancel}>
-            Hủy cuộc hẹn
-          </Button>
-        ] : [])
+        // ...(canApprove ? [
+        //   <Button key="approve" type="primary" onClick={handleApprove}>
+        //     Duyệt cuộc hẹn
+        //   </Button>
+        // ] : []),
+        // ...(canComplete ? [
+        //   <Button key="complete" type="primary" onClick={handleComplete}>
+        //     Hoàn thành
+        //   </Button>
+        // ] : []),
+        // ...(canCancelAppt ? [
+        //   <Button key="cancel-appt" danger onClick={handleCancel}>
+        //     Hủy cuộc hẹn
+        //   </Button>
+        // ] : [])
       ]}
     >
       {loading ? (
