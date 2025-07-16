@@ -90,7 +90,7 @@ const Header = ({ userType, onMenuClick }) => {
             </div>
           </div>
 
-          <div className="flex-1 max-w-md mx-4 hidden md:block">
+          {/* <div className="flex-1 max-w-md mx-4 hidden md:block">
             <form onSubmit={handleSearch}>
               <SearchInput
                 placeholder="Tìm kiếm..."
@@ -99,10 +99,10 @@ const Header = ({ userType, onMenuClick }) => {
                 className="w-full"
               />
             </form>
-          </div>
+          </div> */}
 
           <div className="flex items-center space-x-3">
-            <div className="hidden lg:flex items-center space-x-2">
+            {/* <div className="hidden lg:flex items-center space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -119,7 +119,7 @@ const Header = ({ userType, onMenuClick }) => {
               >
                 Hỗ trợ
               </Button>
-            </div>
+            </div> */}
 
 
 
@@ -169,21 +169,21 @@ const Header = ({ userType, onMenuClick }) => {
                         label: 'Hồ sơ cá nhân',
                         onClick: () => navigate(userType === 'MEMBER' ? ROUTES.MEMBER_PROFILE : '/profile')
                       },
-                      {
-                        icon: Settings,
-                        label: 'Cài đặt',
-                        onClick: () => console.log('Settings')
-                      },
-                      {
-                        icon: Shield,
-                        label: 'Bảo mật',
-                        onClick: () => console.log('Security')
-                      },
-                      {
-                        icon: HelpCircle,
-                        label: 'Trợ giúp',
-                        onClick: () => console.log('Help')
-                      }
+                      // {
+                      //   icon: Settings,
+                      //   label: 'Cài đặt',
+                      //   onClick: () => console.log('Settings')
+                      // },
+                      // {
+                      //   icon: Shield,
+                      //   label: 'Bảo mật',
+                      //   onClick: () => console.log('Security')
+                      // },
+                      // {
+                      //   icon: HelpCircle,
+                      //   label: 'Trợ giúp',
+                      //   onClick: () => console.log('Help')
+                      // }
                     ].map((item, index) => (
                       <button
                         key={index}
