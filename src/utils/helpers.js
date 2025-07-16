@@ -6,6 +6,7 @@ import {
   WHOLE_BLOOD_COMPATIBILITY,
   GENERIC_COMPONENT_COMPATIBILITY,
   BLOOD_COMPONENTS,
+  REMINDER_TYPE,
 } from "./constants";
 
 /**
@@ -601,3 +602,12 @@ export const prepareInventoryExport = (inventories, bloodTypes, bloodComponents)
     'Trạng thái': getStockStatus(inventory.quantity, inventory.expiryDate).label
   }));
 };
+
+export const getDefaultMessage = (reminderType) => {
+    const messages = {
+      [REMINDER_TYPE.BLOOD_DONATION]: 'Bạn có đặt lịch hẹn hiến máu, nhớ ăn uống đầy đủ để tiếp tục hành trình cứu người.',
+      [REMINDER_TYPE.APPOINTMENT]: 'Nhắc nhở cuộc hẹn khám sức khỏe. Vui lòng đến đúng giờ và mang theo các giấy tờ cần thiết.',
+      [REMINDER_TYPE.HEALTH_CHECK]: 'Thời gian kiểm tra sức khỏe định kỳ đã đến. Vui lòng liên hệ để đặt lịch khám.'
+    };
+    return messages[reminderType] || '';
+  };

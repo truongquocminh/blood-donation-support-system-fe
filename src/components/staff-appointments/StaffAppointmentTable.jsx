@@ -111,7 +111,7 @@ const StaffAppointmentTable = ({
         actions.push(
           <button
             key="schedule"
-            onClick={() => onStatusUpdate(appointment.appointmentId, APPOINTMENT_STATUS.SCHEDULED)}
+            onClick={() => onStatusUpdate(appointment.userId, appointment.appointmentDate, appointment.appointmentId, APPOINTMENT_STATUS.SCHEDULED)}
             className="text-green-600 hover:text-green-800 text-sm font-medium px-2 py-1 hover:bg-green-50 rounded"
           >
             Xác nhận

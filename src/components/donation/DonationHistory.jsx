@@ -122,10 +122,10 @@ const DonationHistory = ({
                         <Droplets className="w-3 h-3 mr-1" />
                         {getBloodTypeName(donation.bloodType)}
                       </span>
-                      <span className="text-sm font-medium text-gray-900">
+                      {/* <span className="text-sm font-medium text-gray-900">
                         {getComponentName(donation.bloodType, donation.bloodComponent)}
 
-                      </span>
+                      </span> */}
                     </div>
                     {getStatusBadge(donation.status)}
                   </div>

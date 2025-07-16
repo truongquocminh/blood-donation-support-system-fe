@@ -59,6 +59,7 @@ const MemberProfile = () => {
       const response = await getCurrentUser();
       if (response.status === 200 && response.data.data) {
         const userData = response.data.data;
+        console.log("userData: ", userData)
         setMember(prev => ({
           ...prev,
           id: userData.id,
@@ -67,7 +68,7 @@ const MemberProfile = () => {
           phoneNumber: userData.phoneNumber || '',
           address: userData.address || '',
           gender: userData.gender,
-          bloodTypeId: userData.bloodType !== null ? userData.bloodType : null,
+          bloodTypeId: userData.bloodTypeId !== null ? userData.bloodTypeId : null,
           dateOfBirth: userData.dateOfBirth || '',
           latitude: userData.latitude,
           longitude: userData.longitude,
@@ -124,7 +125,7 @@ const MemberProfile = () => {
       };
 
       const response = await updateUser(member.id, updateData);
-
+console.log("response update: ",response)
       if (response.status === 200) {
         setMember(prev => ({
           ...prev,

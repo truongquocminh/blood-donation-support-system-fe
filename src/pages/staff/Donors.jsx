@@ -8,7 +8,9 @@ import { getBloodDonations, updateBloodDonationStatus } from '../../services/blo
 import { getBloodTypes } from '../../services/bloodTypeService';
 import { getUserHealthChecks } from '../../services/healthCheckService';
 import { getUserById } from '../../services/userService';
-import { BLOOD_DONATION_STATUS } from '../../utils/constants';
+import { BLOOD_DONATION_STATUS, REMINDER_TYPE } from '../../utils/constants';
+import { getDefaultMessage } from '../../utils/helpers';
+import { createReminder } from '../../services/reminderService';
 
 const DONATION_STATUSES = {
   PENDING: 'Chờ xác nhận',
@@ -118,7 +120,7 @@ const Donors = () => {
     }
   };
 
-  const handleStatusUpdate = async (donationId, newStatus) => {
+  const handleStatusUpdate = async (userId, donationDate, donationId, newStatus) => {
     try {
       const response = await updateBloodDonationStatus(donationId, newStatus);
 
@@ -130,6 +132,18 @@ const Donors = () => {
               : donation
           )
         );
+
+        if (BLOOD_DONATION_STATUS.APPROVED === newStatus) {
+          const reminderData = {
+            userId,
+            nextDate: donationDate,
+            reminderType: REMINDER_TYPE.BLOOD_DONATION,
+            message: getDefaultMessage(REMINDER_TYPE.BLOOD_DONATION),
+            sent: true
+          };
+
+          await createReminder(reminderData);
+        }
         toast.success('Cập nhật trạng thái thành công');
       } else {
         toast.error('Không thể cập nhật trạng thái');
@@ -172,11 +186,9 @@ const Donors = () => {
 
   const filteredDonations = donations.filter(donation => {
     const enhancedDonation = getDonationWithDetails(donation);
-
     const matchesSearch = searchTerm === '' ||
       enhancedDonation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      enhancedDonation.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      enhancedDonation.user.phone.includes(searchTerm);
+      enhancedDonation.user.email.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = filterStatus === '' || donation.status === filterStatus;
     const matchesBloodType = filterBloodType === '' || donation.bloodType.toString() === filterBloodType;
@@ -236,7 +248,7 @@ const Donors = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
+              placeholder="Tìm kiếm theo tên hoặc email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"

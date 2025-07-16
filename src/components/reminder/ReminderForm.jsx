@@ -13,7 +13,7 @@ const ReminderForm = ({
     nextDate: '',
     reminderType: REMINDER_TYPE.BLOOD_DONATION,
     message: '',
-    sent: false
+    sent: true
   });
 
   const [errors, setErrors] = useState({});

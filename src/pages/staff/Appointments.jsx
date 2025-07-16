@@ -8,7 +8,9 @@ import HealthCheckFormModal from '../../components/staff-appointments/HealthChec
 import { filterAppointments, updateAppointmentStatus } from '../../services/appointmentService';
 import { getBloodTypes } from '../../services/bloodTypeService';
 import { createHealthCheck } from '../../services/healthCheckService';
-import { APPOINTMENT_STATUS } from '../../utils/constants';
+import { APPOINTMENT_STATUS, REMINDER_TYPE } from '../../utils/constants';
+import { getDefaultMessage } from '../../utils/helpers';
+import { createReminder } from '../../services/reminderService';
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -74,7 +76,7 @@ const StaffAppointments = () => {
     }
   };
 
-  const handleStatusUpdate = async (appointmentId, newStatus) => {
+  const handleStatusUpdate = async (userId, appointmentDate, appointmentId, newStatus) => {
     try {
       await updateAppointmentStatus(appointmentId, newStatus);
 
@@ -85,6 +87,19 @@ const StaffAppointments = () => {
             : appointment
         )
       );
+
+      if (APPOINTMENT_STATUS.SCHEDULED === newStatus) {
+        const reminderData = {
+          userId,
+          nextDate: appointmentDate,
+          reminderType: REMINDER_TYPE.APPOINTMENT,
+          message: getDefaultMessage(REMINDER_TYPE.APPOINTMENT),
+          sent: true
+        };
+
+        await createReminder(reminderData);
+
+      }
 
       toast.success('Cập nhật trạng thái thành công');
     } catch (error) {
@@ -286,8 +301,8 @@ const StaffAppointments = () => {
                   key={pageNumber}
                   onClick={() => handlePageChange(pageNumber)}
                   className={`px-3 py-1 text-sm border rounded ${currentPage === pageNumber
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-gray-300 hover:bg-gray-50'
                     }`}
                 >
                   {pageNumber + 1}

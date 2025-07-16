@@ -16,13 +16,14 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserHealthChecks } from '../../services/healthCheckService';
-import { createBloodDonation } from '../../services/bloodDonationService';
+import { createBloodDonation, getBloodDonations } from '../../services/bloodDonationService';
 import { getBloodTypes } from '../../services/bloodTypeService';
 import DonationFormModal from '../../components/donation/DonationFormModal';
 
 const HealthChecks = () => {
     const { user } = useAuth();
     const [allHealthChecks, setAllHealthChecks] = useState([]);
+    const [donations, setDonations] = useState([]);
     const [bloodTypes, setBloodTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
@@ -44,7 +45,6 @@ const HealthChecks = () => {
         try {
             setLoading(true);
             const response = await getUserHealthChecks(user.id, page, pagination.size);
-
             if (response.status === 200) {
                 setAllHealthChecks(response.data.data.content);
                 setPagination({
@@ -64,9 +64,28 @@ const HealthChecks = () => {
         }
     };
 
+    const fetchBloodDonations = async () => {
+        try {
+            const response = await getBloodDonations(0, 100);
+            if (response.status === 200 && response.data?.data?.content) {
+                const allDonations = response.data.data.content;
+
+                const userDonations = allDonations.filter(donation => {
+                    return donation.user === user.id || donation.user?.id === user.id;
+                });
+
+                setDonations(userDonations);
+            }
+        } catch (error) {
+            console.error('Error fetching blood donations:', error);
+        }
+    };
+
+
     useEffect(() => {
         if (user?.id) {
             fetchHealthChecks();
+            fetchBloodDonations();
             loadBloodTypes();
         }
     }, [user?.id]);
@@ -214,6 +233,7 @@ const HealthChecks = () => {
     const totalChecks = allHealthChecks.length;
     const eligibleChecks = allHealthChecks.filter(hc => hc.isEligible).length;
     const recentCheck = allHealthChecks.sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
+    const donatedHealthCheckIds = new Set(donations.map(d => d.healthCheck));
 
     if (loading) {
         return (
@@ -503,7 +523,7 @@ const HealthChecks = () => {
                                             </div>
                                         </div>
 
-                                        {healthCheck.isEligible && (
+                                        {healthCheck.isEligible && !donatedHealthCheckIds.has(healthCheck.healthCheckId) && (
                                             <div className="ml-4">
                                                 <button
                                                     onClick={() => handleDonationClick(healthCheck)}

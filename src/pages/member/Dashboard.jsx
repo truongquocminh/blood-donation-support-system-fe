@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  Heart, Calendar, Award, TrendingUp, Clock, MapPin, 
+import {
+  Heart, Calendar, Award, TrendingUp, Clock, MapPin,
   User, Star, Gift, Bell, ChevronRight, Plus
 } from 'lucide-react';
 import { StatsCard, InfoCard, ActionCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal, { AlertModal } from '../../components/ui/Modal';
+import useAuth from '../../hooks/useAuth';
 
 const MemberDashboard = () => {
+  const { user } = useAuth();
   const [showBookingModal, setShowBookingModal] = useState(false);
 
   const memberData = {
@@ -139,7 +141,7 @@ const MemberDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
-              Chào mừng trở lại, {memberData.name}! 👋
+              Chào mừng trở lại, {user.fullName}! 👋
             </h1>
             <p className="text-red-100 mb-4">
               Cảm ơn bạn đã là một phần của cộng đồng hiến máu. Mỗi giọt máu của bạn đều có ý nghĩa!
@@ -319,25 +321,22 @@ const MemberDashboard = () => {
 
           <div className="space-y-4">
             {achievements.map((achievement) => (
-              <div 
-                key={achievement.id} 
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  achievement.unlocked 
-                    ? 'border-yellow-200 bg-yellow-50' 
+              <div
+                key={achievement.id}
+                className={`p-4 rounded-lg border-2 transition-all ${achievement.unlocked
+                    ? 'border-yellow-200 bg-yellow-50'
                     : 'border-gray-200 bg-gray-50 opacity-60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-3">
                   <div className="text-2xl">{achievement.icon}</div>
                   <div className="flex-1">
-                    <h3 className={`font-medium ${
-                      achievement.unlocked ? 'text-gray-900' : 'text-gray-500'
-                    }`}>
+                    <h3 className={`font-medium ${achievement.unlocked ? 'text-gray-900' : 'text-gray-500'
+                      }`}>
                       {achievement.title}
                     </h3>
-                    <p className={`text-sm ${
-                      achievement.unlocked ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
+                    <p className={`text-sm ${achievement.unlocked ? 'text-gray-600' : 'text-gray-400'
+                      }`}>
                       {achievement.description}
                     </p>
                     {achievement.unlocked && achievement.date && (
@@ -385,7 +384,7 @@ const MemberDashboard = () => {
               <span className="font-medium text-blue-900">Nhắc nhở</span>
             </div>
             <p className="text-sm text-blue-700">
-              Bạn có thể hiến máu lại sau ngày {formatDate(memberData.nextEligibleDate)}. 
+              Bạn có thể hiến máu lại sau ngày {formatDate(memberData.nextEligibleDate)}.
               Hãy đặt lịch hẹn sớm để đảm bảo có chỗ!
             </p>
           </div>

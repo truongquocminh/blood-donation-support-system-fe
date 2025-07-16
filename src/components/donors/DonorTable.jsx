@@ -1,14 +1,14 @@
 import React from 'react';
-import { 
-  Eye, UserCheck, Calendar, Droplets, Phone, 
-  CheckCircle, Clock, XCircle, AlertCircle, User 
+import {
+  Eye, UserCheck, Calendar, Droplets, Phone,
+  CheckCircle, Clock, XCircle, AlertCircle, User
 } from 'lucide-react';
 import { BLOOD_DONATION_STATUS } from '../../utils/constants';
 
-const DonorTable = ({ 
-  donations, 
-  bloodTypes, 
-  onStatusUpdate, 
+const DonorTable = ({
+  donations,
+  bloodTypes,
+  onStatusUpdate,
   onViewDetails,
   getBloodTypeName
 }) => {
@@ -54,13 +54,12 @@ const DonorTable = ({
 
   const getStatusActions = (donation) => {
     const actions = [];
-
     switch (donation.status) {
       case BLOOD_DONATION_STATUS.PENDING:
         actions.push(
           <button
             key="approve"
-            onClick={() => onStatusUpdate(donation.donationId, BLOOD_DONATION_STATUS.APPROVED)}
+            onClick={() => onStatusUpdate(donation?.user?.id, donation.donationDate, donation.donationId, BLOOD_DONATION_STATUS.APPROVED)}
             className="text-green-600 hover:text-green-800 text-sm font-medium"
           >
             Phê duyệt
@@ -97,8 +96,8 @@ const DonorTable = ({
   };
 
   const isPastDue = (donationDate, status) => {
-    return new Date(donationDate) < new Date() && 
-           [BLOOD_DONATION_STATUS.PENDING, BLOOD_DONATION_STATUS.APPROVED].includes(status);
+    return new Date(donationDate) < new Date() &&
+      [BLOOD_DONATION_STATUS.PENDING, BLOOD_DONATION_STATUS.APPROVED].includes(status);
   };
 
   const isToday = (donationDate) => {
@@ -108,21 +107,21 @@ const DonorTable = ({
   };
 
   const sortedDonations = [...donations].sort((a, b) => {
-  const now = new Date();
+    const now = new Date();
 
-  const aDate = new Date(a.donationDate);
-  const bDate = new Date(b.donationDate);
+    const aDate = new Date(a.donationDate);
+    const bDate = new Date(b.donationDate);
 
-  const isPast = (date) => date < now;
+    const isPast = (date) => date < now;
 
-  const aPast = isPast(aDate);
-  const bPast = isPast(bDate);
+    const aPast = isPast(aDate);
+    const bPast = isPast(bDate);
 
-  if (aPast && !bPast) return 1;
-  if (!aPast && bPast) return -1;
+    if (aPast && !bPast) return 1;
+    if (!aPast && bPast) return -1;
 
-  return Math.abs(aDate - now) - Math.abs(bDate - now);
-});
+    return Math.abs(aDate - now) - Math.abs(bDate - now);
+  });
 
 
   return (
@@ -175,7 +174,7 @@ const DonorTable = ({
                         <div className="text-sm font-medium text-gray-900">
                           {donation.user.name}
                         </div>
-                       
+
                         <div className="text-sm text-gray-500 truncate max-w-[200px]">
                           {donation.user.email}
                         </div>
@@ -201,9 +200,8 @@ const DonorTable = ({
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <div>
-                        <div className={`text-sm ${
-                          isToday(donation.donationDate) ? 'font-medium text-blue-600' : 'text-gray-900'
-                        }`}>
+                        <div className={`text-sm ${isToday(donation.donationDate) ? 'font-medium text-blue-600' : 'text-gray-900'
+                          }`}>
                           {new Date(donation.donationDate).toLocaleDateString('vi-VN')}
                           {isToday(donation.donationDate) && (
                             <span className="ml-1 text-blue-500">(Hôm nay)</span>

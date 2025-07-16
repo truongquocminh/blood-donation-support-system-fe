@@ -209,15 +209,15 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete, onRef
   };
 
   const handleEdit = async (componentData) => {
+
     try {
       setLoading(true);
-
       const updateData = {
-        componentId: editingComponent.id,
+        componentId: editingComponent.componentId,
         componentName: componentData.componentName
       };
 
-      const response = await updateBloodComponent(editingComponent.id, updateData);
+      const response = await updateBloodComponent(editingComponent.componentId, updateData);
 
       if (response.status === 200) {
         toast.success('Cập nhật thành phần máu thành công!');
@@ -227,7 +227,7 @@ const BloodComponentManager = ({ bloodComponents, onAdd, onEdit, onDelete, onRef
         if (onRefresh) {
           onRefresh();
         } else {
-          onEdit(editingComponent.id, updateData);
+          onEdit(editingComponent.componentId, updateData);
         }
       } else {
         toast.error('Không thể cập nhật thành phần máu');

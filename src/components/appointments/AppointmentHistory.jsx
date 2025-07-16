@@ -136,7 +136,7 @@ const AppointmentHistory = ({ appointments, onCancel }) => {
                     <div className="flex items-center space-x-2 text-sm text-green-700 bg-green-50 p-2 rounded">
                       <CheckCircle className="w-4 h-4" />
                       <span>
-                        Cảm ơn bạn đã hiến máu! Hoàn thành lúc: {' '}
+                        Hoàn thành lúc: {' '}
                         {new Date(appointment.appointmentDate).toLocaleString('vi-VN')}
                       </span>
                     </div>

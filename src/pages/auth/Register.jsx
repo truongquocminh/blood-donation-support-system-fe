@@ -190,7 +190,7 @@ const Register = () => {
 
         const updateResult = await updateUser(auth.user.id, updateData);
 
-        if (updateResult.status === 200) {
+        if (updateResult.status === 200 || updateResult.status === 201) {
           setCurrentStep(3);
         }
       } catch (error) {

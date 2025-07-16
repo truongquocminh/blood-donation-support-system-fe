@@ -163,12 +163,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.MEMBER_APPOINTMENTS,
             badge: null
           },
-          {
-            icon: Syringe,
-            label: 'Yêu cầu máu',
-            path: ROUTES.MEMBER_BLOOD_REQUEST,
-            badge: null
-          },
+          // {
+          //   icon: Syringe,
+          //   label: 'Yêu cầu máu',
+          //   path: ROUTES.MEMBER_BLOOD_REQUEST,
+          //   badge: null
+          // },
           {
             icon: History,
             label: 'Nhắc nhở',
@@ -181,12 +181,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.MEMBER_LOOKUP,
             badge: null
           },
-          {
-            icon: Award,
-            label: 'Phần thưởng',
-            path: ROUTES.MEMBER_REWARDS,
-            badge: 3
-          },
+          // {
+          //   icon: Award,
+          //   label: 'Phần thưởng',
+          //   path: ROUTES.MEMBER_REWARDS,
+          //   badge: 3
+          // },
 
         ];
       default:
