@@ -120,7 +120,7 @@ const StaffAppointmentTable = ({
         actions.push(
           <button
             key="cancel"
-            onClick={() => onStatusUpdate(appointment.appointmentId, APPOINTMENT_STATUS.CANCELLED)}
+            onClick={() => onStatusUpdate(appointment.userId, appointment.appointmentDate, appointment.appointmentId, APPOINTMENT_STATUS.CANCELLED)}
             className="text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 hover:bg-red-50 rounded"
           >
             Từ chối

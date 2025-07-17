@@ -53,6 +53,7 @@ const DonorTable = ({
   };
 
   const getStatusActions = (donation) => {
+    console.log("donation: ", donation)
     const actions = [];
     switch (donation.status) {
       case BLOOD_DONATION_STATUS.PENDING:
@@ -68,7 +69,7 @@ const DonorTable = ({
         actions.push(
           <button
             key="reject"
-            onClick={() => onStatusUpdate(donation.donationId, BLOOD_DONATION_STATUS.REJECTED)}
+            onClick={() => onStatusUpdate(donation?.user?.id, donation.donationDate, donation.donationId, BLOOD_DONATION_STATUS.REJECTED)}
             className="text-red-600 hover:text-red-800 text-sm font-medium"
           >
             Từ chối
@@ -80,7 +81,7 @@ const DonorTable = ({
         actions.push(
           <button
             key="complete"
-            onClick={() => onStatusUpdate(donation.donationId, BLOOD_DONATION_STATUS.COMPLETED)}
+            onClick={() => onStatusUpdate(donation?.user?.id, donation.donationDate, donation.donationId, BLOOD_DONATION_STATUS.COMPLETED)}
             className="text-green-600 hover:text-green-800 text-sm font-medium"
           >
             Hoàn thành
