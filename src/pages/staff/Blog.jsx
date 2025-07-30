@@ -135,15 +135,15 @@ const Blog = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
-                        {user?.role === ('ADMIN' || 'STAFF') ? 'Quản lý bài viết' : 'Bài viết'}
+                        {(user?.role === 'ADMIN' || user?.role === 'STAFF') ? 'Quản lý bài viết' : 'Bài viết'}
                     </h1>
                     <p className="text-gray-600">
-                        {user?.role === ('ADMIN' || 'STAFF') ? 'Quản lý và theo dõi các bài viết đã được đăng' : 'Xem các bài viết hiện có'}
+                        {(user?.role === 'ADMIN' || user?.role === 'STAFF') ? 'Quản lý và theo dõi các bài viết đã được đăng' : 'Xem các bài viết hiện có'}
                     </p>
                 </div>
 
                 {
-                    user?.role === ('ADMIN' || 'STAFF')
+                    (user?.role === 'ADMIN' || user?.role === 'STAFF')
                     &&
                     <button
                         onClick={handleCreateBlog}
@@ -168,7 +168,7 @@ const Blog = () => {
                         >
                             Tất cả bài viết
                         </button>
-                        {user?.role === ('ADMIN' || 'STAFF') &&
+                        {(user?.role === 'ADMIN' || user?.role === 'STAFF') &&
 
                             (<button
                                 onClick={() => setActiveTab('my')}
