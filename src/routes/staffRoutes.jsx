@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Blog from '../pages/staff/Blog';
 
 const StaffDashboard = lazy(() => import('../pages/staff/Dashboard'));
 const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
@@ -25,6 +26,7 @@ const StaffRoutes = () => {
           <Route path="blood-requests" element={<BloodRequests />} />               
           <Route path="inventories" element={<Inventory />} />               
           <Route path="reminders" element={<Reminders />} />               
+          <Route path="blogs" element={<Blog />} />               
         </Routes>
       </Suspense>
     </Layout>

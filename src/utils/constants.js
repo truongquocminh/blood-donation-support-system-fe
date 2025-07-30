@@ -62,6 +62,7 @@ export const ROUTES = {
   MEMBER_LOOKUP: "/member/lookup",
   MEMBER_HEALTH_CHECK: "/member/health-check",
   MEMBER_BLOOD_REQUEST: "/member/blood-requests",
+  MEMBER_BLOGS: "/member/blogs",
 
   STAFF_DASHBOARD: "/staff/dashboard",
   STAFF_APPOINTMENTS: "/staff/appointments",
@@ -70,6 +71,7 @@ export const ROUTES = {
   STAFF_INVENTORIES: "/staff/inventories",
   STAFF_REMINDERS: "/staff/reminders",
   STAFF_BLOOD_REQUEST: "/staff/blood-requests",
+  STAFF_BLOGS: "/staff/blogs",
 
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_USERS: "/admin/users",
@@ -78,6 +80,7 @@ export const ROUTES = {
   ADMIN_REPORTS: "/admin/reports",
   ADMIN_SETTINGS: "/admin/settings",
   ADMIN_LOCATIONS: "/admin/locations",
+  ADMIN_BLOGS: "/admin/blogs",
 };
 
 export const ERROR_MESSAGES = {

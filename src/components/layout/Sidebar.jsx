@@ -6,7 +6,8 @@ import {
   Heart, Shield, Database, ChevronDown, ChevronRight,
   Search,
   HeartPulse,
-  Syringe
+  Syringe,
+  NotepadText
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { ROUTES } from '../../utils/constants';
@@ -42,7 +43,7 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.ADMIN_USERS,
             children: [
               { label: 'Thành viên', path: ROUTES.ADMIN_USERS + '/members' },
-              { label: 'Nhân viên', path: ROUTES.ADMIN_USERS + '/staffs'},
+              { label: 'Nhân viên', path: ROUTES.ADMIN_USERS + '/staffs' },
             ]
           },
           {
@@ -54,6 +55,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
               { label: 'Lịch hẹn', path: ROUTES.ADMIN_DONATIONS + '/appointments' },
               { label: 'Kho máu', path: ROUTES.ADMIN_DONATIONS + '/inventories' }
             ]
+          },
+          {
+            icon: NotepadText,
+            label: 'Bài viết',
+            path: ROUTES.ADMIN_BLOGS,
+            badge: null
           },
           // {
           //   icon: MapPin,
@@ -127,7 +134,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             path: ROUTES.STAFF_REMINDERS,
             badge: null
           },
-
+          {
+            icon: NotepadText,
+            label: 'Bài viết',
+            path: ROUTES.STAFF_BLOGS,
+            badge: null
+          },
         ];
 
       case 'MEMBER':
@@ -179,6 +191,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
             icon: Search,
             label: 'Tra cứu',
             path: ROUTES.MEMBER_LOOKUP,
+            badge: null
+          },
+          {
+            icon: NotepadText,
+            label: 'Khám phá Bài viết',
+            path: ROUTES.MEMBER_BLOGS,
             badge: null
           },
           // {

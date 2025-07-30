@@ -2,6 +2,7 @@ import { apiPost, apiGet, apiPut } from "./api";
 
 const AUTH_ENDPOINTS = {
   LOGIN: "/v1/auth/login",
+  LOGIN_GOOGLE: "/v1/auth/google-login",
   REGISTER: "/v1/auth",
   LOGOUT: "/v1/auth/logout",
   REFRESH: "/v1/auth/refreshToken",

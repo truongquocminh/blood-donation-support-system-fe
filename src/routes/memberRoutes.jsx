@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Blog from '../pages/staff/Blog';
 
 const MemberDashboard = lazy(() => import('../pages/member/Dashboard'));
 const MemberProfile = lazy(() => import('../pages/member/Profile'));
@@ -30,6 +31,7 @@ const MemberRoutes = () => {
           <Route path="lookup" element={<BloodLookupPage />} />
           <Route path="blood-requests" element={<BloodRequests />} />
           <Route path="health-check" element={<HealthCheck />} />
+          <Route path="blogs" element={<Blog />} />
           <Route path="rewards" element={<MemberRewards />} />
         </Routes>
       </Suspense>
