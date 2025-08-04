@@ -1,9 +1,9 @@
 import { apiGet } from "./api";
 
 const CERTIFICATE_ENDPOINTS = {
-  GET_CERTIFICATES: "/api/v1/certificates",
-  GET_CERTIFICATE_BY_ID: "/api/v1/certificates",
-  GET_USER_CERTIFICATES: "/api/v1/certificates/user",
+  GET_CERTIFICATES: "/v1/certificates",
+  GET_CERTIFICATE_BY_ID: "/v1/certificates",
+  GET_USER_CERTIFICATES: "/v1/certificates/user",
 };
 
 export const getCertificates = async (page = 0, size = 10) => {

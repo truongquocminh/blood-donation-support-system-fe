@@ -5,6 +5,7 @@ import { getUserById } from '../../services/userService';
 import { getAppointmentHealthDeclaration } from '../../services/healthDeclarationService';
 import { getBloodTypes } from '../../services/bloodTypeService';
 import { getHealthCheckByAppointment } from '../../services/healthCheckService';
+import { getAppointmentBloodDonationInfo } from '../../services/bloodDonationInformationService';
 import { formatVietnamTime } from '../../utils/formatters';
 import { useAuth } from '../../context/AuthContext';
 
@@ -18,13 +19,16 @@ const AppointmentDetailsModal = ({
   const [userInfo, setUserInfo] = useState(null);
   const [healthDeclaration, setHealthDeclaration] = useState(null);
   const [healthCheck, setHealthCheck] = useState(null);
+  const [bloodDonationInfo, setBloodDonationInfo] = useState(null);
   const [bloodTypes, setBloodTypes] = useState([]);
   const [loadingUser, setLoadingUser] = useState(false);
   const [loadingHealth, setLoadingHealth] = useState(false);
   const [loadingHealthCheck, setLoadingHealthCheck] = useState(false);
+  const [loadingBloodDonation, setLoadingBloodDonation] = useState(false);
   const [userError, setUserError] = useState(false);
   const [healthError, setHealthError] = useState(false);
   const [healthCheckError, setHealthCheckError] = useState(false);
+  const [bloodDonationError, setBloodDonationError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,9 +37,11 @@ const AppointmentDetailsModal = ({
       setLoadingUser(true);
       setLoadingHealth(true);
       setLoadingHealthCheck(true);
+      setLoadingBloodDonation(true);
       setUserError(false);
       setHealthError(false);
       setHealthCheckError(false);
+      setBloodDonationError(false);
 
       try {
         const [userData, bloodTypesData] = await Promise.all([
@@ -71,6 +77,20 @@ const AppointmentDetailsModal = ({
       } finally {
         setLoadingHealthCheck(false);
       }
+
+      if ([APPOINTMENT_STATUS.COMPLETED].includes(appointment.status)) {
+        try {
+          const bloodDonationData = await getAppointmentBloodDonationInfo(appointment.appointmentId);
+          setBloodDonationInfo(bloodDonationData.data.data);
+        } catch (error) {
+          console.error('Error fetching blood donation info:', error);
+          setBloodDonationError(true);
+        } finally {
+          setLoadingBloodDonation(false);
+        }
+      } else {
+        setLoadingBloodDonation(false);
+      }
     };
 
     if (isOpen && appointment) {
@@ -83,13 +103,16 @@ const AppointmentDetailsModal = ({
       setUserInfo(null);
       setHealthDeclaration(null);
       setHealthCheck(null);
+      setBloodDonationInfo(null);
       setBloodTypes([]);
       setLoadingUser(false);
       setLoadingHealth(false);
       setLoadingHealthCheck(false);
+      setLoadingBloodDonation(false);
       setUserError(false);
       setHealthError(false);
       setHealthCheckError(false);
+      setBloodDonationError(false);
     }
   }, [isOpen]);
 
@@ -329,7 +352,6 @@ const AppointmentDetailsModal = ({
 
     return (
       <div className="space-y-4">
-        {/* Kết quả tổng quan */}
         <div className={`p-4 rounded-lg border-2 ${healthCheck.isEligible
           ? 'bg-green-50 border-green-200'
           : 'bg-red-50 border-red-200'
@@ -358,7 +380,6 @@ const AppointmentDetailsModal = ({
           )}
         </div>
 
-        {/* Chỉ số sức khỏe */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
             <h5 className="font-medium text-gray-900">Chỉ số sinh hiệu</h5>
@@ -421,6 +442,92 @@ const AppointmentDetailsModal = ({
     );
   };
 
+  const BloodDonationDisplay = () => {
+    if (loadingBloodDonation) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+          <span className="text-sm text-gray-500">Đang tải thông tin hiến máu...</span>
+        </div>
+      );
+    }
+
+    if (bloodDonationError || !bloodDonationInfo) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Droplets className="w-4 h-4 text-gray-400" />
+          <span className="text-sm text-gray-500">Chưa có thông tin hiến máu</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="p-4 rounded-lg border-2 bg-red-50 border-red-200">
+          <div className="flex items-center space-x-2 mb-3">
+            <CheckCircle className="w-5 h-5 text-red-600" />
+            <span className="font-medium text-red-800">Đã hoàn thành hiến máu</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-red-100">
+                <div className="flex items-center space-x-2">
+                  <Droplets className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-gray-700">Lượng máu thực tế:</span>
+                </div>
+                <span className="text-sm font-medium text-red-900">{bloodDonationInfo.actualBloodVolume} ml</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-red-100">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-gray-700">Nhóm máu:</span>
+                </div>
+                <span className="text-sm font-medium text-red-900">
+                  {bloodDonationInfo.bloodTypeName || 'Chưa xác định'}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-red-100">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-700">Thời gian hiến:</span>
+                </div>
+                <span className="text-sm font-medium text-red-900">
+                  {formatVietnamTime(bloodDonationInfo.createdAt, 'DD/MM/YYYY HH:mm')}
+                </span>
+              </div>
+
+              {bloodDonationInfo.updatedAt !== bloodDonationInfo.createdAt && (
+                <div className="flex items-center justify-between py-2 border-b border-red-100">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-700">Cập nhật lần cuối:</span>
+                  </div>
+                  <span className="text-sm font-medium text-red-900">
+                    {formatVietnamTime(bloodDonationInfo.updatedAt, 'DD/MM/YYYY HH:mm')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {user.role === 'MEMBER' && (
+            <div className="mt-4 p-3 bg-green-100 rounded-md">
+              <p className="text-sm text-green-800">
+                <span className="font-medium">🎉 Cảm ơn bạn đã hiến máu!</span>
+                <br />Lượng máu hiến tặng của bạn sẽ giúp cứu sống nhiều người.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-0-important fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -447,11 +554,12 @@ const AppointmentDetailsModal = ({
         </div>
 
         <div className="p-6 space-y-6">
-          {user.role === 'STAFF' && (<div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin người khám</h4>
-            <UserInfoDisplay />
-          </div>)}
-
+          {user.role === 'STAFF' && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin người khám</h4>
+              <UserInfoDisplay />
+            </div>
+          )}
 
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin lịch hẹn</h4>
@@ -500,7 +608,6 @@ const AppointmentDetailsModal = ({
             <HealthDeclarationDisplay />
           </div>
 
-          {/* Thêm phần thông tin khám sức khỏe */}
           <div className="bg-green-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
               <Activity className="w-4 h-4 text-green-600" />
@@ -508,6 +615,16 @@ const AppointmentDetailsModal = ({
             </h4>
             <HealthCheckDisplay />
           </div>
+
+          {[APPOINTMENT_STATUS.COMPLETED].includes(appointment.status) && (
+            <div className="bg-red-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
+                <Droplets className="w-4 h-4 text-red-600" />
+                <span>Thông tin hiến máu</span>
+              </h4>
+              <BloodDonationDisplay />
+            </div>
+          )}
 
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin thời gian</h4>

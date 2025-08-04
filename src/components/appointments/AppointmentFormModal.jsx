@@ -49,8 +49,64 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
     }
   }, [isOpen]);
 
+  const getVietnamTime = () => {
+    return new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Ho_Chi_Minh"
+    });
+  };
+
+  const getCurrentVietnamDateTime = () => {
+    const now = new Date();
+    const vietnamTime = new Date(now.toLocaleString("en-US", {
+      timeZone: "Asia/Ho_Chi_Minh"
+    }));
+    return vietnamTime;
+  };
+
+  const isToday = (dateString) => {
+    const selectedDate = new Date(dateString);
+    const today = getCurrentVietnamDateTime();
+    return selectedDate.toDateString() === today.toDateString();
+  };
+
+  const getCurrentVietnamHour = () => {
+    const vietnamTime = getCurrentVietnamDateTime();
+    return vietnamTime.getHours();
+  };
+
+  const getCurrentVietnamMinute = () => {
+    const vietnamTime = getCurrentVietnamDateTime();
+    return vietnamTime.getMinutes();
+  };
+
+  const isTimeSlotAvailable = (timeSlot) => {
+    if (!formData.appointmentDate) return true;
+    
+    if (!isToday(formData.appointmentDate)) return true;
+
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    const currentHour = getCurrentVietnamHour();
+    const currentMinute = getCurrentVietnamMinute();
+
+    if (hours < currentHour) {
+      return false;
+    }
+    
+    if (hours === currentHour && minutes <= currentMinute) {
+      return false;
+    }
+
+    return true;
+  };
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (field === 'appointmentDate' && formData.appointmentTime) {
+      if (!isTimeSlotAvailable(formData.appointmentTime)) {
+        setFormData((prev) => ({ ...prev, appointmentTime: "" }));
+      }
+    }
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -89,6 +145,10 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
       const [hours] = formData.appointmentTime.split(":").map(Number);
       if (hours < 8 || hours >= 17) {
         newErrors.appointmentTime = "Giờ hẹn phải trong khung 8:00 - 17:00";
+      }
+
+      if (!isTimeSlotAvailable(formData.appointmentTime)) {
+        newErrors.appointmentTime = "Không thể chọn giờ trong quá khứ";
       }
     }
 
@@ -227,6 +287,8 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
     }
   }
 
+  const availableTimeSlots = timeSlots.filter(timeSlot => isTimeSlotAvailable(timeSlot));
+
   return (
     <div className="mt-0-important fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] overflow-y-auto">
@@ -295,6 +357,7 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
                       <p className="font-medium mb-1">Lưu ý quan trọng:</p>
                       <div className="space-y-0.5">
                         <div>• Giờ làm việc: 8:00 - 17:00 (T2-CN)</div>
+                        <div>• Thời gian theo múi giờ Việt Nam (GMT+7)</div>
                         <div>• Nhân viên y tế sẽ tư vấn khi bạn đến</div>
                         <div>• Vui lòng đến đúng giờ hẹn</div>
                       </div>
@@ -335,6 +398,11 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Giờ hẹn <span className="text-red-500">*</span>
+                      {isToday(formData.appointmentDate) && (
+                        <span className="text-xs text-orange-600 ml-2">
+                          (Giờ hiện tại: {String(getCurrentVietnamHour()).padStart(2, '0')}:{String(getCurrentVietnamMinute()).padStart(2, '0')})
+                        </span>
+                      )}
                     </label>
                     <select
                       value={formData.appointmentTime}
@@ -348,15 +416,32 @@ const AppointmentFormModal = ({ isOpen, onClose, onSubmit }) => {
                         } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <option value="">Chọn giờ</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
+                      {timeSlots.map((time) => {
+                        const isAvailable = isTimeSlotAvailable(time);
+                        return (
+                          <option 
+                            key={time} 
+                            value={time}
+                            disabled={!isAvailable}
+                            style={{ 
+                              color: !isAvailable ? '#9CA3AF' : 'inherit',
+                              backgroundColor: !isAvailable ? '#F3F4F6' : 'inherit'
+                            }}
+                          >
+                            {time} {!isAvailable ? '(Đã qua)' : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                     {errors.appointmentTime && (
                       <p className="text-sm text-red-500 mt-1">
                         {errors.appointmentTime}
+                      </p>
+                    )}
+                    {isToday(formData.appointmentDate) && availableTimeSlots.length === 0 && (
+                      <p className="text-sm text-orange-600 mt-1">
+                        <Clock className="w-4 h-4 inline mr-1" />
+                        Không còn khung giờ nào khả dụng hôm nay. Vui lòng chọn ngày khác.
                       </p>
                     )}
                   </div>

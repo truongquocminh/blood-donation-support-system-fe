@@ -101,7 +101,7 @@ api.interceptors.response.use(
           break;
 
         case 404:
-          toast.error(ERROR_MESSAGES.NOT_FOUND);
+          // toast.error(ERROR_MESSAGES.NOT_FOUND);
           break;
 
         case 422:

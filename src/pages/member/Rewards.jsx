@@ -28,10 +28,10 @@ const Certificates = () => {
       setLoading(true);
       const res = await getCertificates(currentPage, pageSize);
       if (res.status === 200 && res.data.data) {
-        const { content, page } = res.data.data;
+        const { content, totalPages, totalElements } = res.data.data;
         setCertificates(content);
-        setTotalPages(page.totalPages);
-        setTotalElements(page.totalElements);
+        setTotalPages(totalPages);
+        setTotalElements(totalElements);
       } else {
         setCertificates([]);
         setTotalPages(0);

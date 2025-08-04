@@ -274,6 +274,7 @@ const StaffAppointments = () => {
         onStatusUpdate={handleStatusUpdate}
         onViewDetails={openDetailsModal}
         onHealthCheck={openHealthCheckModal}
+        onRefresh={loadAppointments}
       />
 
       {totalPages > 1 && (
