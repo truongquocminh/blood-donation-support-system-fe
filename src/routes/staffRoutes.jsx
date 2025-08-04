@@ -2,14 +2,16 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import Blog from '../pages/staff/Blog';
 
 const StaffDashboard = lazy(() => import('../pages/staff/Dashboard'));
 const StaffAppointments = lazy(() => import('../pages/staff/Appointments'));
+const BloodDonations = lazy(() => import('../pages/staff/BloodDonations'));
+const Extractions = lazy(() => import('../pages/staff/Extractions'));
 const Donors = lazy(() => import('../pages/staff/Donors'));
 const Inventory = lazy(() => import('../pages/staff/Inventory'));
 const Reminders = lazy(() => import('../pages/staff/Reminders'));
 const BloodRequests = lazy(() => import('../pages/staff/BloodRequests'));
+const Blog = lazy(() => import('../pages/staff/Blog'));
 
 const StaffRoutes = () => {
   return (
@@ -22,6 +24,8 @@ const StaffRoutes = () => {
         <Routes>
           <Route path="dashboard" element={<StaffDashboard />} />
           <Route path="appointments" element={<StaffAppointments />} />               
+          <Route path="blood-donations" element={<BloodDonations />} />               
+          <Route path="extractions" element={<Extractions />} />               
           <Route path="donors" element={<Donors />} />               
           <Route path="blood-requests" element={<BloodRequests />} />               
           <Route path="inventories" element={<Inventory />} />               

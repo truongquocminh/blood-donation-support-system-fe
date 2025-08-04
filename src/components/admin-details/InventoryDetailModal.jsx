@@ -83,7 +83,7 @@ const InventoryDetailModal = ({ visible, onCancel, inventory }) => {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      toast.success(`Cập nhật số lượng tồn kho thành ${values.quantity} đơn vị`);
+      toast.success(`Cập nhật số lượng tồn kho thành ${values.quantity} ml`);
       setEditing(false);
     } catch (error) {
       toast.error('Vui lòng kiểm tra lại thông tin');
@@ -200,14 +200,14 @@ const InventoryDetailModal = ({ visible, onCancel, inventory }) => {
                     <InputNumber
                       style={{ width: 150 }}
                       placeholder="Nhập số lượng"
-                      addonAfter="đơn vị"
+                      addonAfter="ml"
                     />
                   </Form.Item>
                 </Form>
               ) : (
                 <Space>
                   <Tag color={getQuantityColor(inventory.quantity)} style={{ fontSize: '16px', padding: '4px 12px' }}>
-                    {inventory.quantity} đơn vị
+                    {inventory.quantity} ml
                   </Tag>
                   <Tag color={getQuantityColor(inventory.quantity)}>
                     {getQuantityStatus(inventory.quantity)}

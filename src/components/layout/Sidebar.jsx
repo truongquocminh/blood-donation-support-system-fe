@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
-  X, Home, Calendar, User, Award, History, Users,
-  BarChart3, Settings, FileText, MapPin, Package,
-  Heart, Shield, Database, ChevronDown, ChevronRight,
+  X,
+  Home,
+  Calendar,
+  User,
+  Award,
+  History,
+  Users,
+  BarChart3,
+  Settings,
+  FileText,
+  MapPin,
+  Package,
+  Heart,
+  Shield,
+  Database,
+  ChevronDown,
+  ChevronRight,
   Search,
   HeartPulse,
   Syringe,
-  NotepadText
-} from 'lucide-react';
-import { cn } from '../../utils/helpers';
-import { ROUTES } from '../../utils/constants';
+  NotepadText,
+} from "lucide-react";
+import { cn } from "../../utils/helpers";
+import { ROUTES } from "../../utils/constants";
 
 const Sidebar = ({ userType, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -28,39 +42,48 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
     ];
 
     switch (userType) {
-      case 'ADMIN':
+      case "ADMIN":
         return [
           ...baseItems,
           {
             icon: BarChart3,
-            label: 'Dashboard',
+            label: "Dashboard",
             path: ROUTES.ADMIN_DASHBOARD,
-            badge: null
+            badge: null,
           },
           {
             icon: Users,
-            label: 'Quản lý người dùng',
+            label: "Quản lý người dùng",
             path: ROUTES.ADMIN_USERS,
             children: [
-              { label: 'Thành viên', path: ROUTES.ADMIN_USERS + '/members' },
-              { label: 'Nhân viên', path: ROUTES.ADMIN_USERS + '/staffs' },
-            ]
+              { label: "Thành viên", path: ROUTES.ADMIN_USERS + "/members" },
+              { label: "Nhân viên", path: ROUTES.ADMIN_USERS + "/staffs" },
+            ],
           },
           {
             icon: Heart,
-            label: 'Quản lý hiến máu',
+            label: "Quản lý hiến máu",
             path: ROUTES.ADMIN_DONATIONS,
             children: [
-              { label: 'Lịch sử hiến máu', path: ROUTES.ADMIN_DONATIONS + '/donation-history' },
-              { label: 'Lịch hẹn', path: ROUTES.ADMIN_DONATIONS + '/appointments' },
-              { label: 'Kho máu', path: ROUTES.ADMIN_DONATIONS + '/inventories' }
-            ]
+              {
+                label: "Lịch sử hiến máu",
+                path: ROUTES.ADMIN_DONATIONS + "/donation-history",
+              },
+              {
+                label: "Lịch hẹn",
+                path: ROUTES.ADMIN_DONATIONS + "/appointments",
+              },
+              {
+                label: "Kho máu",
+                path: ROUTES.ADMIN_DONATIONS + "/inventories",
+              },
+            ],
           },
           {
             icon: NotepadText,
-            label: 'Bài viết',
+            label: "Bài viết",
             path: ROUTES.ADMIN_BLOGS,
-            badge: null
+            badge: null,
           },
           // {
           //   icon: MapPin,
@@ -86,20 +109,20 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           // }
         ];
 
-      case 'STAFF':
+      case "STAFF":
         return [
           ...baseItems,
           {
             icon: BarChart3,
-            label: 'Dashboard',
+            label: "Dashboard",
             path: ROUTES.STAFF_DASHBOARD,
-            badge: null
+            badge: null,
           },
           {
             icon: Calendar,
-            label: 'Lịch hẹn',
+            label: "Lịch hẹn",
             path: ROUTES.STAFF_APPOINTMENTS,
-            badge: null
+            badge: null,
           },
           // {
           //   icon: Heart,
@@ -110,70 +133,82 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           //     { label: 'Lịch sử', path: ROUTES.STAFF_DONATIONS + '/history' }
           //   ]
           // },
+          // {
+          //   icon: Users,
+          //   label: 'Người hiến máu',
+          //   path: ROUTES.STAFF_DONORS,
+          //   badge: null
+          // },
           {
             icon: Users,
-            label: 'Người hiến máu',
-            path: ROUTES.STAFF_DONORS,
-            badge: null
+            label: "Thông tin hiến máu",
+            path: ROUTES.STAFF_BLOOD_DONATIONS,
+            badge: null,
           },
           {
             icon: Syringe,
-            label: 'Yêu cầu máu',
+            label: "Yêu cầu máu",
             path: ROUTES.STAFF_BLOOD_REQUEST,
-            badge: null
+            badge: null,
           },
           {
             icon: Package,
-            label: 'Kho máu',
+            label: "Kho máu",
             path: ROUTES.STAFF_INVENTORIES,
-            badge: null
+            badge: null,
+          },
+          {
+            icon: HeartPulse,
+            label: "Quản lý trích xuất",
+            path: ROUTES.STAFF_EXTRACTIONS,
+            badge: null,
           },
           {
             icon: History,
-            label: 'Nhắc nhở',
+            label: "Nhắc nhở",
             path: ROUTES.STAFF_REMINDERS,
-            badge: null
+            badge: null,
           },
           {
             icon: NotepadText,
-            label: 'Bài viết',
+            label: "Bài viết",
             path: ROUTES.STAFF_BLOGS,
-            badge: null
+            badge: null,
           },
         ];
 
-      case 'MEMBER':
+      case "MEMBER":
         return [
           ...baseItems,
           {
             icon: BarChart3,
-            label: 'Dashboard',
+            label: "Dashboard",
             path: ROUTES.MEMBER_DASHBOARD,
-            badge: null
+            badge: null,
           },
           {
             icon: User,
-            label: 'Hồ sơ cá nhân',
+            label: "Hồ sơ cá nhân",
             path: ROUTES.MEMBER_PROFILE,
-            badge: null
+            badge: null,
           },
           {
             icon: HeartPulse,
-            label: 'Kiểm tra sức khỏe',
+            label: "Kiểm tra sức khỏe",
             path: ROUTES.MEMBER_HEALTH_CHECK,
-            badge: null
+            badge: null,
           },
-          {
-            icon: Heart,
-            label: 'Hiến máu',
-            path: ROUTES.MEMBER_DONATIONS,
-            badge: null
-          },
+          // {
+          //   icon: Heart,
+          //   label: 'Hiến máu',
+          //   path: ROUTES.MEMBER_DONATIONS,
+          //   badge: null
+          // },
           {
             icon: Calendar,
-            label: 'Lịch hẹn',
+            label: "Lịch hẹn",
             path: ROUTES.MEMBER_APPOINTMENTS,
-            badge: null
+            badge: null,
           },
           // {
           //   icon: Syringe,
@@ -183,29 +218,28 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
           // },
           {
             icon: History,
-            label: 'Nhắc nhở',
+            label: "Nhắc nhở",
             path: ROUTES.MEMBER_REMINDERS,
-            badge: null
+            badge: null,
           },
           {
             icon: Search,
-            label: 'Tra cứu',
+            label: "Tra cứu",
             path: ROUTES.MEMBER_LOOKUP,
-            badge: null
+            badge: null,
+          },
+          {
+            icon: Award,
+            label: "Chứng nhận",
+            path: ROUTES.MEMBER_REWARDS,
+            badge: null,
           },
           {
             icon: NotepadText,
-            label: 'Khám phá Bài viết',
+            label: "Khám phá Bài viết",
             path: ROUTES.MEMBER_BLOGS,
-            badge: null
+            badge: null,
           },
-          // {
-          //   icon: Award,
-          //   label: 'Phần thưởng',
-          //   path: ROUTES.MEMBER_REWARDS,
-          //   badge: 3
-          // },
-
         ];
       default:
         return baseItems;
@@ -220,14 +254,16 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
   };
 
   const toggleSection = (index) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [index]: !prev[index]
+      [index]: !prev[index],
     }));
   };
 
   const isActive = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
   };
 
   const SidebarItem = ({ item, index }) => {
@@ -239,15 +275,22 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
       <div className="mb-1">
         <div
           className={cn(
-            'flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors',
+            "flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors",
             active
-              ? 'bg-red-100 text-red-700 border-r-2 border-red-500'
-              : 'text-gray-700 hover:bg-gray-100'
+              ? "bg-red-100 text-red-700 border-r-2 border-red-500"
+              : "text-gray-700 hover:bg-gray-100"
           )}
-          onClick={() => hasChildren ? toggleSection(index) : handleNavigation(item.path)}
+          onClick={() =>
+            hasChildren ? toggleSection(index) : handleNavigation(item.path)
+          }
         >
           <div className="flex items-center space-x-3">
-            <item.icon className={cn('w-5 h-5', active ? 'text-red-600' : 'text-gray-500')} />
+            <item.icon
+              className={cn(
+                "w-5 h-5",
+                active ? "text-red-600" : "text-gray-500"
+              )}
+            />
             <span className="font-medium">{item.label}</span>
           </div>
 
@@ -258,7 +301,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
               </span>
             )}
             {hasChildren && (
-              <div className={cn('transition-transform', isExpanded ? 'rotate-90' : '')}>
+              <div
+                className={cn(
+                  "transition-transform",
+                  isExpanded ? "rotate-90" : ""
+                )}
+              >
                 <ChevronRight className="w-4 h-4 text-gray-400" />
               </div>
             )}
@@ -271,10 +319,10 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
               <div
                 key={childIndex}
                 className={cn(
-                  'flex items-center px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm',
+                  "flex items-center px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
                   isActive(child.path)
-                    ? 'bg-red-50 text-red-600'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? "bg-red-50 text-red-600"
+                    : "text-gray-600 hover:bg-gray-50"
                 )}
                 onClick={() => handleNavigation(child.path)}
               >
@@ -290,10 +338,12 @@ const Sidebar = ({ userType, isOpen, onClose }) => {
 
   return (
     <>
-      <div className={cn(
-        'fixed left-0 top-16 bottom-0 z-50 w-64 bg-white border-r border-gray-200 shadow-lg transform transition-transform duration-300',
-        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      )}>
+      <div
+        className={cn(
+          "fixed left-0 top-16 bottom-0 z-50 w-64 bg-white border-r border-gray-200 shadow-lg transform transition-transform duration-300",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}
+      >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:hidden">
           <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
           <button

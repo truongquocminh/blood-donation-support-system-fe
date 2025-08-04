@@ -8,7 +8,7 @@ const MemberDashboard = lazy(() => import('../pages/member/Dashboard'));
 const MemberProfile = lazy(() => import('../pages/member/Profile'));
 const MemberDonations = lazy(() => import('../pages/member/Donations'));
 const Appointments = lazy(() => import('../pages/member/Appointments'));
-const MemberRewards = lazy(() => import('../pages/member/Rewards'));
+const Certificates = lazy(() => import('../pages/member/Rewards'));
 const Reminders = lazy(() => import('../pages/member/Reminders'));
 const BloodLookupPage = lazy(() => import('../pages/member/BloodLookupPage'));
 const HealthCheck = lazy(() => import('../pages/member/HealthCheck'));
@@ -32,7 +32,7 @@ const MemberRoutes = () => {
           <Route path="blood-requests" element={<BloodRequests />} />
           <Route path="health-check" element={<HealthCheck />} />
           <Route path="blogs" element={<Blog />} />
-          <Route path="rewards" element={<MemberRewards />} />
+          <Route path="rewards" element={<Certificates />} />
         </Routes>
       </Suspense>
     </Layout>

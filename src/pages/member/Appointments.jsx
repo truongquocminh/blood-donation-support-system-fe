@@ -4,12 +4,12 @@ import toast from 'react-hot-toast';
 import AppointmentStats from '../../components/appointments/AppointmentStats';
 import AppointmentHistory from '../../components/appointments/AppointmentHistory';
 import AppointmentFormModal from '../../components/appointments/AppointmentFormModal';
+import AppointmentDetailsModal from '../../components/staff-appointments/AppointmentDetailsModal'; 
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { APPOINTMENT_STATUS } from '../../utils/constants';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   getUserAppointments, 
-  createAppointment, 
   deleteAppointment,
   getAppointmentById
 } from '../../services/appointmentService';
@@ -45,6 +45,12 @@ const Appointments = () => {
     message: ''
   });
 
+  const [detailsModal, setDetailsModal] = useState({
+    isOpen: false,
+    appointment: null
+  });
+  const [loadingAppointmentDetails, setLoadingAppointmentDetails] = useState(false);
+
   const fetchAppointments = async (page = 0) => {
     try {
       setLoading(true);
@@ -75,21 +81,9 @@ const Appointments = () => {
     }
   }, [user?.id]);
 
-  const handleAddAppointment = async (appointmentData) => {
-    try {
-      const response = await createAppointment(appointmentData);
-      
-      if (response.status === 200 || response.status === 201) {
-        toast.success('Đặt lịch hẹn thành công!');
-        setIsModalOpen(false);
-        fetchAppointments(pagination.page); 
-      } else {
-        toast.error(response.message || 'Không thể đặt lịch hẹn');
-      }
-    } catch (error) {
-      console.error('Error creating appointment:', error);
-      toast.error('Có lỗi xảy ra khi đặt lịch hẹn');
-    }
+  const handleAppointmentSuccess = () => {
+    setIsModalOpen(false);
+    fetchAppointments(pagination.page);
   };
 
   const handleCancelAppointment = (id) => {
@@ -117,6 +111,35 @@ const Appointments = () => {
     } finally {
       setConfirmModal({ isOpen: false, appointmentId: null, title: '', message: '' });
     }
+  };
+
+  const handleViewDetails = async (appointmentId) => {
+    try {
+      setLoadingAppointmentDetails(true);
+      
+      const response = await getAppointmentById(appointmentId);
+      
+      if (response.status === 200) {
+        setDetailsModal({
+          isOpen: true,
+          appointment: response.data.data
+        });
+      } else {
+        toast.error('Không thể tải chi tiết lịch hẹn');
+      }
+    } catch (error) {
+      console.error('Error fetching appointment details:', error);
+      toast.error('Có lỗi xảy ra khi tải chi tiết lịch hẹn');
+    } finally {
+      setLoadingAppointmentDetails(false);
+    }
+  };
+
+  const handleCloseDetailsModal = () => {
+    setDetailsModal({
+      isOpen: false,
+      appointment: null
+    });
   };
 
   const handleFilterChange = (field, value) => {
@@ -203,7 +226,6 @@ const Appointments = () => {
           
           <button
             onClick={() => setIsModalOpen(true)}
-            // disabled={!canCreateAppointment()}
             className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4" />
@@ -211,23 +233,6 @@ const Appointments = () => {
           </button>
         </div>
       </div>
-
-      {/* {!canCreateAppointment() && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <Clock className="w-5 h-5 text-yellow-500 mt-0.5" />
-            <div>
-              <h3 className="text-sm font-medium text-yellow-800">
-                Chưa thể đặt lịch hẹn mới
-              </h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                Bạn cần chờ ít nhất 12 tuần kể từ lần hiến máu cuối cùng ({new Date(lastCompletedAppointment.appointmentDate).toLocaleDateString('vi-VN')}) 
-                trước khi có thể đặt lịch hẹn mới.
-              </p>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
         <div className="flex items-center space-x-4">
@@ -357,6 +362,8 @@ const Appointments = () => {
       <AppointmentHistory
         appointments={filteredAppointments}
         onCancel={handleCancelAppointment}
+        onViewDetails={handleViewDetails}
+        loadingDetails={loadingAppointmentDetails}
       />
 
       {pagination.totalPages > 1 && (
@@ -431,7 +438,14 @@ const Appointments = () => {
       <AppointmentFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddAppointment}
+        onSubmit={handleAppointmentSuccess}
+      />
+
+      {/* Modal chi tiết lịch hẹn */}
+      <AppointmentDetailsModal
+        isOpen={detailsModal.isOpen}
+        onClose={handleCloseDetailsModal}
+        appointment={detailsModal.appointment}
       />
 
       <ConfirmModal

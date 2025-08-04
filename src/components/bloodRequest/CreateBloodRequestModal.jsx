@@ -42,7 +42,7 @@ const CreateBloodRequestModal = ({ isOpen, onClose, onSubmit, bloodTypes, isLoad
     if (!formData.bloodTypeId) newErrors.bloodTypeId = 'Chọn nhóm máu';
     if (!formData.bloodComponentId) newErrors.bloodComponentId = 'Chọn thành phần máu';
     if (!formData.quantity || formData.quantity < 1) newErrors.quantity = 'Số lượng phải > 0';
-    if (formData.quantity > 100) newErrors.quantity = 'Tối đa 100 đơn vị';
+    if (formData.quantity > 100) newErrors.quantity = 'Tối đa 100 ml';
     return newErrors;
   };
 

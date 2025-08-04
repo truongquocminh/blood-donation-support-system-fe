@@ -68,6 +68,8 @@ export const ROUTES = {
   STAFF_APPOINTMENTS: "/staff/appointments",
   STAFF_DONATIONS: "/staff/donations",
   STAFF_DONORS: "/staff/donors",
+  STAFF_BLOOD_DONATIONS: "/staff/blood-donations",
+  STAFF_EXTRACTIONS: "/staff/extractions",
   STAFF_INVENTORIES: "/staff/inventories",
   STAFF_REMINDERS: "/staff/reminders",
   STAFF_BLOOD_REQUEST: "/staff/blood-requests",
@@ -160,6 +162,7 @@ export const APPOINTMENT_STATUS = {
   SCHEDULED: "SCHEDULED",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
+  MEDICAL_COMPLETED: "MEDICAL_COMPLETED",
 };
 
 export const BLOOD_DONATION_STATUS = {

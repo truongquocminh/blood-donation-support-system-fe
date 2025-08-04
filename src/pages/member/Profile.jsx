@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Droplets, Calendar, Edit3, Save, X, Users } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Droplets, Calendar, Edit3, Save, X, Users, CreditCard, Briefcase } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { getCurrentUser, updateUser } from '../../services/userService';
 import { getBloodTypes } from '../../services/bloodTypeService';
@@ -9,6 +9,68 @@ const GENDER_OPTIONS = {
   FEMALE: 'Nữ',
   OTHER: 'Khác'
 };
+
+const InfoItem = ({ icon: Icon, label, value, isEditing = false, field, type = 'text', disabled = false, editForm, handleInputChange, bloodTypes }) => (
+  <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm">
+    <div className="p-3 bg-red-50 rounded-full">
+      <Icon className="w-5 h-5 text-red-500" />
+    </div>
+    <div className="flex-1">
+      <p className="text-sm text-gray-500">{label}</p>
+      {isEditing && !disabled ? (
+        <div>
+          {type === 'select' && field === 'bloodTypeId' ? (
+            <select
+              value={editForm[field] || ''}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              <option value="">Chọn nhóm máu</option>
+              {bloodTypes.map((bt) => (
+                <option key={bt.id} value={bt.id}>
+                  {bt.typeName}
+                </option>
+              ))}
+            </select>
+          ) : type === 'select' && field === 'gender' ? (
+            <select
+              value={editForm[field] || 'MALE'}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              {Object.entries(GENDER_OPTIONS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          ) : type === 'date' ? (
+            <input
+              type="date"
+              value={editForm[field] || ''}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          ) : type === 'textarea' ? (
+            <textarea
+              value={editForm[field] || ''}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              rows="2"
+            />
+          ) : (
+            <input
+              type={type}
+              value={editForm[field] || ''}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          )}
+        </div>
+      ) : (
+        <p className="text-gray-800 font-medium">{value || 'Chưa cập nhật'}</p>
+      )}
+    </div>
+  </div>
+);
 
 const MemberProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -27,6 +89,8 @@ const MemberProfile = () => {
     longitude: null,
     role: '',
     status: true,
+    citizenId: '',
+    job: '',
   });
   const [bloodTypes, setBloodTypes] = useState([]);
 
@@ -45,10 +109,12 @@ const MemberProfile = () => {
         phoneNumber: member.phoneNumber || '',
         address: member.address || '',
         gender: member.gender || 'MALE',
-        bloodTypeId: member.bloodTypeId !== null ? member.bloodTypeId : 0,
+        bloodTypeId: member.bloodTypeId || '',
         dateOfBirth: member.dateOfBirth || '',
-        latitude: member.latitude || 0,
-        longitude: member.longitude || 0,
+        latitude: member.latitude || '',
+        longitude: member.longitude || '',
+        citizenId: member.citizenId || '',
+        job: member.job || '',
       });
     }
   }, [isEditing, member]);
@@ -68,12 +134,14 @@ const MemberProfile = () => {
           phoneNumber: userData.phoneNumber || '',
           address: userData.address || '',
           gender: userData.gender,
-          bloodTypeId: userData.bloodTypeId !== null ? userData.bloodTypeId : null,
+          bloodTypeId: userData.bloodTypeId || null,
           dateOfBirth: userData.dateOfBirth || '',
           latitude: userData.latitude,
           longitude: userData.longitude,
           role: userData.role,
           status: userData.status,
+          citizenId: userData.citizenId || '',
+          job: userData.job || '',
         }));
       } else {
         toast.error('Không thể tải thông tin người dùng');
@@ -118,19 +186,20 @@ const MemberProfile = () => {
         phoneNumber: editForm.phoneNumber,
         address: editForm.address,
         gender: editForm.gender,
-        bloodTypeId: parseInt(editForm.bloodTypeId),
+        bloodTypeId: editForm.bloodTypeId ? parseInt(editForm.bloodTypeId) : null,
         dateOfBirth: editForm.dateOfBirth,
-        latitude: parseFloat(editForm.latitude),
-        longitude: parseFloat(editForm.longitude),
+        latitude: editForm.latitude ? parseFloat(editForm.latitude) : null,
+        longitude: editForm.longitude ? parseFloat(editForm.longitude) : null,
+        citizenId: editForm.citizenId,
+        job: editForm.job,
       };
 
       const response = await updateUser(member.id, updateData);
-console.log("response update: ",response)
+      console.log("response update: ",response)
       if (response.status === 200) {
         setMember(prev => ({
           ...prev,
           ...updateData,
-          bloodTypeId: updateData.bloodTypeId,
         }));
         setIsEditing(false);
         toast.success('Cập nhật thông tin thành công!');
@@ -158,8 +227,8 @@ console.log("response update: ",response)
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          handleInputChange('latitude', latitude);
-          handleInputChange('longitude', longitude);
+          handleInputChange('latitude', latitude.toString());
+          handleInputChange('longitude', longitude.toString());
           toast.dismiss();
           toast.success(`Đã cập nhật vị trí: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
         },
@@ -173,66 +242,7 @@ console.log("response update: ",response)
     }
   };
 
-  const InfoItem = ({ icon: Icon, label, value, isEditing = false, field, type = 'text', disabled = false }) => (
-    <div className="flex items-center space-x-4 p-4 bg-white rounded-lg shadow-sm">
-      <div className="p-3 bg-red-50 rounded-full">
-        <Icon className="w-5 h-5 text-red-500" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm text-gray-500">{label}</p>
-        {isEditing && !disabled ? (
-          <div>
-            {type === 'select' && field === 'bloodTypeId' ? (
-              <select
-                value={editForm[field] || 0}
-                onChange={(e) => handleInputChange(field, parseInt(e.target.value))}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                {bloodTypes.map((bt) => (
-                  <option key={bt.id} value={bt.id}>
-                    {bt.typeName}
-                  </option>
-                ))}
-              </select>
-            ) : type === 'select' && field === 'gender' ? (
-              <select
-                value={editForm[field] || 'MALE'}
-                onChange={(e) => handleInputChange(field, e.target.value)}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              >
-                {Object.entries(GENDER_OPTIONS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            ) : type === 'date' ? (
-              <input
-                type="date"
-                value={editForm[field] || ''}
-                onChange={(e) => handleInputChange(field, e.target.value)}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            ) : type === 'textarea' ? (
-              <textarea
-                value={editForm[field] || ''}
-                onChange={(e) => handleInputChange(field, e.target.value)}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                rows="2"
-              />
-            ) : (
-              <input
-                type={type}
-                value={editForm[field] || ''}
-                onChange={(e) => handleInputChange(field, e.target.value)}
-                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-              />
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-800 font-medium">{value || 'Chưa cập nhật'}</p>
-        )}
-      </div>
-    </div>
-  );
+
 
   if (loading) {
     return (
@@ -324,6 +334,9 @@ console.log("response update: ",response)
           value={member.fullName}
           isEditing={isEditing}
           field="fullName"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <InfoItem
           icon={Mail}
@@ -333,6 +346,9 @@ console.log("response update: ",response)
           field="email"
           type="email"
           disabled={true}
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <InfoItem
           icon={Phone}
@@ -341,6 +357,31 @@ console.log("response update: ",response)
           isEditing={isEditing}
           field="phoneNumber"
           type="text"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
+        />
+        <InfoItem
+          icon={CreditCard}
+          label="CMND/CCCD"
+          value={member.citizenId}
+          isEditing={isEditing}
+          field="citizenId"
+          type="text"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
+        />
+        <InfoItem
+          icon={Briefcase}
+          label="Nghề nghiệp"
+          value={member.job}
+          isEditing={isEditing}
+          field="job"
+          type="text"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <InfoItem
           icon={Users}
@@ -349,6 +390,9 @@ console.log("response update: ",response)
           isEditing={isEditing}
           field="gender"
           type="select"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <InfoItem
           icon={Droplets}
@@ -357,6 +401,9 @@ console.log("response update: ",response)
           isEditing={isEditing}
           field="bloodTypeId"
           type="select"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <InfoItem
           icon={Calendar}
@@ -365,6 +412,9 @@ console.log("response update: ",response)
           isEditing={isEditing}
           field="dateOfBirth"
           type="date"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
       </div>
 
@@ -376,6 +426,9 @@ console.log("response update: ",response)
           isEditing={isEditing}
           field="address"
           type="textarea"
+          editForm={editForm}
+          handleInputChange={handleInputChange}
+          bloodTypes={bloodTypes}
         />
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center space-x-4">
@@ -392,7 +445,7 @@ console.log("response update: ",response)
                       step="any"
                       placeholder="Latitude"
                       value={editForm.latitude || ''}
-                      onChange={(e) => handleInputChange('latitude', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleInputChange('latitude', e.target.value)}
                       className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <input
@@ -400,7 +453,7 @@ console.log("response update: ",response)
                       step="any"
                       placeholder="Longitude"
                       value={editForm.longitude || ''}
-                      onChange={(e) => handleInputChange('longitude', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleInputChange('longitude', e.target.value)}
                       className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                   </div>
@@ -414,7 +467,7 @@ console.log("response update: ",response)
               ) : (
                 <p className="text-gray-800 font-medium">
                   {member.latitude !== null && member.longitude !== null
-                    ? `${member.latitude?.toFixed(6)}, ${member.longitude?.toFixed(6)}`
+                    ? `${parseFloat(member.latitude)?.toFixed(6)}, ${parseFloat(member.longitude)?.toFixed(6)}`
                     : 'Chưa cập nhật'}
                 </p>
               )}

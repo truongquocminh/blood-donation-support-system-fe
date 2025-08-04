@@ -117,7 +117,7 @@ const StaffAppointments = () => {
 
       await createHealthCheck(payload);
 
-      await updateAppointmentStatus(appointmentId, APPOINTMENT_STATUS.COMPLETED);
+      await updateAppointmentStatus(appointmentId, APPOINTMENT_STATUS.MEDICAL_COMPLETED);
 
       await loadAppointments();
 

@@ -523,17 +523,7 @@ const HealthChecks = () => {
                                             </div>
                                         </div>
 
-                                        {healthCheck.isEligible && !donatedHealthCheckIds.has(healthCheck.healthCheckId) && (
-                                            <div className="ml-4">
-                                                <button
-                                                    onClick={() => handleDonationClick(healthCheck)}
-                                                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                                                >
-                                                    <Plus className="w-4 h-4" />
-                                                    <span>Đăng ký hiến máu</span>
-                                                </button>
-                                            </div>
-                                        )}
+                                       
                                     </div>
                                 </div>
                             </div>

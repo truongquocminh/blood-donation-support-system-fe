@@ -3,6 +3,8 @@ import { apiPost, apiGet } from "./api";
 const HEALTH_CHECK_ENDPOINTS = {
   CREATE_HEALTH_CHECK: "/v1/health-check",
   GET_USER_HEALTH_CHECKS: "/v1/health-check/users",
+  GET_HEALTH_CHECK_BY_APPOINTMENT:
+    "/v1/health-check/health-checks/by-appointment",
 };
 
 export const createHealthCheck = async (healthCheckData) => {
@@ -13,7 +15,8 @@ export const createHealthCheck = async (healthCheckData) => {
     resultSummary,
     isEligible,
     ineligibleReason,
-    bloodTypeId,
+    weight,
+    suggestBloodVolume,
   } = healthCheckData;
 
   const payload = {
@@ -23,13 +26,11 @@ export const createHealthCheck = async (healthCheckData) => {
     resultSummary,
     isEligible,
     ineligibleReason,
-    bloodTypeId,
+    weight,
+    suggestBloodVolume,
   };
 
-  return apiPost(
-    `${HEALTH_CHECK_ENDPOINTS.CREATE_HEALTH_CHECK}`,
-    payload
-  );
+  return apiPost(`${HEALTH_CHECK_ENDPOINTS.CREATE_HEALTH_CHECK}`, payload);
 };
 
 export const getUserHealthChecks = async (userId, page = 0, size = 10) => {
@@ -45,7 +46,14 @@ export const getUserHealthChecks = async (userId, page = 0, size = 10) => {
   );
 };
 
+export const getHealthCheckByAppointment = async (appointmentId) => {
+  return apiGet(
+    `${HEALTH_CHECK_ENDPOINTS.GET_HEALTH_CHECK_BY_APPOINTMENT}/${appointmentId}`
+  );
+};
+
 export default {
   createHealthCheck,
   getUserHealthChecks,
+  getHealthCheckByAppointment,
 };

@@ -18,23 +18,43 @@ export const getInventoryById = async (id) => {
 };
 
 export const updateInventory = async (id, inventoryData) => {
-  const { bloodTypeId, bloodComponentId, quantity } = inventoryData;
+  const {
+    bloodTypeId,
+    componentId,
+    quantity,
+    addedDate,
+    expiryDate,
+    batchNumber,
+  } = inventoryData;
 
   const payload = {
     bloodTypeId,
-    bloodComponentId,
+    componentId,
     quantity,
+    addedDate,
+    expiryDate,
+    batchNumber,
   };
 
   return apiPut(`${INVENTORY_ENDPOINTS.UPDATE_INVENTORY}/${id}`, payload);
 };
 
 export const createInventory = async (inventoryData) => {
-  const { bloodTypeId, bloodComponentId, quantity } = inventoryData;
+  const {
+    bloodTypeId,
+    componentId,
+    quantity,
+    addedDate,
+    expiryDate,
+    batchNumber,
+  } = inventoryData;
   const payload = {
     bloodTypeId,
-    bloodComponentId,
+    componentId,
     quantity,
+    addedDate,
+    expiryDate,
+    batchNumber,
   };
 
   return apiPost(INVENTORY_ENDPOINTS.CREATE_INVENTORY, payload);

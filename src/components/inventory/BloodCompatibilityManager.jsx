@@ -14,8 +14,8 @@ const BloodCompatibilityManager = ({
     const [loading, setLoading] = useState(false);
     const [viewMode, setViewMode] = useState('list');
     const [confirmModal, setConfirmModal] = useState({ open: false, bloodTypeId: null, componentId: null });
-    const [savingType, setSavingType] = useState(null); 
-    const [removingComponent, setRemovingComponent] = useState(null); 
+    const [savingType, setSavingType] = useState(null);
+    const [removingComponent, setRemovingComponent] = useState(null);
 
     const getCompatibilityMatrix = () => {
         return bloodTypes.map(type => ({
@@ -55,12 +55,14 @@ const BloodCompatibilityManager = ({
     const handleSaveCompatibility = async (bloodType) => {
         try {
             setLoading(true);
-            setSavingType(bloodType.id); 
+            setSavingType(bloodType.id);
 
             const updateData = {
                 bloodTypeId: bloodType.id,
                 typeName: bloodType.typeName,
-                componentIds: editingComponents
+                componentIds: editingComponents,
+                canDonateTo: bloodType.canDonateTo || null,
+                canReceiveFrom: bloodType.canReceiveFrom || null
             };
 
             const response = await updateBloodType(bloodType.id, updateData);
@@ -96,7 +98,7 @@ const BloodCompatibilityManager = ({
         try {
             setLoading(true);
             setRemovingComponent(`${bloodTypeId}-${componentId}`);
-            
+
             const response = await removeComponentFromBloodType(bloodTypeId, componentId);
             if (response.status === 200) {
                 toast.success('Xóa thành phần thành công!');
@@ -118,7 +120,7 @@ const BloodCompatibilityManager = ({
     return (
         <div className="space-y-6">
             {loading && (
-                <HandleLoading/>
+                <HandleLoading />
             )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">

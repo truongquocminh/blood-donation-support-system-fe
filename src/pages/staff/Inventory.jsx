@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
-import InventoryStats from '../../components/inventory/InventoryStats';
-import InventoryTable from '../../components/inventory/InventoryTable';
-import InventoryFormModal from '../../components/inventory/InventoryFormModal';
-import BloodTypeManager from '../../components/inventory/BloodTypeManager';
-import BloodComponentManager from '../../components/inventory/BloodComponentManager';
-import BloodCompatibilityManager from '../../components/inventory/BloodCompatibilityManager';
-import { getInventories } from '../../services/inventoryService';
-import toast from 'react-hot-toast';
-import { getBloodTypes } from '../../services/bloodTypeService';
-import { getBloodComponents } from '../../services/bloodComponentService';
+import React, { useState, useEffect } from "react";
+import { Plus, Search, Filter, Users } from "lucide-react";
+import InventoryStats from "../../components/inventory/InventoryStats";
+import InventoryTable from "../../components/inventory/InventoryTable";
+import InventoryFormModal from "../../components/inventory/InventoryFormModal";
+import BloodTypeManager from "../../components/inventory/BloodTypeManager";
+import BloodComponentManager from "../../components/inventory/BloodComponentManager";
+import BloodCompatibilityManager from "../../components/inventory/BloodCompatibilityManager";
+import ExtractionFormModal from "../../components/extraction/ExtractionFormModal";
+import DonorSearchModal from "../../components/inventory/DonorSearchModal";
+import { getInventories } from "../../services/inventoryService";
+import toast from "react-hot-toast";
+import { getBloodTypes } from "../../services/bloodTypeService";
+import { getBloodComponents } from "../../services/bloodComponentService";
+import BloodTypeCompatibilityManager from "../../components/inventory/BloodTypeCompatibilityManager";
 
 const Inventory = () => {
   const [inventories, setInventories] = useState([]);
@@ -22,12 +25,14 @@ const Inventory = () => {
   const [loading, setLoading] = useState(false);
   const [inventoryActionLoading, setInventoryActionLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('inventory');
+  const [activeTab, setActiveTab] = useState("inventory");
+  const [isFormModalExtractionOpen, setIsFormModalExtractionOpen] = useState(false);
+  const [isDonorSearchModalOpen, setIsDonorSearchModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInventory, setEditingInventory] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterComponent, setFilterComponent] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterComponent, setFilterComponent] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
   const handleAddInventory = async (inventoryData) => {
@@ -37,48 +42,6 @@ const Inventory = () => {
   const handleEditInventory = async (inventoryData) => {
     await fetchInventories();
   };
-
-  // const handleDeleteInventory = async (id) => {
-  //   const inventory = inventories.find(inv => inv.id === id);
-  //   if (!inventory) {
-  //     toast.error('Không tìm thấy kho máu');
-  //     return;
-  //   }
-
-  //   const confirmMessage = `Bạn có chắc chắn muốn xóa kho máu #${id}?\n\nHành động này không thể hoàn tác.`;
-    
-  //   if (!window.confirm(confirmMessage)) {
-  //     return;
-  //   }
-
-  //   try {
-  //     setInventoryActionLoading(true);
-      
-  //     console.log('Deleting inventory with ID:', id);
-  //     const response = await deleteInventory(id);
-      
-  //     if (response.status === 200) {
-  //       toast.success('Xóa kho máu thành công!');
-  //       await fetchInventories(); // Refresh data
-  //     } else {
-  //       toast.error('Không thể xóa kho máu');
-  //     }
-  //   } catch (error) {
-  //     console.error('Lỗi khi xóa kho máu:', error);
-      
-  //     if (error.response?.data?.message) {
-  //       toast.error(error.response.data.message);
-  //     } else if (error.response?.status === 400) {
-  //       toast.error('Không thể xóa kho máu - dữ liệu không hợp lệ');
-  //     } else if (error.response?.status === 404) {
-  //       toast.error('Kho máu không tồn tại');
-  //     } else {
-  //       toast.error('Lỗi khi xóa kho máu');
-  //     }
-  //   } finally {
-  //     setInventoryActionLoading(false);
-  //   }
-  // };
 
   const openEditModal = (inventory) => {
     setEditingInventory(inventory);
@@ -90,9 +53,25 @@ const Inventory = () => {
     setIsModalOpen(true);
   };
 
+  const openAddModalExtraction = () => {
+    setIsFormModalExtractionOpen(true);
+  };
+
+  const openDonorSearchModal = () => {
+    setIsDonorSearchModalOpen(true);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingInventory(null);
+  };
+
+  const closeAddModalExtraction = () => {
+    setIsFormModalExtractionOpen(false);
+  };
+
+  const closeDonorSearchModal = () => {
+    setIsDonorSearchModalOpen(false);
   };
 
   const handleAddBloodType = async (bloodTypeData) => {
@@ -131,23 +110,23 @@ const Inventory = () => {
     try {
       const [typesRes, componentsRes] = await Promise.all([
         getBloodTypes(),
-        getBloodComponents()
+        getBloodComponents(),
       ]);
 
       if (typesRes.status === 200 && typesRes.data.data?.content) {
         setBloodTypes(typesRes.data.data.content);
       } else {
-        toast.error('Không thể tải danh sách nhóm máu');
+        toast.error("Không thể tải danh sách nhóm máu");
       }
 
       if (componentsRes.status === 200 && componentsRes.data.data?.content) {
         setBloodComponents(componentsRes.data.data.content);
       } else {
-        toast.error('Không thể tải danh sách thành phần máu');
+        toast.error("Không thể tải danh sách thành phần máu");
       }
     } catch (error) {
-      console.error('Lỗi khi tải dữ liệu máu:', error);
-      toast.error('Lỗi khi gọi API nhóm máu hoặc thành phần máu');
+      console.error("Lỗi khi tải dữ liệu máu:", error);
+      toast.error("Lỗi khi gọi API nhóm máu hoặc thành phần máu");
     }
   };
 
@@ -176,6 +155,23 @@ const Inventory = () => {
     }
   };
 
+  const handleAddExtraction = async () => {
+    await fetchExtractions();
+  };
+
+  const fetchExtractions = async () => {
+    try {
+      setLoading(true);
+      fetchInventories();
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách trích xuất:", error);
+      toast.error("Không thể tải danh sách trích xuất");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -193,14 +189,32 @@ const Inventory = () => {
             <span>Lọc</span>
           </button>
 
-          {activeTab === 'inventory' && (
-            <button
-              onClick={openAddModal}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Thêm kho máu</span>
-            </button>
+          {activeTab === "inventory" && (
+            <>
+              <button
+                onClick={openAddModal}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Thêm kho máu</span>
+              </button>
+
+              <button
+                onClick={openAddModalExtraction}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tạo trích xuất</span>
+              </button>
+
+              <button
+                onClick={openDonorSearchModal}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <Users className="w-4 h-4" />
+                <span>Tìm người hiến máu</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -208,17 +222,18 @@ const Inventory = () => {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {[
-            { id: 'inventory', label: 'Kho máu' },
-            { id: 'blood-types', label: 'Nhóm máu' },
-            { id: 'blood-components', label: 'Thành phần máu' },
-            { id: 'compatibility', label: 'Bảng tương thích truyền máu' }
+            { id: "inventory", label: "Kho máu" },
+            { id: "blood-types", label: "Nhóm máu" },
+            { id: "blood-components", label: "Thành phần máu" },
+            { id: "compatibility", label: "Bảng tương thích giữa máu toàn phần - thành phần" },
+            { id: "blood-compatibility", label: "Bảng tương thích giữa các loại máu" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                ? 'border-red-500 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? "border-red-500 text-red-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
             >
               {tab.label}
@@ -227,7 +242,7 @@ const Inventory = () => {
         </nav>
       </div>
 
-      {activeTab === 'inventory' && (
+      {activeTab === "inventory" && (
         <div className="space-y-4">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
@@ -257,7 +272,7 @@ const Inventory = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
                   >
                     <option value="">Tất cả nhóm máu</option>
-                    {bloodTypes.map(type => (
+                    {bloodTypes.map((type) => (
                       <option key={type.id} value={type.id}>
                         {type.typeName}
                       </option>
@@ -275,8 +290,11 @@ const Inventory = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
                   >
                     <option value="">Tất cả thành phần</option>
-                    {bloodComponents.map(component => (
-                      <option key={component.bloodComponentId} value={component.bloodComponentId}>
+                    {bloodComponents.map((component) => (
+                      <option
+                        key={component.componentId}
+                        value={component.componentId}
+                      >
                         {component.componentName}
                       </option>
                     ))}
@@ -288,7 +306,7 @@ const Inventory = () => {
         </div>
       )}
 
-      {activeTab === 'inventory' && (
+      {activeTab === "inventory" && (
         <>
           <InventoryStats inventories={inventories} />
           <InventoryTable
@@ -296,7 +314,6 @@ const Inventory = () => {
             bloodTypes={bloodTypes}
             bloodComponents={bloodComponents}
             onEdit={openEditModal}
-            // onDelete={handleDeleteInventory}
             searchTerm={searchTerm}
             filterType={filterType}
             filterComponent={filterComponent}
@@ -307,11 +324,13 @@ const Inventory = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-gray-700">
-                Hiển thị {currentPage * pageSize + 1} – {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} bản ghi
+                Hiển thị {currentPage * pageSize + 1} –{" "}
+                {Math.min((currentPage + 1) * pageSize, totalElements)} trong
+                tổng số {totalElements} bản ghi
               </div>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(p - 1, 0))}
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
                   disabled={currentPage === 0}
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
@@ -321,13 +340,16 @@ const Inventory = () => {
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i)}
-                    className={`px-3 py-1 border rounded ${i === currentPage ? 'bg-red-500 text-white' : ''}`}
+                    className={`px-3 py-1 border rounded ${i === currentPage ? "bg-red-500 text-white" : ""
+                      }`}
                   >
                     {i + 1}
                   </button>
                 ))}
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages - 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages - 1))
+                  }
                   disabled={currentPage === totalPages - 1}
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
@@ -351,7 +373,7 @@ const Inventory = () => {
         </>
       )}
 
-      {activeTab === 'blood-types' && (
+      {activeTab === "blood-types" && (
         <BloodTypeManager
           bloodTypes={bloodTypes}
           onAdd={handleAddBloodType}
@@ -361,7 +383,7 @@ const Inventory = () => {
         />
       )}
 
-      {activeTab === 'blood-components' && (
+      {activeTab === "blood-components" && (
         <BloodComponentManager
           bloodComponents={bloodComponents}
           onAdd={handleAddBloodComponent}
@@ -371,10 +393,17 @@ const Inventory = () => {
         />
       )}
 
-      {activeTab === 'compatibility' && (
+      {activeTab === "compatibility" && (
         <BloodCompatibilityManager
           bloodTypes={bloodTypes}
           bloodComponents={bloodComponents}
+          onUpdate={fetchBloodData}
+        />
+      )}
+
+      {activeTab === "blood-compatibility" && (
+        <BloodTypeCompatibilityManager
+          bloodTypes={bloodTypes}
           onUpdate={fetchBloodData}
         />
       )}
@@ -387,6 +416,21 @@ const Inventory = () => {
         bloodTypes={bloodTypes}
         bloodComponents={bloodComponents}
         onRefresh={fetchInventories}
+      />
+
+      <ExtractionFormModal
+        isOpen={isFormModalExtractionOpen}
+        onClose={closeAddModalExtraction}
+        onSubmit={handleAddExtraction}
+        bloodTypes={bloodTypes}
+        bloodComponents={bloodComponents}
+        onRefresh={fetchExtractions}
+      />
+
+      <DonorSearchModal
+        isOpen={isDonorSearchModalOpen}
+        onClose={closeDonorSearchModal}
+        bloodTypes={bloodTypes}
       />
     </div>
   );

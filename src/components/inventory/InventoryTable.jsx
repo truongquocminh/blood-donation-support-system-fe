@@ -1,5 +1,16 @@
-import React from 'react';
-import { Edit, Trash2, Droplets, AlertTriangle, CheckCircle, Package, Loader2 } from 'lucide-react';
+import React from "react";
+import {
+  Edit,
+  Trash2,
+  Droplets,
+  AlertTriangle,
+  CheckCircle,
+  Package,
+  Loader2,
+  Calendar,
+  Hash
+} from "lucide-react";
+import { formatVietnamTime } from "../../utils/formatters"; 
 
 const InventoryTable = ({
   inventories,
@@ -11,55 +22,72 @@ const InventoryTable = ({
   filterType,
   filterComponent,
   loading = false,
-  actionLoading = false
+  actionLoading = false,
 }) => {
   const getBloodTypeName = (typeId) => {
-    if (!typeId || !bloodTypes || bloodTypes.length === 0) return 'N/A';
-    const type = bloodTypes.find(t => t.id === typeId);
+    if (!typeId || !bloodTypes || bloodTypes.length === 0) return "N/A";
+    const type = bloodTypes.find((t) => t.id === typeId);
     return type ? type.typeName : `ID: ${typeId}`;
   };
 
   const getComponentName = (componentId) => {
-    if (!componentId || !bloodComponents || bloodComponents.length === 0) return 'N/A';
-    const component = bloodComponents.find(c => c.componentId === componentId);
+    if (!componentId || !bloodComponents || bloodComponents.length === 0)
+      return "N/A";
+    const component = bloodComponents.find(
+      (c) => c.componentId === componentId
+    );
     return component ? component.componentName : `ID: ${componentId}`;
   };
 
-  const isExpiringSoon = (lastUpdated) => {
-    const expiryDate = new Date(lastUpdated);
-    expiryDate.setDate(expiryDate.getDate() + 35);
-
+  const isExpiringSoon = (expiryDate) => {
+    if (!expiryDate) return false;
+    const expiry = new Date(expiryDate);
     const today = new Date();
-    const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
     return diffDays <= 7 && diffDays >= 0;
   };
 
-  const getExpiryDate = (lastUpdated) => {
-    const expiryDate = new Date(lastUpdated);
-    expiryDate.setDate(expiryDate.getDate() + 35);
-    return expiryDate;
+  const isExpired = (expiryDate) => {
+    if (!expiryDate) return false;
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    return expiry < today;
   };
 
   const isLowStock = (quantity) => {
     return quantity <= 5;
   };
 
-  const filteredInventories = inventories.filter(inventory => {
+  const filteredInventories = inventories.filter((inventory) => {
     const bloodTypeName = getBloodTypeName(inventory.bloodTypeId);
-    const componentName = getComponentName(inventory.bloodComponentId);
+    const componentName = getComponentName(inventory.componentId);
 
-    const matchesSearch = searchTerm === '' ||
+    const matchesSearch =
+      searchTerm === "" ||
       bloodTypeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      componentName.toLowerCase().includes(searchTerm.toLowerCase());
+      componentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (inventory.batchNumber && inventory.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesType = filterType === '' || inventory.bloodTypeId?.toString() === filterType;
-    const matchesComponent = filterComponent === '' || inventory.bloodComponentId?.toString() === filterComponent;
+    const matchesType =
+      filterType === "" || inventory.bloodTypeId?.toString() === filterType;
+    const matchesComponent =
+      filterComponent === "" ||
+      inventory.componentId?.toString() === filterComponent;
 
     return matchesSearch && matchesType && matchesComponent;
   });
 
   const getStatusBadge = (inventory) => {
-    if (isExpiringSoon(inventory.lastUpdated)) {
+    if (isExpired(inventory.expiryDate)) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <AlertTriangle className="w-3 h-3 mr-1" />
+          Đã hết hạn
+        </span>
+      );
+    }
+
+    if (isExpiringSoon(inventory.expiryDate)) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
           <AlertTriangle className="w-3 h-3 mr-1" />
@@ -70,7 +98,7 @@ const InventoryTable = ({
 
     if (isLowStock(inventory.quantity)) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
           <AlertTriangle className="w-3 h-3 mr-1" />
           Tồn kho thấp
         </span>
@@ -100,10 +128,16 @@ const InventoryTable = ({
         <div className="h-4 bg-gray-200 rounded w-16"></div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
+        <div className="h-4 bg-gray-200 rounded w-20"></div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
         <div className="h-4 bg-gray-200 rounded w-24"></div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="h-4 bg-gray-200 rounded w-20"></div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="h-4 bg-gray-200 rounded w-24"></div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="h-6 bg-gray-200 rounded-full w-20"></div>
@@ -148,7 +182,10 @@ const InventoryTable = ({
                 Số lượng
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ngày cập nhật
+                Số lô
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày nhập
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Hạn sử dụng
@@ -168,10 +205,17 @@ const InventoryTable = ({
               ))
             ) : filteredInventories.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                <td
+                  colSpan="9"
+                  className="px-6 py-12 text-center text-gray-500"
+                >
                   <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium mb-2">Không tìm thấy kho máu</p>
-                  <p className="text-sm">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                  <p className="text-lg font-medium mb-2">
+                    Không tìm thấy kho máu
+                  </p>
+                  <p className="text-sm">
+                    Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
+                  </p>
                 </td>
               </tr>
             ) : (
@@ -187,22 +231,60 @@ const InventoryTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getComponentName(inventory.bloodComponentId)}
+                    {getComponentName(inventory.componentId)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className={`font-medium ${isLowStock(inventory.quantity) ? 'text-red-600' : ''}`}>
+                    <span
+                      className={`font-medium ${
+                        isLowStock(inventory.quantity) ? "text-red-600" : ""
+                      }`}
+                    >
                       {inventory.quantity}
-                    </span> đơn vị
+                    </span>{" "}
+                    ml
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(inventory.lastUpdated).toLocaleDateString('vi-VN')}
+                    <div className="flex items-center space-x-1">
+                      <Hash className="w-3 h-3 text-gray-400" />
+                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                        {inventory.batchNumber || 'N/A'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className={`${isExpiringSoon(inventory.lastUpdated) ? 'text-yellow-600 font-medium' : ''}`}>
-                      {getExpiryDate(inventory.lastUpdated).toLocaleDateString('vi-VN')}
-                      {isExpiringSoon(inventory.lastUpdated) && (
-                        <div className="text-xs text-yellow-500">Sắp hết hạn</div>
-                      )}
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-3 h-3 text-gray-400" />
+                      <span>
+                        {inventory.addedDate ? formatVietnamTime(inventory.addedDate, 'DD/MM/YYYY') : 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div
+                      className={`flex items-center space-x-1 ${
+                        isExpired(inventory.expiryDate)
+                          ? "text-red-600 font-medium"
+                          : isExpiringSoon(inventory.expiryDate)
+                          ? "text-yellow-600 font-medium"
+                          : ""
+                      }`}
+                    >
+                      <Calendar className="w-3 h-3 text-gray-400" />
+                      <div>
+                        <span>
+                          {inventory.expiryDate ? formatVietnamTime(inventory.expiryDate, 'DD/MM/YYYY') : 'N/A'}
+                        </span>
+                        {isExpired(inventory.expiryDate) && (
+                          <div className="text-xs text-red-500">
+                            Đã hết hạn
+                          </div>
+                        )}
+                        {isExpiringSoon(inventory.expiryDate) && !isExpired(inventory.expiryDate) && (
+                          <div className="text-xs text-yellow-500">
+                            Sắp hết hạn
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -218,18 +300,20 @@ const InventoryTable = ({
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      {/* <button
-                        onClick={() => onDelete(inventory.id)}
-                        disabled={actionLoading}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Xóa"
-                      >
-                        {actionLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button> */}
+                      {onDelete && (
+                        <button
+                          onClick={() => onDelete(inventory.id)}
+                          disabled={actionLoading}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Xóa"
+                        >
+                          {actionLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

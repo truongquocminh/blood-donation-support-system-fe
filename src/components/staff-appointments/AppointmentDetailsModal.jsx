@@ -1,45 +1,95 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, User, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { X, Calendar, Clock, User, CheckCircle, XCircle, AlertTriangle, Heart, Phone, MapPin, CreditCard, Briefcase, Droplets, Activity, Weight, Gauge, UserCheck } from 'lucide-react';
 import { APPOINTMENT_STATUS } from '../../utils/constants';
 import { getUserById } from '../../services/userService';
+import { getAppointmentHealthDeclaration } from '../../services/healthDeclarationService';
+import { getBloodTypes } from '../../services/bloodTypeService';
+import { getHealthCheckByAppointment } from '../../services/healthCheckService';
+import { formatVietnamTime } from '../../utils/formatters';
+import { useAuth } from '../../context/AuthContext';
 
-const AppointmentDetailsModal = ({ 
-  isOpen, 
-  onClose, 
-  appointment, 
+const AppointmentDetailsModal = ({
+  isOpen,
+  onClose,
+  appointment,
 }) => {
+  const { user } = useAuth();
+
   const [userInfo, setUserInfo] = useState(null);
+  const [healthDeclaration, setHealthDeclaration] = useState(null);
+  const [healthCheck, setHealthCheck] = useState(null);
+  const [bloodTypes, setBloodTypes] = useState([]);
   const [loadingUser, setLoadingUser] = useState(false);
+  const [loadingHealth, setLoadingHealth] = useState(false);
+  const [loadingHealthCheck, setLoadingHealthCheck] = useState(false);
   const [userError, setUserError] = useState(false);
+  const [healthError, setHealthError] = useState(false);
+  const [healthCheckError, setHealthCheckError] = useState(false);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (!appointment?.userId) return;
+    const fetchData = async () => {
+      if (!appointment?.userId || !appointment?.appointmentId) return;
 
       setLoadingUser(true);
+      setLoadingHealth(true);
+      setLoadingHealthCheck(true);
       setUserError(false);
-      
+      setHealthError(false);
+      setHealthCheckError(false);
+
       try {
-        const userData = await getUserById(appointment.userId);
+        const [userData, bloodTypesData] = await Promise.all([
+          getUserById(appointment.userId),
+          getBloodTypes()
+        ]);
+
         setUserInfo(userData.data.data);
+        setBloodTypes(bloodTypesData.data.data.content);
       } catch (error) {
         console.error('Error fetching user info:', error);
         setUserError(true);
       } finally {
         setLoadingUser(false);
       }
+
+      try {
+        const healthData = await getAppointmentHealthDeclaration(appointment.appointmentId);
+        setHealthDeclaration(healthData.data.data);
+      } catch (error) {
+        console.error('Error fetching health declaration:', error);
+        setHealthError(true);
+      } finally {
+        setLoadingHealth(false);
+      }
+
+      try {
+        const healthCheckData = await getHealthCheckByAppointment(appointment.appointmentId);
+        setHealthCheck(healthCheckData.data.data[0]);
+      } catch (error) {
+        console.error('Error fetching health check:', error);
+        setHealthCheckError(true);
+      } finally {
+        setLoadingHealthCheck(false);
+      }
     };
 
     if (isOpen && appointment) {
-      fetchUserInfo();
+      fetchData();
     }
   }, [appointment, isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
       setUserInfo(null);
+      setHealthDeclaration(null);
+      setHealthCheck(null);
+      setBloodTypes([]);
       setLoadingUser(false);
+      setLoadingHealth(false);
+      setLoadingHealthCheck(false);
       setUserError(false);
+      setHealthError(false);
+      setHealthCheckError(false);
     }
   }, [isOpen]);
 
@@ -62,6 +112,11 @@ const AppointmentDetailsModal = ({
         color: 'bg-green-100 text-green-800 border-green-200',
         label: 'Hoàn thành'
       },
+      [APPOINTMENT_STATUS.MEDICAL_COMPLETED]: {
+        icon: UserCheck,
+        color: 'bg-purple-100 text-purple-800 border-purple-200',
+        label: 'Đã kiểm tra y tế'
+      },
       [APPOINTMENT_STATUS.CANCELLED]: {
         icon: XCircle,
         color: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -78,6 +133,17 @@ const AppointmentDetailsModal = ({
         {config.label}
       </span>
     );
+  };
+
+  const getBloodTypeName = (bloodTypeId) => {
+    const bloodType = bloodTypes.find(bt => bt.id === bloodTypeId);
+    return bloodType ? bloodType.typeName : 'Chưa cập nhật';
+  };
+
+  const GENDER_LABELS = {
+    MALE: 'Nam',
+    FEMALE: 'Nữ',
+    OTHER: 'Khác'
   };
 
   const UserInfoDisplay = () => {
@@ -103,25 +169,261 @@ const AppointmentDetailsModal = ({
     }
 
     return (
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <User className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-gray-900">{userInfo.fullName}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-blue-500" />
+            <div>
+              <span className="text-sm font-medium text-gray-900">{userInfo.fullName}</span>
+              <div className="text-xs text-gray-500">ID: {userInfo.id}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Phone className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700">{userInfo.phoneNumber || 'Chưa cập nhật'}</span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700">
+              {userInfo.dateOfBirth ? formatVietnamTime(userInfo.dateOfBirth, 'DD/MM/YYYY') : 'Chưa cập nhật'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Droplets className="w-4 h-4 text-red-500" />
+            <span className="text-sm text-gray-700">{getBloodTypeName(userInfo.bloodTypeId)}</span>
+          </div>
         </div>
-        <div className="text-sm text-gray-600">{userInfo.email}</div>
-        <div className="text-xs text-gray-500">ID: {appointment.userId}</div>
-        {userInfo.role && (
-          <div className="text-xs text-gray-500">
-            Vai trò: <span className="font-medium">{userInfo.role}</span>
+
+        <div className="space-y-3">
+          <div className="text-sm text-gray-600">{userInfo.email}</div>
+
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700">{GENDER_LABELS[userInfo.gender] || 'Chưa cập nhật'}</span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <CreditCard className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700">{userInfo.citizenId || 'Chưa cập nhật'}</span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Briefcase className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-700">{userInfo.job || 'Chưa cập nhật'}</span>
+          </div>
+        </div>
+
+        {userInfo.address && (
+          <div className="md:col-span-2">
+            <div className="flex items-start space-x-2">
+              <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+              <span className="text-sm text-gray-700">{userInfo.address}</span>
+            </div>
           </div>
         )}
+
+        <div className="md:col-span-2">
+          <div className="text-xs text-gray-500">
+            Vai trò: <span className="font-medium">{userInfo.role}</span>
+            {userInfo.status !== undefined && (
+              <span className="ml-4">
+                Trạng thái: <span className={`font-medium ${userInfo.status ? 'text-green-600' : 'text-red-600'}`}>
+                  {userInfo.status ? 'Hoạt động' : 'Không hoạt động'}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const HealthDeclarationDisplay = () => {
+    if (loadingHealth) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+          <span className="text-sm text-gray-500">Đang tải khai báo y tế...</span>
+        </div>
+      );
+    }
+
+    if (healthError || !healthDeclaration) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Heart className="w-4 h-4 text-red-400" />
+          <span className="text-sm text-red-500">Không thể tải thông tin khai báo y tế</span>
+        </div>
+      );
+    }
+
+    const BooleanDisplay = ({ label, value }) => (
+      <div className="flex items-center justify-between py-1">
+        <span className="text-sm text-gray-700">{label}:</span>
+        <span className={`text-sm font-medium ${value ? 'text-red-600' : 'text-green-600'}`}>
+          {value ? 'Có' : 'Không'}
+        </span>
+      </div>
+    );
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          <h5 className="font-medium text-gray-900">Tiền sử bệnh lý</h5>
+          <div className="space-y-1">
+            <BooleanDisplay label="Bệnh lây qua đường máu" value={healthDeclaration.hasBloodTransmittedDisease} />
+            <BooleanDisplay label="Bệnh mãn tính" value={healthDeclaration.hasChronicDisease} />
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-gray-700">Thuốc đang sử dụng:</span>
+              <span className="text-sm text-gray-900 text-right">{healthDeclaration.currentMedications}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h5 className="font-medium text-gray-900">Hoạt động gần đây</h5>
+          <div className="space-y-1">
+            <BooleanDisplay label="Xăm mình/châm cứu" value={healthDeclaration.hasTattooAcupuncture} />
+            <BooleanDisplay label="Tiêm vaccine gần đây" value={healthDeclaration.hasRecentVaccine} />
+            <BooleanDisplay label="Đi nước ngoài" value={healthDeclaration.hasTravelAbroad} />
+            <BooleanDisplay label="Hành vi tình dục không an toàn" value={healthDeclaration.hasUnsafeSex} />
+          </div>
+        </div>
+
+        <div className="md:col-span-2 space-y-1">
+          <BooleanDisplay label="Lần đầu hiến máu" value={healthDeclaration.isFirstBlood} />
+
+          {healthDeclaration.isPregnantOrBreastfeeding !== null && (
+            <BooleanDisplay label="Mang thai/cho con bú" value={healthDeclaration.isPregnantOrBreastfeeding} />
+          )}
+
+          {healthDeclaration.isMenstruating !== null && (
+            <BooleanDisplay label="Đang trong kỳ kinh nguyệt" value={healthDeclaration.isMenstruating} />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const HealthCheckDisplay = () => {
+    if (loadingHealthCheck) {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+          <span className="text-sm text-gray-500">Đang tải thông tin khám sức khỏe...</span>
+        </div>
+      );
+    }
+
+    if (healthCheckError || !healthCheck) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Activity className="w-4 h-4 text-gray-400" />
+          <span className="text-sm text-gray-500">Chưa có thông tin khám sức khỏe</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Kết quả tổng quan */}
+        <div className={`p-4 rounded-lg border-2 ${healthCheck.isEligible
+          ? 'bg-green-50 border-green-200'
+          : 'bg-red-50 border-red-200'
+          }`}>
+          <div className="flex items-center space-x-2 mb-2">
+            {healthCheck.isEligible ? (
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            ) : (
+              <XCircle className="w-5 h-5 text-red-600" />
+            )}
+            <span className={`font-medium ${healthCheck.isEligible ? 'text-green-800' : 'text-red-800'}`}>
+              {healthCheck.isEligible ? 'Đủ điều kiện hiến máu' : 'Không đủ điều kiện hiến máu'}
+            </span>
+          </div>
+
+          {healthCheck.resultSummary && (
+            <p className="text-sm text-gray-700 mb-2">{healthCheck.resultSummary}</p>
+          )}
+
+          {!healthCheck.isEligible && healthCheck.ineligibleReason && (
+            <div className="bg-red-100 p-3 rounded-md">
+              <p className="text-sm text-red-700">
+                <span className="font-medium">Lý do không đủ điều kiện:</span> {healthCheck.ineligibleReason}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Chỉ số sức khỏe */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <h5 className="font-medium text-gray-900">Chỉ số sinh hiệu</h5>
+
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <div className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-red-500" />
+                <span className="text-sm text-gray-700">Mạch:</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{healthCheck.pulse} nhịp/phút</span>
+            </div>
+
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <div className="flex items-center space-x-2">
+                <Gauge className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-gray-700">Huyết áp:</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{healthCheck.bloodPressure} mmHg</span>
+            </div>
+
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <div className="flex items-center space-x-2">
+                <Weight className="w-4 h-4 text-purple-500" />
+                <span className="text-sm text-gray-700">Cân nặng:</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">{healthCheck.weight} kg</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h5 className="font-medium text-gray-900">Thông tin khác</h5>
+
+            {healthCheck.suggestBloodVolume && (
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <Droplets className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-gray-700">Lượng máu đề xuất:</span>
+                </div>
+                <span className="text-sm font-medium text-gray-900">{healthCheck.suggestBloodVolume} ml</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700">Thời gian khám:</span>
+              </div>
+              <span className="text-sm font-medium text-gray-900">
+                {formatVietnamTime(healthCheck.checkedAt)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-gray-700">ID Khám sức khỏe:</span>
+              <span className="text-sm font-medium text-gray-900">#{healthCheck.healthCheckId}</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
 
   return (
     <div className="mt-0-important fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -145,13 +447,12 @@ const AppointmentDetailsModal = ({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Thông tin người dùng */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin người dùng</h4>
+          {user.role === 'STAFF' && (<div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin người khám</h4>
             <UserInfoDisplay />
-          </div>
+          </div>)}
 
-          {/* Thông tin lịch hẹn */}
+
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin lịch hẹn</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,7 +464,7 @@ const AppointmentDetailsModal = ({
                 <div>
                   <span className="text-sm text-gray-600">Ngày hẹn:</span>
                   <p className="text-sm font-medium text-gray-900">
-                    {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')}
+                    {formatVietnamTime(appointment.appointmentDate, 'DD/MM/YYYY')}
                   </p>
                 </div>
               </div>
@@ -171,25 +472,19 @@ const AppointmentDetailsModal = ({
                 <div>
                   <span className="text-sm text-gray-600">Giờ hẹn:</span>
                   <p className="text-sm font-medium text-gray-900">
-                    {new Date(appointment.appointmentDate).toLocaleTimeString('vi-VN', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {formatVietnamTime(appointment.appointmentDate, 'HH:mm')}
                   </p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-600">Ngày trong tuần:</span>
                   <p className="text-sm font-medium text-gray-900">
-                    {new Date(appointment.appointmentDate).toLocaleDateString('vi-VN', {
-                      weekday: 'long'
-                    })}
+                    {formatVietnamTime(appointment.appointmentDate, 'dddd')}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Trạng thái hiện tại */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Trạng thái hiện tại</h4>
             <div className="flex items-center space-x-2">
@@ -197,65 +492,64 @@ const AppointmentDetailsModal = ({
             </div>
           </div>
 
-          {/* Thông tin thời gian */}
+          <div className="bg-red-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
+              <Heart className="w-4 h-4 text-red-600" />
+              <span>Khai báo y tế</span>
+            </h4>
+            <HealthDeclarationDisplay />
+          </div>
+
+          {/* Thêm phần thông tin khám sức khỏe */}
+          <div className="bg-green-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-green-600" />
+              <span>Thông tin khám sức khỏe</span>
+            </h4>
+            <HealthCheckDisplay />
+          </div>
+
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin thời gian</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Thời gian lịch hẹn:</span>
                 <span className="font-medium">
-                  {new Date(appointment.appointmentDate).toLocaleString('vi-VN')}
+                  {formatVietnamTime(appointment.appointmentDate)}
                 </span>
               </div>
-              
-              {/* Kiểm tra xem có phải hôm nay không */}
-              {new Date(appointment.appointmentDate).toDateString() === new Date().toDateString() && (
+
+              {formatVietnamTime(appointment.appointmentDate, 'YYYY-MM-DD') === formatVietnamTime(new Date(), 'YYYY-MM-DD') && (
                 <div className="flex justify-between text-blue-600">
                   <span>Lịch hẹn hôm nay:</span>
                   <span className="font-medium">Cần được ưu tiên xử lý</span>
                 </div>
               )}
-              
-              {/* Kiểm tra quá hạn */}
-              {new Date(appointment.appointmentDate) < new Date() && 
-               [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(appointment.status) && (
-                <div className="flex justify-between text-red-600">
-                  <span>Trạng thái:</span>
-                  <span className="font-medium flex items-center">
-                    <AlertTriangle className="w-4 h-4 mr-1" />
-                    Quá hạn
-                  </span>
-                </div>
-              )}
-              
+
+              {new Date(appointment.appointmentDate) < new Date() &&
+                [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(appointment.status) && (
+                  <div className="flex justify-between text-red-600">
+                    <span>Trạng thái:</span>
+                    <span className="font-medium flex items-center">
+                      <AlertTriangle className="w-4 h-4 mr-1" />
+                      Quá hạn
+                    </span>
+                  </div>
+                )}
+
               {appointment.status === APPOINTMENT_STATUS.COMPLETED && (
                 <div className="flex justify-between text-green-600">
                   <span>Trạng thái:</span>
                   <span className="font-medium">Đã hoàn thành thành công</span>
                 </div>
               )}
-              
+
               {appointment.status === APPOINTMENT_STATUS.CANCELLED && (
                 <div className="flex justify-between text-red-600">
                   <span>Trạng thái:</span>
                   <span className="font-medium">Đã bị hủy</span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Ghi chú */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-700">
-                <p className="font-medium mb-1">Thông tin chi tiết:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Thông tin người dùng được tải từ API riêng biệt</li>
-                  <li>Kết quả kiểm tra sức khỏe sẽ được hiển thị sau khi hoàn thành</li>
-                  <li>Có thể cập nhật trạng thái lịch hẹn từ bảng danh sách</li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
