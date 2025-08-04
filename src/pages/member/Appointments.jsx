@@ -13,6 +13,7 @@ import {
   deleteAppointment,
   getAppointmentById
 } from '../../services/appointmentService';
+import { getUserById } from '../../services/userService';
 
 const STATUS_LABELS = {
   PENDING: 'Chờ xác nhận',
@@ -23,6 +24,7 @@ const STATUS_LABELS = {
 
 const Appointments = () => {
   const { user } = useAuth();
+  const [userData, setUserData] = useState(null); 
   const [allAppointments, setAllAppointments] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,11 +47,45 @@ const Appointments = () => {
     message: ''
   });
 
+  const [ageWarningModal, setAgeWarningModal] = useState({
+    isOpen: false
+  });
+
   const [detailsModal, setDetailsModal] = useState({
     isOpen: false,
     appointment: null
   });
   const [loadingAppointmentDetails, setLoadingAppointmentDetails] = useState(false);
+
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return 0;
+    
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const fetchUserData = async () => {
+    try {
+      if (user?.id) {
+        const response = await getUserById(user.id);
+        if (response.status === 200) {
+          setUserData(response.data.data);
+        } else {
+          console.error('Failed to fetch user data:', response);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
 
   const fetchAppointments = async (page = 0) => {
     try {
@@ -77,9 +113,30 @@ const Appointments = () => {
 
   useEffect(() => {
     if (user?.id) {
+      fetchUserData(); 
       fetchAppointments();
     }
   }, [user?.id]);
+
+  const handleBookAppointment = () => {
+    if (!userData) {
+      toast.error('Đang tải thông tin người dùng...');
+      return;
+    }
+
+    const age = calculateAge(userData.dateOfBirth);
+    
+    if (age < 18) {
+      setAgeWarningModal({ isOpen: true });
+      return;
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const handleCloseAgeWarning = () => {
+    setAgeWarningModal({ isOpen: false });
+  };
 
   const handleAppointmentSuccess = () => {
     setIsModalOpen(false);
@@ -225,7 +282,7 @@ const Appointments = () => {
           </button>
           
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleBookAppointment}
             className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <Plus className="w-4 h-4" />
@@ -441,11 +498,22 @@ const Appointments = () => {
         onSubmit={handleAppointmentSuccess}
       />
 
-      {/* Modal chi tiết lịch hẹn */}
       <AppointmentDetailsModal
         isOpen={detailsModal.isOpen}
         onClose={handleCloseDetailsModal}
         appointment={detailsModal.appointment}
+      />
+
+      <ConfirmModal
+        isOpen={ageWarningModal.isOpen}
+        title="Không đủ điều kiện đăng kí hiến máu"
+        message="Bạn chưa đủ 18 tuổi nên không thể hiến máu!"
+        onConfirm={handleCloseAgeWarning}
+        onCancel={handleCloseAgeWarning}
+        confirmText="Đã hiểu"
+        cancelText="Đóng"
+        confirmButtonClass="bg-yellow-600 hover:bg-yellow-700 text-white"
+        type="warning"
       />
 
       <ConfirmModal

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Award, Medal, Star, Download, Calendar, FileText,
   Search, Filter, ChevronDown, Trophy, Crown
 } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import { getCertificates } from '../../services/certificateService';
+import { getUserCertificates } from '../../services/certificateService';
 import toast from 'react-hot-toast';
+import useAuth from '../../hooks/useAuth';
 
 const Certificates = () => {
+  const { user } = useAuth();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -18,7 +20,7 @@ const Certificates = () => {
   const [filterType, setFilterType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-
+  
   useEffect(() => {
     fetchCertificates();
   }, [currentPage, pageSize]);
@@ -26,16 +28,18 @@ const Certificates = () => {
   const fetchCertificates = async () => {
     try {
       setLoading(true);
-      const res = await getCertificates(currentPage, pageSize);
-      if (res.status === 200 && res.data.data) {
-        const { content, totalPages, totalElements } = res.data.data;
-        setCertificates(content);
-        setTotalPages(totalPages);
-        setTotalElements(totalElements);
-      } else {
-        setCertificates([]);
-        setTotalPages(0);
-        setTotalElements(0);
+      if (user?.id) {
+        const res = await getUserCertificates(user.id, currentPage, pageSize);
+        if (res.status === 200 && res.data.data) {
+          const { content, totalPages, totalElements } = res.data.data;
+          setCertificates(content);
+          setTotalPages(totalPages);
+          setTotalElements(totalElements);
+        } else {
+          setCertificates([]);
+          setTotalPages(0);
+          setTotalElements(0);
+        }
       }
     } catch (error) {
       console.error("Lỗi khi tải chứng chỉ:", error);
@@ -50,34 +54,52 @@ const Certificates = () => {
 
   const getCertificateIcon = (type) => {
     switch (type) {
-      case 'certificate':
+      case 'CERTIFICATE':
         return Award;
-      case 'merit':
+      case 'MERIT':
         return Medal;
       default:
         return FileText;
     }
   };
 
-  const getCertificateColor = (type) => {
+  const getCertificateDesign = (type) => {
     switch (type) {
-      case 'certificate':
-        return 'text-blue-600 bg-blue-100';
-      case 'merit':
-        return 'text-yellow-600 bg-yellow-100';
+      case 'CERTIFICATE':
+        return {
+          bgGradient: 'bg-gradient-to-br from-blue-50 via-white to-blue-50',
+          borderColor: 'border-blue-200',
+          headerBg: 'bg-gradient-to-r from-blue-600 to-blue-700',
+          iconColor: 'text-blue-600',
+          pattern: 'certificate'
+        };
+      case 'MERIT':
+        return {
+          bgGradient: 'bg-gradient-to-br from-yellow-50 via-white to-amber-50',
+          borderColor: 'border-yellow-200',
+          headerBg: 'bg-gradient-to-r from-yellow-500 to-amber-600',
+          iconColor: 'text-yellow-600',
+          pattern: 'merit'
+        };
       default:
-        return 'text-gray-600 bg-gray-100';
+        return {
+          bgGradient: 'bg-gradient-to-br from-gray-50 via-white to-gray-50',
+          borderColor: 'border-gray-200',
+          headerBg: 'bg-gradient-to-r from-gray-600 to-gray-700',
+          iconColor: 'text-gray-600',
+          pattern: 'default'
+        };
     }
   };
 
   const getCertificateTypeText = (type) => {
     switch (type) {
-      case 'certificate':
-        return 'Chứng chỉ';
-      case 'merit':
-        return 'Bằng khen';
+      case 'CERTIFICATE':
+        return 'CHỨNG CHỈ';
+      case 'MERIT':
+        return 'BẰNG KHEN';
       default:
-        return 'Khác';
+        return 'KHÁC';
     }
   };
 
@@ -97,8 +119,8 @@ const Certificates = () => {
 
   const certificateStats = {
     total: totalElements,
-    certificates: certificates.filter(c => c.certificateType === 'certificate').length,
-    merits: certificates.filter(c => c.certificateType === 'merit').length
+    certificates: certificates.filter(c => c.certificateType === 'CERTIFICATE').length,
+    merits: certificates.filter(c => c.certificateType === 'MERIT').length
   };
 
   return (
@@ -161,7 +183,7 @@ const Certificates = () => {
               <Star className="w-5 h-5 text-yellow-500 mr-2" />
               Danh sách chứng chỉ
             </CardTitle>
-            
+
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -173,7 +195,7 @@ const Certificates = () => {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              
+
               <div className="relative">
                 <button
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
@@ -183,14 +205,14 @@ const Certificates = () => {
                   <span>{filterType === 'all' ? 'Tất cả' : getCertificateTypeText(filterType)}</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
-                
+
                 {showFilterDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                     <div className="py-1">
                       {[
                         { value: 'all', label: 'Tất cả' },
-                        { value: 'certificate', label: 'Chứng chỉ' },
-                        { value: 'merit', label: 'Bằng khen' }
+                        { value: 'CERTIFICATE', label: 'Chứng chỉ' },
+                        { value: 'MERIT', label: 'Bằng khen' }
                       ].map((option) => (
                         <button
                           key={option.value}
@@ -210,7 +232,7 @@ const Certificates = () => {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           {loading ? (
             <div className="flex justify-center items-center py-8">
@@ -222,64 +244,106 @@ const Certificates = () => {
               <p className="text-gray-500">Không có chứng chỉ nào</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {filteredCertificates.map((certificate) => {
                 const IconComponent = getCertificateIcon(certificate.certificateType);
-                
+                const design = getCertificateDesign(certificate.certificateType);
+
                 return (
                   <div
                     key={certificate.certificateId}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                    className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${design.bgGradient} ${design.borderColor} border-2`}
+                    style={{ aspectRatio: '4/3', minHeight: '300px' }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCertificateColor(certificate.certificateType)}`}>
-                          <IconComponent className="w-6 h-6" />
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-gray-900">{certificate.description}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCertificateColor(certificate.certificateType)}`}>
+                    <div className={`absolute inset-0 opacity-5`}>
+                      <div className="absolute top-4 left-4 w-32 h-32 border-8 border-current rounded-full opacity-20"></div>
+                      <div className="absolute bottom-4 right-4 w-24 h-24 border-4 border-current rounded-full opacity-15"></div>
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 border-2 border-current rounded-full opacity-10"></div>
+                    </div>
+
+                    <div className={`${design.headerBg} px-6 py-4 relative z-10`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <IconComponent className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-white font-bold text-sm tracking-wider">
                               {getCertificateTypeText(certificate.certificateType)}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-4 h-4" />
-                              <span>Ngày tạo: {formatDate(certificate.createdAt)}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <FileText className="w-4 h-4" />
-                              <span>ID: {certificate.certificateId}</span>
-                            </div>
+                            </h3>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          icon={<Download />}
-                        >
-                          Tải xuống
-                        </Button>
+                        <div className="text-right">
+                          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                            <Crown className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
                       </div>
                     </div>
+
+                    <div className="p-6 relative z-10 flex flex-col justify-between" style={{ height: 'calc(100% - 72px)' }}>
+                      <div className="text-center">
+                        <div className="mb-4">
+                          <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${design.iconColor} bg-white shadow-lg`}>
+                            <IconComponent className="w-8 h-8" />
+                          </div>
+                        </div>
+                        
+                        <h4 className="text-lg font-bold text-gray-800 mb-3 leading-tight">
+                          {certificate.description}
+                        </h4>
+                        
+                        <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto mb-4"></div>
+                        
+                        <div className="mb-6">
+                          <p className="text-gray-600 text-xs mb-2">Được trao tặng cho</p>
+                          <h5 className="text-xl font-bold text-gray-900 mb-3 tracking-wide">
+                            {certificate.userName}
+                          </h5>
+                          <p className="text-gray-600 text-sm">
+                            Vì những đóng góp tích cực trong việc hiến máu cứu người
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-4">
+                        <div className="flex justify-between items-center text-xs text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>{formatDate(certificate.createAt)}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <FileText className="w-3 h-3" />
+                            <span>#{certificate.certificateId}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="absolute top-2 right-2">
+                        <div className={`w-3 h-3 rounded-full ${design.iconColor.replace('text-', 'bg-')} opacity-60`}></div>
+                      </div>
+                      <div className="absolute top-4 right-4">
+                        <div className={`w-2 h-2 rounded-full ${design.iconColor.replace('text-', 'bg-')} opacity-40`}></div>
+                      </div>
+                      <div className="absolute top-6 right-6">
+                        <div className={`w-1 h-1 rounded-full ${design.iconColor.replace('text-', 'bg-')} opacity-20`}></div>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-50"></div>
                   </div>
                 );
               })}
             </div>
           )}
-          
+
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
               <div className="text-sm text-gray-700">
                 Hiển thị {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalElements)} của {totalElements} kết quả
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
@@ -289,11 +353,11 @@ const Certificates = () => {
                 >
                   Trước
                 </Button>
-                
+
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const pageNum = currentPage < 3 ? i : currentPage - 2 + i;
                   if (pageNum >= totalPages) return null;
-                  
+
                   return (
                     <Button
                       key={pageNum}
@@ -305,7 +369,7 @@ const Certificates = () => {
                     </Button>
                   );
                 })}
-                
+
                 <Button
                   variant="outline"
                   size="sm"

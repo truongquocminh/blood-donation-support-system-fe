@@ -239,8 +239,8 @@ const CompatibilitySearchWidget = ({
                         </>
                       ) : (
                         <>
-                          <strong>{searchResult.donorType.typeName}</strong> có thể hiến máu cho{' '}
-                          <strong>{searchResult.recipientType.typeName}</strong>
+                          {/* <strong>{searchResult.donorType.typeName}</strong> có thể hiến máu cho{' '}
+                          <strong>{searchResult.recipientType.typeName}</strong> */}
                         </>
                       )}
                     </div>

@@ -8,6 +8,7 @@ import {
   Loader2
 } from "lucide-react";
 import { formatVietnamTime } from "../../utils/formatters";
+import dayjs from "dayjs";
 
 const ExtractionTable = ({
   extractions,
@@ -148,8 +149,8 @@ const ExtractionTable = ({
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-3 h-3 text-gray-400" />
                       <span>
-                        {extraction.extractedAt 
-                          ? formatVietnamTime(extraction.extractedAt, 'DD/MM/YYYY HH:mm') 
+                        {extraction.extractedAt
+                          ? dayjs(extraction.extractedAt).format('DD/MM/YYYY HH:mm')
                           : 'N/A'
                         }
                       </span>

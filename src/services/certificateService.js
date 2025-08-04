@@ -18,9 +18,9 @@ export const getCertificateById = async (certificateId) => {
   );
 };
 
-export const getUserCertificates = async (page = 0, size = 10) => {
+export const getUserCertificates = async (userId, page = 0, size = 10) => {
   return apiGet(
-    `${CERTIFICATE_ENDPOINTS.GET_USER_CERTIFICATES}?page=${page}&size=${size}`
+    `${CERTIFICATE_ENDPOINTS.GET_USER_CERTIFICATES}?userId=${userId}&page=${page}&size=${size}`
   );
 };
 

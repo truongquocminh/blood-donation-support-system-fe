@@ -129,7 +129,6 @@ const ExtractionFormModal = ({
       };
 
       const response = await createExtraction(extractionData);
-
       if (response.status === 200 || response.status === 201) {
         toast.success('Tạo trích xuất thành công!');
         onClose();

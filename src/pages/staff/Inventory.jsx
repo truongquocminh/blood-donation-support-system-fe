@@ -136,7 +136,18 @@ const Inventory = () => {
       const res = await getInventories(currentPage, pageSize);
       if (res.status === 200 && res.data.data) {
         const { content, page } = res.data.data;
-        setInventories(content);
+
+        const sortedContent = content.sort((a, b) => {
+          if (!a.expiryDate && !b.expiryDate) return 0;
+          if (!a.expiryDate) return 1; 
+          if (!b.expiryDate) return -1;
+
+          const dateA = new Date(a.expiryDate);
+          const dateB = new Date(b.expiryDate);
+          return dateA - dateB; 
+        });
+
+        setInventories(sortedContent);
         setTotalPages(page.totalPages);
         setTotalElements(page.totalElements);
       } else {

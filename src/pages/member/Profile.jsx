@@ -125,7 +125,6 @@ const MemberProfile = () => {
       const response = await getCurrentUser();
       if (response.status === 200 && response.data.data) {
         const userData = response.data.data;
-        console.log("userData: ", userData)
         setMember(prev => ({
           ...prev,
           id: userData.id,

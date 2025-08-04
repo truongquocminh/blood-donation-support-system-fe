@@ -3,6 +3,7 @@ import { X, Package, Droplets, Syringe, Calendar, FileText, Hash, Loader2, Alert
 import { getInventoryById } from '../../services/inventoryService';
 import { formatVietnamTime } from '../../utils/formatters';
 import toast from 'react-hot-toast';
+import dayjs from 'dayjs';
 
 const ExtractionDetailModal = ({
   isOpen,
@@ -22,7 +23,7 @@ const ExtractionDetailModal = ({
   const fetchInventoryDetails = async () => {
     try {
       setLoading(true);
-      const inventoryPromises = extractionDetails.map(detail => 
+      const inventoryPromises = extractionDetails.map(detail =>
         getInventoryById(detail.inventoryId)
       );
 
@@ -66,7 +67,7 @@ const ExtractionDetailModal = ({
 
   const getStatusBadge = (inventory) => {
     if (!inventory) return null;
-    
+
     if (isExpired(inventory.expiryDate)) {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -125,7 +126,7 @@ const ExtractionDetailModal = ({
               <Droplets className="w-5 h-5 text-blue-600 mr-2" />
               Thông tin trích xuất
             </h4>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white p-4 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
@@ -163,8 +164,8 @@ const ExtractionDetailModal = ({
                   <span className="text-sm font-medium text-gray-600">Thời gian trích xuất</span>
                 </div>
                 <p className="text-sm font-medium text-gray-900">
-                  {extraction.extractedAt 
-                    ? formatVietnamTime(extraction.extractedAt, 'DD/MM/YYYY HH:mm') 
+                  {extraction.extractedAt
+                    ? dayjs(extraction.extractedAt).format('DD/MM/YYYY HH:mm')
                     : 'N/A'
                   }
                 </p>
@@ -254,8 +255,8 @@ const ExtractionDetailModal = ({
                             <div className="flex items-center space-x-1">
                               <Calendar className="w-3 h-3 text-gray-400" />
                               <span>
-                                {inventory?.addedDate 
-                                  ? formatVietnamTime(inventory.addedDate, 'DD/MM/YYYY') 
+                                {inventory?.addedDate
+                                  ? formatVietnamTime(inventory.addedDate, 'DD/MM/YYYY')
                                   : 'N/A'
                                 }
                               </span>
@@ -268,11 +269,11 @@ const ExtractionDetailModal = ({
                                 inventory && isExpired(inventory.expiryDate)
                                   ? "text-red-600 font-medium"
                                   : inventory && isExpiringSoon(inventory.expiryDate)
-                                  ? "text-yellow-600 font-medium"
-                                  : ""
+                                    ? "text-yellow-600 font-medium"
+                                    : ""
                               }>
-                                {inventory?.expiryDate 
-                                  ? formatVietnamTime(inventory.expiryDate, 'DD/MM/YYYY') 
+                                {inventory?.expiryDate
+                                  ? formatVietnamTime(inventory.expiryDate, 'DD/MM/YYYY')
                                   : 'N/A'
                                 }
                               </span>
@@ -306,14 +307,14 @@ const ExtractionDetailModal = ({
                   <p className="text-xs text-gray-600">Số lô được sử dụng</p>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <p className="text-sm text-gray-600">
                   Trích xuất hoàn tất lúc
                 </p>
                 <p className="text-sm font-medium text-gray-900">
-                  {extraction.extractedAt 
-                    ? formatVietnamTime(extraction.extractedAt, 'HH:mm - DD/MM/YYYY') 
+                  {extraction.extractedAt
+                    ? dayjs(extraction.extractedAt).format('DD/MM/YYYY HH:mm')
                     : 'N/A'
                   }
                 </p>

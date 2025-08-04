@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 
 const Extraction = () => {
   const [extractions, setExtractions] = useState([]);
+  console.log('Extractions:', extractions);
   const [bloodTypes, setBloodTypes] = useState([]);
   const [bloodComponents, setBloodComponents] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
