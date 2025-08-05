@@ -4,6 +4,12 @@ import { APPOINTMENT_STATUS } from '../../utils/constants';
 import HealthDeclarationModal from './HealthDeclarationModal';
 import { formatVietnamTime } from '../../utils/formatters';
 import useAuth from '../../hooks/useAuth';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const AppointmentHistory = ({ appointments, onCancel, onViewDetails, loadingDetails }) => {
 
@@ -56,14 +62,19 @@ const AppointmentHistory = ({ appointments, onCancel, onViewDetails, loadingDeta
   };
 
   const isPastDue = (appointmentDate, status) => {
-    return new Date(appointmentDate) < new Date() &&
+    const nowVietnam = dayjs().tz('Asia/Ho_Chi_Minh');
+    
+    const appointmentVietnam = dayjs(appointmentDate).tz('Asia/Ho_Chi_Minh');
+    
+    return appointmentVietnam.isBefore(nowVietnam) &&
       [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.SCHEDULED].includes(status);
   };
 
   const isToday = (appointmentDate) => {
-    const today = new Date();
-    const appointment = new Date(appointmentDate);
-    return appointment.toDateString() === today.toDateString();
+    const todayVietnam = dayjs().tz('Asia/Ho_Chi_Minh');
+    const appointmentVietnam = dayjs(appointmentDate).tz('Asia/Ho_Chi_Minh');
+    
+    return appointmentVietnam.isSame(todayVietnam, 'day');
   };
 
   const handleViewHealthDeclaration = (appointmentId) => {
